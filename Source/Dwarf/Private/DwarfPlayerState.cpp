@@ -6,14 +6,40 @@
 #include "Cave.h"
 #include "DwarfUserWidget.h"
 #include "Components/TextRenderComponent.h"
+#include "UpgradeEntryData.h"
 #include "DwarfSaveGame.h"
 
 void ADwarfPlayerState::BeginPlay()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
+	resourceUpgrades.upgradeFunctionNames[0] = "StrongArms";
+	resourceUpgrades.upgradeFunctionNames[1] = "Drill";
+	resourceUpgrades.displayNames[0] = "Strong Arms";
+	resourceUpgrades.displayNames[1] = "Drill";
+
 	if (HUDClass)
 	{
 		HUD = CreateWidget<UDwarfUserWidget>(GetPlayerController(), HUDClass);
-		HUD->UpgradeButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::UpgradeStrongArms);
+
+		// Setup Upgrade delegates and buttons
+		for (int i = 0; i < UPGRADE_COUNT; i++)
+		{
+			FScriptDelegate delegate;
+			FName delegateName;
+			delegateName = FName(resourceUpgrades.upgradeFunctionNames[i]);
+			FWideString prefix = "Upgrade";
+			delegateName.AppendString(prefix);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, prefix);
+			delegate.BindUFunction(this, FName(prefix));
+
+			UUpgradeEntryData* data = NewObject<UUpgradeEntryData>(this);
+			data->upgradeName = resourceUpgrades.displayNames[i];
+			data->upgradeDelegate = delegate;
+			
+			HUD->UpgradeBox->AddItem(data);
+		}
+		
 		HUD->SaveButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::SaveCurrentState);
 		HUD->Populate();
 		HUD->AddToViewport();
@@ -45,6 +71,22 @@ void ADwarfPlayerState::BeginPlay()
 void ADwarfPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	SaveCurrentState();
+}
+
+void ADwarfPlayerState::Tick(float _dt)
+{
+	DrillClock -= _dt;
+
+	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString::FromInt(DrillClock));
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString::FromInt(1));
+
+	if (DrillClock <= 0)
+	{
+		DrillClock = DrillDowntime;
+
+		CreateDamageText(DrillDamage);
+		Damage(DrillDamage);
+	}
 }
 
 void ADwarfPlayerState::OnSaveFinished(const FString& _name, const int32 _userIndex, bool _success)
@@ -91,9 +133,7 @@ void ADwarfPlayerState::SaveCurrentState()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString(TEXT("Saving...")));
 
-	// Set up the (optional) delegate.
 	FAsyncSaveGameToSlotDelegate SavedDelegate;
-	// USomeUObjectClass::SaveGameDelegateFunction is a void function that takes the following parameters: const FString& SlotName, const int32 UserIndex, bool bSuccess
 	SavedDelegate.BindUObject(this, &ADwarfPlayerState::OnSaveFinished);
 
 	UDwarfSaveGame* save = (UDwarfSaveGame*)UGameplayStatics::CreateSaveGameObject(UDwarfSaveGame::StaticClass());
@@ -101,12 +141,6 @@ void ADwarfPlayerState::SaveCurrentState()
 	memcpy(save->upgradeLevels, resourceUpgrades.upgradeLevels, sizeof(int) * UPGRADE_COUNT);
 	memcpy(save->resources, resources, sizeof(int) * RESOURCE_COUNT);
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(save->upgradeLevels[0]));
-	/*for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT;)
-	{
-		save->resourceUpgradeLevels[upgrade] = resourceUpgrades.upgradeLevels[upgrade];
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(save->resourceUpgradeLevels[upgrade]));
-		upgrade = (UpgradeType)(1 + upgrade);
-	}*/
 
 	UGameplayStatics::AsyncSaveGameToSlot(save, "SaveSlot", 0, SavedDelegate);
 }
@@ -136,11 +170,16 @@ bool ADwarfPlayerState::PayCost(const TArray<ResourceData>& _cost)
 void ADwarfPlayerState::BuyResourceUpgrade(UpgradeType _upgrade)
 {
 	TArray<ResourceData> cost = resourceUpgrades.GetCost(_upgrade);
-	if (PayCost(cost) == false) return;
+	if (PayCost(cost) == false)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Not enough resources"); 
+		return;
+	}
 
 	// Give upgrade reward based on type
 	resourceUpgrades.upgradeLevels[_upgrade]++;
 	IncreaseResourceUpgrade(_upgrade);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Bought upgrade " + FString::FromInt(_upgrade));
 }
 
 void ADwarfPlayerState::IncreaseResourceUpgrade(UpgradeType _upgrade)
@@ -153,6 +192,12 @@ void ADwarfPlayerState::IncreaseResourceUpgrade(UpgradeType _upgrade)
 		MaxDamage += 2;
 		break;
 	}
+	case DRILL:
+	{
+		DrillDamage += 1;
+		DrillDowntime *= 0.9;
+		break;
+	}
 	}
 }
 
@@ -161,7 +206,12 @@ void ADwarfPlayerState::UpgradeStrongArms()
 	BuyResourceUpgrade(STRONG_ARMS);
 }
 
-int ADwarfPlayerState::GetDamage()
+void ADwarfPlayerState::UpgradeDrill()
+{
+	BuyResourceUpgrade(DRILL);
+}
+
+int ADwarfPlayerState::GetClickDamage()
 {
 	int DamageDelta = MaxDamage - MinDamage;
 	int DamageBonus = rand() % (DamageDelta + 1);
@@ -170,11 +220,15 @@ int ADwarfPlayerState::GetDamage()
 
 void ADwarfPlayerState::Hit()
 {
-	BlockData currentBlockData = cave->first->Data;
-
-	int damage = GetDamage();
+	int damage = GetClickDamage();
 	CreateDamageText(damage);
-	if (cave->DamageFirst(damage))
+	Damage(damage);
+}
+
+void ADwarfPlayerState::Damage(int _damage)
+{
+	BlockData currentBlockData = cave->first->Data;
+	if (cave->DamageFirst(_damage))
 	{
 		IncreaseBlocks();
 

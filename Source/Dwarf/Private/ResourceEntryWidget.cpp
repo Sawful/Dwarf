@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ResourceEntryWidget.h"
-#include "Components/EditableText.h"
+#include "Components/TextBlock.h"
 
 void UResourceEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {

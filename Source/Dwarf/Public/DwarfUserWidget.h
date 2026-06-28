@@ -4,6 +4,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/ListView.h"
+#include "Components/HorizontalBox.h"
 #include "ResourceEntryWidget.h"
 #include "ResourceEntryData.h"
 #include "Block.h"
@@ -26,7 +27,8 @@ public:
 	void UpdateResources(int (&_resources)[RESOURCE_COUNT]);
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UButton* UpgradeButton;
+	UListView* UpgradeBox;
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* SaveButton;
 

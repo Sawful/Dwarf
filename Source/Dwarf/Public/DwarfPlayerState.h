@@ -16,12 +16,19 @@ class ADwarfPawn;
 enum UpgradeType
 {
 	STRONG_ARMS = 0,
+	DRILL,
 
 	UPGRADE_COUNT
 };
 
 struct ResourceUpgrades
 {
+	UPROPERTY()
+	FString upgradeFunctionNames[UPGRADE_COUNT];
+
+	UPROPERTY()
+	FString displayNames[UPGRADE_COUNT];
+
 	UPROPERTY()
 	int upgradeLevels[UPGRADE_COUNT];
 	TArray<ResourceData> GetCost(UpgradeType _upgrade);
@@ -40,6 +47,7 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	GENERATED_BODY()
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void Tick(float DeltaTime) override;
 
 
 	UPROPERTY(EditAnywhere)
@@ -68,6 +76,8 @@ public:
 
 	UFUNCTION()
 	void UpgradeStrongArms();
+	UFUNCTION()
+	void UpgradeDrill();
 	
 	ADwarfPawn* pawn;
 	Cave* cave;
@@ -80,10 +90,16 @@ public:
 
 	int MinDamage = 10;
 	int MaxDamage = 15;
-	int GetDamage();
+	int GetClickDamage();
+
+	// Drill data
+	int DrillDamage = 0;
+	float DrillDowntime = 2;
+	float DrillClock;
 
 	void CreateDamageText(int _damage);
 	void Hit();
+	void Damage(int _damage);
 
 	// Stored stats
 	SavedStats savedStats;

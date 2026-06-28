@@ -5,29 +5,26 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
-#include "ResourceEntryData.h"
-#include "ResourceEntryWidget.generated.h"
+#include "UpgradeEntryData.h"
+#include "UpgradeEntryWidget.generated.h"
 
+class UButton;
 class UTextBlock;
 
 UCLASS()
-class DWARF_API UResourceEntryWidget : public UUserWidget, public IUserObjectListEntry
+class DWARF_API UUpgradeEntryWidget : public UUserWidget, public IUserObjectListEntry
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UTextBlock* ResourceText;
-
 	UPROPERTY()
-	UResourceEntryData* CurrentData;
+	UUpgradeEntryData* CurrentData;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* Button;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* Name;
+
 
 protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
-
-	UFUNCTION()
-	void OnDataChanged();
-
-	UFUNCTION()
-	void UpdateText();
-
 };
