@@ -31,14 +31,15 @@ public:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* SaveButton;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* MenuButton;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* RebirthButton;
 
 protected:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UListView* ResourceList;
-
-	UPROPERTY()
-	FString ResourceNames[3];
 
 	UPROPERTY()
 	TArray<UResourceEntryData*> ResourceItems;

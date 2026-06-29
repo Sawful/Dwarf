@@ -14,3 +14,13 @@ void ABlock::BeginPlay()
 	Super::BeginPlay();
 }
 
+FString GetResourceName(ResourceType _type)
+{
+	switch (_type)
+	{
+	case DIRT: return "Dirt";
+	case STONE: return "Stone";
+	case ORE: return "Ore";
+	}
+	return FString();
+}

@@ -4,15 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ResourceData.h"
 #include "Block.generated.h"
-
-enum ResourceType {
-	DIRT = 0,
-	STONE = 1,
-	ORE = 2,
-
-	RESOURCE_COUNT
-};
 
 enum BlockType {
 	DIRT_BLOCK = 0,
@@ -20,12 +13,6 @@ enum BlockType {
 	ORE_BLOCK = 2,
 
 	BLOCK_COUNT
-};
-
-struct ResourceData
-{
-	ResourceType Type;
-	int Amount;
 };
 
 struct BlockData
@@ -49,6 +36,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	UStaticMeshComponent* mesh;
 	BlockData Data;
 	ABlock* next = nullptr;
 };
+
+FString GetResourceName(ResourceType _type);

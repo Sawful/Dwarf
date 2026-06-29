@@ -10,6 +10,7 @@ void UChatUserWidget::NativeConstruct()
 	FScriptDelegate changeDelegate;
 	changeDelegate.BindUFunction(this, "PushMessage");
 	ChatBar->OnTextCommitted.Add(changeDelegate);
+	ChatBar->SetClearKeyboardFocusOnCommit(true);
 }
 
 void UChatUserWidget::PushMessage(const FText& text, ETextCommit::Type InCommitType)
@@ -19,4 +20,6 @@ void UChatUserWidget::PushMessage(const FText& text, ETextCommit::Type InCommitT
 	UTextBlock* newMessage = NewObject<UTextBlock>(this);
 	newMessage->SetText(text);
 	Chat->AddChild(newMessage);
+
+	ChatBar->SetText(FText());
 }

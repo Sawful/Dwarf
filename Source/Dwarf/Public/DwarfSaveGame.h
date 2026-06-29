@@ -16,4 +16,7 @@ public:
 
 	UPROPERTY()
 	int resources[RESOURCE_COUNT];
+
+	UPROPERTY()
+	int savedStats[4];
 };

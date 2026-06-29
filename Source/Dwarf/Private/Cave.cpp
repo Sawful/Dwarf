@@ -2,6 +2,7 @@
 
 
 #include "Cave.h"
+#include "DwarfPlayerState.h"
 
 void Cave::GenerateStart()
 {
@@ -28,19 +29,44 @@ void Cave::GenerateStart()
 	lastGridPos[1] = BLOCK_COUNT_Y;
 }
 
+void Cave::ResetCave()
+{
+	// Destroy every block
+	while (first->next)
+	{
+		ABlock* temp = first;
+		first = first->next;
+		temp->Destroy();
+	}
+	first->Destroy();
+
+	GenerateStart();
+}
+
+void Cave::SetCaveVisible(bool _visible)
+{
+	while (first->next)
+	{
+		first->SetActorHiddenInGame(!_visible);
+		first = first->next;
+	}
+	first->SetActorHiddenInGame(!_visible);
+	caveVisible = _visible;
+}
+
 ABlock* Cave::GenerateBlock(FVector _pos)
 {
 	FActorSpawnParameters SpawnParam = FActorSpawnParameters();
 	FRotator rot = FRotator();
 	ABlock* block = player->GetWorld()->SpawnActor<ABlock>(BP_BlockClass, _pos, rot, SpawnParam);
-
 	if (!block)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Error creating block")));
 		return nullptr;
 	}
 
-	UStaticMeshComponent* mesh = block->GetComponentByClass<UStaticMeshComponent>();
+	block->mesh = block->GetComponentByClass<UStaticMeshComponent>();
+	block->SetActorHiddenInGame(!caveVisible);
 
 	block->Data.type = BlockType(rand() % 3);
 
@@ -48,16 +74,16 @@ ABlock* Cave::GenerateBlock(FVector _pos)
 	{
 	case DIRT_BLOCK:
 		block->Data.yield.Push({ DIRT, rand() % 3 + 2 });
-		mesh->SetMaterial(0, DirtMat);
+		block->mesh->SetMaterial(0, DirtMat);
 		break;
 	case STONE_BLOCK:
 		block->Data.yield.Push({ STONE, rand() % 2 + 1 });
-		mesh->SetMaterial(0, StoneMat);
+		block->mesh->SetMaterial(0, StoneMat);
 		break;
 	case ORE_BLOCK:
 		block->Data.yield.Push({ STONE, rand() % 2 + 1 });
 		block->Data.yield.Push({ ORE, rand() % 2 + 1 });
-		mesh->SetMaterial(0, OreMat);
+		block->mesh->SetMaterial(0, OreMat);
 		break;
 	}
 	return block;
@@ -107,8 +133,4 @@ Cave::Cave()
 	DirtMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Dirt.Dirt"));
 	StoneMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Stone.Stone"));
 	OreMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Ore.Ore"));
-}
-
-Cave::~Cave()
-{
 }

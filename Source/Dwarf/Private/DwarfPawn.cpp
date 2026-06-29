@@ -14,8 +14,6 @@ ADwarfPawn::ADwarfPawn()
 
 	Dwarf = CreateDefaultSubobject<USceneComponent>(TEXT("DwarfRoot"));
 
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
-	CameraComponent->SetupAttachment(Dwarf);
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("SpriteComponent"));
 	SpriteComponent->SetupAttachment(Dwarf);
 }
@@ -24,8 +22,7 @@ ADwarfPawn::ADwarfPawn()
 void ADwarfPawn::BeginPlay()
 {
 	Super::BeginPlay();
-
-	playerState = GetPlayerState<ADwarfPlayerState>(); // TODO: remove
+	initialPosition = GetActorLocation();
 }
 
 // Called every frame
@@ -37,13 +34,20 @@ void ADwarfPawn::Tick(float DeltaTime)
 	if (metersWalked >= targetMetersWalked) return;
 
 	FVector newPos = GetActorLocation();
-	newPos += GetActorRightVector() * DeltaTime * playerState->movementSpeed * BLOCK_SIZE;
-	metersWalked += DeltaTime * playerState->movementSpeed;
+	newPos += GetActorRightVector() * DeltaTime * movementSpeed * BLOCK_SIZE;
+	metersWalked += DeltaTime * movementSpeed;
 	SetActorLocation(newPos);
 }
 
 void ADwarfPawn::MoveForward()
 {
 	targetMetersWalked += 1;
+}
+
+void ADwarfPawn::ResetDwarfPawn()
+{
+	metersWalked = 0;
+	targetMetersWalked = 0;
+	SetActorLocation(initialPosition);
 }
 

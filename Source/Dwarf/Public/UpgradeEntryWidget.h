@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
 #include "UpgradeEntryData.h"
+#include "Block.h"
 #include "UpgradeEntryWidget.generated.h"
 
 class UButton;
@@ -23,7 +24,10 @@ class DWARF_API UUpgradeEntryWidget : public UUserWidget, public IUserObjectList
 	UButton* Button;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* Name;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* Cost;
 
+	void SetCost(TArray<ResourceData> cost);
 
 protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;

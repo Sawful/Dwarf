@@ -5,6 +5,20 @@
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 
+void UUpgradeEntryWidget::SetCost(TArray<ResourceData> cost)
+{
+	FString string = "Cost: \n";
+	for(auto resource : cost)
+	{
+		string += GetResourceName(resource.Type);
+		string += ": ";
+		string += FString::FromInt(resource.Amount);
+		string += "\n";
+	}
+
+	Cost->SetText(FText::FromString(string));
+}
+
 void UUpgradeEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
 	CurrentData = Cast<UUpgradeEntryData>(ListItemObject);

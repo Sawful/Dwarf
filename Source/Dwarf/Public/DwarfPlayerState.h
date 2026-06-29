@@ -5,11 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
 #include "Engine/TextRenderActor.h"
+
+#include "DwarfCameraActor.h"
 #include "DwarfUserWidget.h"
+#include "MainMenuWidget.h"
 #include "Block.h"
+#include "Cave.h"
 #include "DwarfPlayerState.generated.h"
 
-class Cave;
 class USaveGame;
 class ADwarfPawn;
 
@@ -21,51 +24,100 @@ enum UpgradeType
 	UPGRADE_COUNT
 };
 
-struct ResourceUpgrades
+DECLARE_DELEGATE_RetVal_OneParam(TArray<ResourceData>, FOnGetCost, int)
+struct ResourceUpgrade
 {
 	UPROPERTY()
-	FString upgradeFunctionNames[UPGRADE_COUNT];
+	FString upgradeFunctionName;
 
 	UPROPERTY()
-	FString displayNames[UPGRADE_COUNT];
+	FString displayName;
 
 	UPROPERTY()
-	int upgradeLevels[UPGRADE_COUNT];
-	TArray<ResourceData> GetCost(UpgradeType _upgrade);
+	int upgradeLevel;
+
+	UPROPERTY()
+	TArray<ResourceData> costCached;
+
+	FOnGetCost costDelegate;
+
+	TArray<ResourceData> GetCost();
+
 };
+
+TArray<ResourceData> CostStrongArms(int _level);
+TArray<ResourceData> CostDrill(int _level);
+
+DECLARE_DELEGATE_OneParam(FOnMilestoneTier, int);
+template <typename T>
+struct Milestone
+{
+	T value; // Tracked value
+	int currentTier = 0;
+	int maximumTier;
+	TArray<T> tiers;
+	FOnMilestoneTier tierUpDelegate;
+
+	Milestone(T _value) : value(_value) {};
+
+	void CheckTier();
+};
+
 
 struct SavedStats
 {
-	int damageDone = 0;
-	int blocksBroken = 0;
-	int metersWalked = 0;
+	UPROPERTY()
+	Milestone<int> damageDone = 0;
+	UPROPERTY()
+	Milestone<int> blocksBroken = 0;
+	UPROPERTY()
+	Milestone<int> metersWalked = 0;
+	UPROPERTY()
+	Milestone<int> rebirthCount = 0;
 };
 
 UCLASS()
 class DWARF_API ADwarfPlayerState : public APlayerState
 {
 	GENERATED_BODY()
+	ADwarfPlayerState();
+
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
 
+	void SetupResourceUpgrades();
+	void SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData>(* InFunc)(int));
+	void SetupMilestones();
+
+	// Main camera (follows the dwarf)
+	UPROPERTY(EditAnywhere)
+	ADwarfCameraActor* CameraActor;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf <ATextRenderActor> DamageTextClass;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UDwarfUserWidget> HUDClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UMainMenuWidget> MenuClass;
 
 	UDwarfUserWidget* HUD;
+	UMainMenuWidget* MainMenu;
 
-	ResourceUpgrades resourceUpgrades;
+	ResourceUpgrade resourceUpgrades[UPGRADE_COUNT];
 
 public:
 	void OnSaveFinished(const FString& _name, const int32 _userIndex, bool _success);
 	void OnLoadFinished(const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData);
+	
+	void ResetDwarfStats();
 
 	UFUNCTION()
 	void SaveCurrentState();
+
+	UFUNCTION()
+	void Rebirth();
 
 	bool CheckCost(const TArray<ResourceData>& _cost);
 	bool PayCost(const TArray<ResourceData>& _cost);
@@ -75,14 +127,25 @@ public:
 	void MoveForward();
 
 	UFUNCTION()
+	void SetRogue();
+
+	UFUNCTION()
+	void ZoomIdle();
+	UFUNCTION()
+	void ZoomMenu();
+
+	UFUNCTION()
 	void UpgradeStrongArms();
+
 	UFUNCTION()
 	void UpgradeDrill();
+
+	UFUNCTION()
+	void BlockMilestone(int _tier);
 	
 	ADwarfPawn* pawn;
-	Cave* cave;
-
-	float movementSpeed = 3;
+	Cave* currentCave;
+	Cave caves[2];
 
 	float GlobalYieldMultiplier = 1.0f;
 	float resourceYieldMultiplier[RESOURCE_COUNT];
@@ -97,7 +160,13 @@ public:
 	float DrillDowntime = 2;
 	float DrillClock;
 
-	void CreateDamageText(int _damage);
+	enum DamageTextType
+	{
+		NORMAL,
+		AUTO,
+		CRITICAL
+	};
+	void CreateDamageText(int _damage, DamageTextType _type);
 	void Hit();
 	void Damage(int _damage);
 
@@ -109,3 +178,14 @@ public:
 
 	int resources[RESOURCE_COUNT];
 };
+
+template<typename T>
+inline void Milestone<T>::CheckTier()
+{
+	while (currentTier < maximumTier && value > tiers[currentTier])
+	{
+		// Call milestone function
+		tierUpDelegate.Execute(currentTier);
+		currentTier++;
+	}
+}

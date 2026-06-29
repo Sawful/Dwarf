@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "Camera/CameraComponent.h"
 #include "C:\Program Files\Epic Games\UE_5.7\Engine\Plugins\2D\Paper2D\Source\Paper2D\Classes\PaperSpriteComponent.h"
 #include "DwarfPlayerState.h"
 #include "DwarfPawn.generated.h"
@@ -15,16 +14,10 @@ class DWARF_API ADwarfPawn : public APawn
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	ADwarfPawn();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	// Main camera (follows the dwarf)
-	UPROPERTY(EditAnywhere)
-	UCameraComponent* CameraComponent;
 
 	UPROPERTY(EditAnywhere)
 	UPaperSpriteComponent* SpriteComponent;
@@ -35,9 +28,11 @@ protected:
 	ADwarfPlayerState* playerState;
 	float metersWalked = 0;
 	float targetMetersWalked = 0;
+	float movementSpeed = 30;
 
+	FVector initialPosition;
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	void MoveForward();
+	void ResetDwarfPawn();
 };

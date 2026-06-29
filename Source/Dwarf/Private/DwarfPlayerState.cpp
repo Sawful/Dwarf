@@ -9,14 +9,60 @@
 #include "UpgradeEntryData.h"
 #include "DwarfSaveGame.h"
 
-void ADwarfPlayerState::BeginPlay()
+ADwarfPlayerState::ADwarfPlayerState()
 {
 	PrimaryActorTick.bCanEverTick = true;
+}
 
-	resourceUpgrades.upgradeFunctionNames[0] = "StrongArms";
-	resourceUpgrades.upgradeFunctionNames[1] = "Drill";
-	resourceUpgrades.displayNames[0] = "Strong Arms";
-	resourceUpgrades.displayNames[1] = "Drill";
+void ADwarfPlayerState::SetupResourceUpgrades()
+{
+	resourceUpgrades[0].upgradeFunctionName = "StrongArms";
+	resourceUpgrades[0].displayName = "Strong Arms";
+	SetupResourceUpgradeDelegate(resourceUpgrades[0], &CostStrongArms);
+
+	resourceUpgrades[1].upgradeFunctionName = "Drill";
+	resourceUpgrades[1].displayName = "Drill";
+	SetupResourceUpgradeDelegate(resourceUpgrades[1], &CostDrill);
+}
+
+void ADwarfPlayerState::SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData> (*InFunc)(int))
+{
+	FOnGetCost del;
+	FString costDelName = "Cost";
+	costDelName += upgrade.upgradeFunctionName;
+	del.BindStatic(InFunc);
+	//del.BindRaw(InFunc);
+	upgrade.costDelegate = del;
+}
+
+void ADwarfPlayerState::SetupMilestones()
+{
+	savedStats.blocksBroken.maximumTier = 4;
+	savedStats.blocksBroken.tiers.Push(15);
+	savedStats.blocksBroken.tiers.Push(50);
+	savedStats.blocksBroken.tiers.Push(250);
+	savedStats.blocksBroken.tiers.Push(1500);
+	savedStats.blocksBroken.tierUpDelegate.BindUObject(this, &ADwarfPlayerState::BlockMilestone);
+}
+
+void ADwarfPlayerState::BeginPlay()
+{
+	SetupMilestones();
+	SetupResourceUpgrades();
+
+	if (MenuClass)
+	{
+		MainMenu = CreateWidget<UMainMenuWidget>(GetPlayerController(), MenuClass);
+
+		FScriptDelegate idleClickDelegate;
+		idleClickDelegate.BindUFunction(this, "ZoomIdle");
+		MainMenu->IdleButton->OnClicked.Add(idleClickDelegate);
+		MainMenu->AddToViewport();
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Could not create Main Menu")));
+	}
 
 	if (HUDClass)
 	{
@@ -27,20 +73,22 @@ void ADwarfPlayerState::BeginPlay()
 		{
 			FScriptDelegate delegate;
 			FName delegateName;
-			delegateName = FName(resourceUpgrades.upgradeFunctionNames[i]);
+			delegateName = FName(resourceUpgrades[i].upgradeFunctionName);
 			FWideString prefix = "Upgrade";
 			delegateName.AppendString(prefix);
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, prefix);
 			delegate.BindUFunction(this, FName(prefix));
 
 			UUpgradeEntryData* data = NewObject<UUpgradeEntryData>(this);
-			data->upgradeName = resourceUpgrades.displayNames[i];
+			data->upgradeName = resourceUpgrades[i].displayName;
 			data->upgradeDelegate = delegate;
 			
 			HUD->UpgradeBox->AddItem(data);
 		}
 		
 		HUD->SaveButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::SaveCurrentState);
+		HUD->RebirthButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::Rebirth);
+		HUD->MenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::ZoomMenu);
 		HUD->Populate();
 		HUD->AddToViewport();
 	}
@@ -49,9 +97,14 @@ void ADwarfPlayerState::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Could not create HUD")));
 	}
 
-	cave = new Cave();
-	cave->player = this;
-	cave->GenerateStart();
+	CameraActor = GetWorld()->SpawnActor<ADwarfCameraActor>(ADwarfCameraActor::StaticClass(), FVector(), FRotator(), FActorSpawnParameters());
+	CameraActor->pawn = pawn;
+	ZoomMenu();
+	CameraActor->ForcePos();
+
+	currentCave = new Cave();
+	currentCave->player = this;
+	currentCave->GenerateStart();
 
 	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
@@ -77,14 +130,11 @@ void ADwarfPlayerState::Tick(float _dt)
 {
 	DrillClock -= _dt;
 
-	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString::FromInt(DrillClock));
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString::FromInt(1));
-
 	if (DrillClock <= 0)
 	{
 		DrillClock = DrillDowntime;
 
-		CreateDamageText(DrillDamage);
+		CreateDamageText(DrillDamage, AUTO);
 		Damage(DrillDamage);
 	}
 }
@@ -108,25 +158,56 @@ void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 User
 	if (save == nullptr)
 	{
 		// Default first time init
-		for (int i = 0; i < UPGRADE_COUNT; i++) resourceUpgrades.upgradeLevels[i] = 0;
+		ResetDwarfStats();
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString(TEXT("First time launching the game.")));
 		return;
 	}
 
-	// Apply upgrades
-	memcpy(resourceUpgrades.upgradeLevels, save->upgradeLevels, sizeof(int) * UPGRADE_COUNT);
-	memcpy(resources, save->resources, sizeof(int) * RESOURCE_COUNT);
-	HUD->UpdateResources(resources);
+	// Upgrades
 	for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT;)
 	{
-		for (int i = 0; i < resourceUpgrades.upgradeLevels[upgrade]; i++)
+		resourceUpgrades[upgrade].upgradeLevel = save->upgradeLevels[upgrade];	// Get level
+		for (int i = 0; i < resourceUpgrades[upgrade].upgradeLevel; i++)		// Re-apply upgrade
 		{
 			IncreaseResourceUpgrade(upgrade);
 		}
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(resourceUpgrades.upgradeLevels[upgrade]));
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(resourceUpgrades[upgrade].upgradeLevel));
 		upgrade = (UpgradeType)(1 + upgrade);
 	}
+
+	// Resources
+	memcpy(resources, save->resources, sizeof(int) * RESOURCE_COUNT);
+	HUD->UpdateResources(resources);
+
+	// Saved Stats (TODO: find a way to put these into a list)
+	savedStats.blocksBroken.value = save->savedStats[0];
+	savedStats.blocksBroken.CheckTier();
+	savedStats.damageDone.value = save->savedStats[1];
+	savedStats.damageDone.CheckTier();
+	savedStats.metersWalked.value = save->savedStats[2];
+	savedStats.metersWalked.CheckTier();
+	savedStats.rebirthCount.value = save->savedStats[3];
+	savedStats.rebirthCount.CheckTier();
+
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString(TEXT("Finished loading!")));
+}
+
+void ADwarfPlayerState::ResetDwarfStats()
+{
+	MinDamage = 10;
+	MaxDamage = 15;
+	DrillDamage = 0;
+	DrillDowntime = 2;
+
+	// Re-apply milestone buffs
+	savedStats.blocksBroken.currentTier = 0;
+	savedStats.blocksBroken.CheckTier();
+	savedStats.damageDone.currentTier = 0;
+	savedStats.damageDone.CheckTier();
+	savedStats.metersWalked.currentTier = 0;
+	savedStats.metersWalked.CheckTier();
+	savedStats.rebirthCount.currentTier = 0;
+	savedStats.rebirthCount.CheckTier();
 }
 
 void ADwarfPlayerState::SaveCurrentState()
@@ -138,11 +219,40 @@ void ADwarfPlayerState::SaveCurrentState()
 
 	UDwarfSaveGame* save = (UDwarfSaveGame*)UGameplayStatics::CreateSaveGameObject(UDwarfSaveGame::StaticClass());
 	// Set all values
-	memcpy(save->upgradeLevels, resourceUpgrades.upgradeLevels, sizeof(int) * UPGRADE_COUNT);
+	
+	// Upgrades
+	for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT;)
+	{
+		save->upgradeLevels[upgrade] = resourceUpgrades[upgrade].upgradeLevel;	// Set level
+	}
 	memcpy(save->resources, resources, sizeof(int) * RESOURCE_COUNT);
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(save->upgradeLevels[0]));
+	save->savedStats[0] = savedStats.blocksBroken.value;
+	save->savedStats[1] = savedStats.damageDone.value;
+	save->savedStats[2] = savedStats.metersWalked.value;
+	save->savedStats[3] = savedStats.rebirthCount.value;
 
 	UGameplayStatics::AsyncSaveGameToSlot(save, "SaveSlot", 0, SavedDelegate);
+}
+
+void ADwarfPlayerState::Rebirth()
+{
+	for (int i = 0; i < UPGRADE_COUNT; i++)
+	{
+		resourceUpgrades[i].upgradeLevel = 0;
+	}
+	for (int i = 0; i < RESOURCE_COUNT; i++)
+	{
+		resources[i] = 0;
+	}
+
+	ResetDwarfStats();
+	currentCave->ResetCave();
+	pawn->ResetDwarfPawn();
+	HUD->UpdateResources(resources);
+
+	savedStats.rebirthCount.value++;
+	savedStats.rebirthCount.CheckTier();
 }
 
 bool ADwarfPlayerState::CheckCost(const TArray<ResourceData>& _cost)
@@ -169,7 +279,7 @@ bool ADwarfPlayerState::PayCost(const TArray<ResourceData>& _cost)
 
 void ADwarfPlayerState::BuyResourceUpgrade(UpgradeType _upgrade)
 {
-	TArray<ResourceData> cost = resourceUpgrades.GetCost(_upgrade);
+	TArray<ResourceData> cost = resourceUpgrades[_upgrade].GetCost();
 	if (PayCost(cost) == false)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Not enough resources"); 
@@ -177,7 +287,7 @@ void ADwarfPlayerState::BuyResourceUpgrade(UpgradeType _upgrade)
 	}
 
 	// Give upgrade reward based on type
-	resourceUpgrades.upgradeLevels[_upgrade]++;
+	resourceUpgrades[_upgrade].upgradeLevel++;
 	IncreaseResourceUpgrade(_upgrade);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Bought upgrade " + FString::FromInt(_upgrade));
 }
@@ -206,9 +316,56 @@ void ADwarfPlayerState::UpgradeStrongArms()
 	BuyResourceUpgrade(STRONG_ARMS);
 }
 
+TArray<ResourceData> CostStrongArms(int _level)
+{
+	TArray<ResourceData> cost;
+	cost.Add({ DIRT, 1 + _level });
+	cost.Add({ STONE, 1 + 2 * _level });
+	return cost;
+}
+
+TArray<ResourceData> CostDrill(int _level)
+{
+	TArray<ResourceData> cost;
+	cost.Add({ ORE, 5 + 2 * _level });
+	return cost;
+}
+
 void ADwarfPlayerState::UpgradeDrill()
 {
 	BuyResourceUpgrade(DRILL);
+}
+
+void ADwarfPlayerState::BlockMilestone(int _tier)
+{
+	// Check milestones:
+	switch (_tier)
+	{
+	case 0:
+	{
+		MinDamage += 5;
+		MaxDamage += 5;
+		break;
+	}
+	case 1:
+	{
+		MinDamage += 10;
+		MaxDamage += 10;
+		break;
+	}
+	case 2:
+	{
+		MinDamage += 15;
+		MaxDamage += 15;
+		break;
+	}
+	case 3:
+	{
+		MinDamage += 20;
+		MaxDamage += 20;
+		break;
+	}
+	}
 }
 
 int ADwarfPlayerState::GetClickDamage()
@@ -221,14 +378,21 @@ int ADwarfPlayerState::GetClickDamage()
 void ADwarfPlayerState::Hit()
 {
 	int damage = GetClickDamage();
-	CreateDamageText(damage);
+	if (damage == MaxDamage)
+	{
+		CreateDamageText(damage, CRITICAL);
+	}
+	else
+	{
+		CreateDamageText(damage, NORMAL);
+	}
 	Damage(damage);
 }
 
 void ADwarfPlayerState::Damage(int _damage)
 {
-	BlockData currentBlockData = cave->first->Data;
-	if (cave->DamageFirst(_damage))
+	BlockData currentBlockData = currentCave->first->Data;
+	if (currentCave->DamageFirst(_damage))
 	{
 		IncreaseBlocks();
 
@@ -247,34 +411,43 @@ void ADwarfPlayerState::MoveForward()
 	pawn->MoveForward();
 }
 
+void ADwarfPlayerState::SetRogue()
+{
+	currentCave->SetCaveVisible(false);
+	pawn->SetActorHiddenInGame(true);
+}
+
+void ADwarfPlayerState::ZoomIdle()
+{
+	CameraActor->SetState(ADwarfCameraActor::IDLE);
+	MainMenu->SetVisibility(ESlateVisibility::Hidden);
+	HUD->SetVisibility(ESlateVisibility::Visible);
+}
+
+void ADwarfPlayerState::ZoomMenu()
+{
+	CameraActor->SetState(ADwarfCameraActor::MENU);
+	HUD->SetVisibility(ESlateVisibility::Hidden);
+	MainMenu->SetVisibility(ESlateVisibility::Visible);
+}
+
 void ADwarfPlayerState::IncreaseBlocks()
 {
-	savedStats.blocksBroken++;
-
-	// Check milestones:
-	if (savedStats.blocksBroken == 15)
-	{
-		MinDamage += 5;
-		MaxDamage += 5;
-	}
+	savedStats.blocksBroken.value++;
+	savedStats.blocksBroken.CheckTier();
 }
 
 void ADwarfPlayerState::IncreaseWalk()
 {
-	savedStats.metersWalked++;
-
-	// Check milestones:
-	if (savedStats.metersWalked == 10)
-	{
-		movementSpeed += 5;
-	}
+	savedStats.metersWalked.value++;
+	savedStats.metersWalked.CheckTier();
 }
 
-void ADwarfPlayerState::CreateDamageText(int _damage)
+void ADwarfPlayerState::CreateDamageText(int _damage, DamageTextType _type)
 {
 	if (!DamageTextClass) return;
 
-	FVector position = cave->first->GetActorLocation();
+	FVector position = currentCave->first->GetActorLocation();
 	position.X += -55;
 	position.Y += ((float)((rand() % 100) - 50));
 	position.Z += ((float)((rand() % 100) - 50));
@@ -282,35 +455,35 @@ void ADwarfPlayerState::CreateDamageText(int _damage)
 	FRotator rotator;
 	rotator.Yaw = 180;
 	ATextRenderActor* damageText = GetWorld()->SpawnActor<ATextRenderActor>(DamageTextClass, position, rotator, FActorSpawnParameters());
+	UTextRenderComponent* textRender = damageText->GetTextRender();
+	switch (_type)
+	{
+	case NORMAL:
+	{
+		textRender->SetTextRenderColor(FColor(0xFFFF0000));
+		textRender->WorldSize = 40;
+		break;
+	}
+	case AUTO:
+	{
+		textRender->SetTextRenderColor(FColor(0xFF0F0F0F));
+		textRender->WorldSize = 30;
+		break;
+	}
+	case CRITICAL:
+	{
+		textRender->SetTextRenderColor(FColor(0xFFF0F000));
+		textRender->WorldSize = 60;
+		break;
+	}
 
-	damageText->GetTextRender()->SetText(FText::FromString(FString::FromInt(_damage)));
+	}
+		
+	textRender->SetText(FText::FromString(FString::FromInt(_damage)));
 }
 
-TArray<ResourceData> ResourceUpgrades::GetCost(UpgradeType _upgrade)
+TArray<ResourceData> ResourceUpgrade::GetCost()
 {
-	TArray<ResourceData> Cost;
-	if (_upgrade >= UPGRADE_COUNT)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Could not find upgrade.")));
-		return Cost;
-	}
-	
-	int level = upgradeLevels[_upgrade];
-	switch (_upgrade)
-	{
-	case STRONG_ARMS:
-	{
-		Cost.Add({DIRT, 1 + level});
-		Cost.Add({STONE, 1 + 2 * level});
-		break;
-	}
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-		break;
-	//...
-	}
-
-	return Cost;
+	costCached = costDelegate.Execute(upgradeLevel);
+	return costCached;
 }

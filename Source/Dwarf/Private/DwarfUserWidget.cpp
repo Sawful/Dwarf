@@ -7,15 +7,11 @@ void UDwarfUserWidget::NativeConstruct()
 
 void UDwarfUserWidget::Populate()
 {
-	ResourceNames[0] = "Dirt";
-	ResourceNames[1] = "Stone";
-	ResourceNames[2] = "Ore";
-
 	ResourceList->ClearListItems();
-	for (auto& Name : ResourceNames)
+	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
 		UResourceEntryData* Item = NewObject<UResourceEntryData>(this);
-		Item->ResourceName = Name;
+		Item->ResourceName = GetResourceName((ResourceType)i);
 		Item->Amount = 0;
 		ResourceItems.Add(Item);
 		ResourceList->AddItem(Item);

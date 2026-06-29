@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h" 
 #include "Materials/Material.h"
-#include "DwarfPlayerState.h" 
 #include "Block.h"
 
 #define BLOCK_SIZE 100
@@ -12,8 +11,11 @@
 #define BLOCK_COUNT_X 5
 #define BLOCK_COUNT_Y 3
 
+class ADwarfPlayerState;
+
 class DWARF_API Cave
 {
+protected:
 	int lastGridPos[2];
 	ABlock* last;
 
@@ -25,14 +27,17 @@ class DWARF_API Cave
 
 	TSubclassOf<ABlock> BP_BlockClass = nullptr;
 
+	bool caveVisible = true;
+
 public:
 	ABlock* first;
 	ADwarfPlayerState* player;
 
-	ABlock* GenerateBlock(FVector _pos);
+	void ResetCave();
+	void SetCaveVisible(bool _visible);
+	virtual ABlock* GenerateBlock(FVector _pos);
 	void GenerateStart();
 	bool DamageFirst(int _damage);
 
 	Cave();
-	~Cave();
 };
