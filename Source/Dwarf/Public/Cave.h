@@ -17,7 +17,7 @@ class DWARF_API Cave
 {
 protected:
 	int lastGridPos[2];
-	ABlock* last;
+	ABlock* last = nullptr;
 
 	void BreakFirst();
 
@@ -30,7 +30,7 @@ protected:
 	bool caveVisible = true;
 
 public:
-	ABlock* first;
+	ABlock* first = nullptr;
 	ADwarfPlayerState* player;
 
 	void ResetCave();

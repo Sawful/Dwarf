@@ -6,6 +6,7 @@
 
 void Cave::GenerateStart()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Tried generating cave")));
 	if (BP_BlockClass == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Could not create block class.")));
@@ -56,9 +57,7 @@ void Cave::SetCaveVisible(bool _visible)
 
 ABlock* Cave::GenerateBlock(FVector _pos)
 {
-	FActorSpawnParameters SpawnParam = FActorSpawnParameters();
-	FRotator rot = FRotator();
-	ABlock* block = player->GetWorld()->SpawnActor<ABlock>(BP_BlockClass, _pos, rot, SpawnParam);
+	ABlock* block = player->GetWorld()->SpawnActor<ABlock>(BP_BlockClass, _pos, FRotator(), FActorSpawnParameters());
 	if (!block)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Error creating block")));
@@ -128,7 +127,7 @@ bool Cave::DamageFirst(int _damage)
 
 Cave::Cave()
 {
-	BP_BlockClass = StaticLoadClass(ABlock::StaticClass(), nullptr, TEXT("/Game/BP_Block.BP_Block_C"));
+	BP_BlockClass = StaticLoadClass(ABlock::StaticClass(), nullptr, TEXT("/Game/Blueprints/BP_Block.BP_Block_C"));
 	
 	DirtMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Dirt.Dirt"));
 	StoneMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Stone.Stone"));

@@ -3,6 +3,7 @@
 void UDwarfUserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	TechPointIndicator->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UDwarfUserWidget::Populate()

@@ -7,8 +7,11 @@
 #include "Engine/TextRenderActor.h"
 
 #include "DwarfCameraActor.h"
+
 #include "DwarfUserWidget.h"
 #include "MainMenuWidget.h"
+#include "CharacterMenuWidget.h"
+
 #include "Block.h"
 #include "Cave.h"
 #include "DwarfPlayerState.generated.h"
@@ -101,9 +104,12 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	TSubclassOf<UDwarfUserWidget> HUDClass;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMainMenuWidget> MenuClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UCharacterMenuWidget> CharacterMenuClass;
 
 	UDwarfUserWidget* HUD;
 	UMainMenuWidget* MainMenu;
+	UCharacterMenuWidget* CharacterMenu;
 
 	ResourceUpgrade resourceUpgrades[UPGRADE_COUNT];
 
@@ -135,6 +141,12 @@ public:
 	void ZoomMenu();
 
 	UFUNCTION()
+	void ShowCharacterMenu();
+
+	UFUNCTION()
+	void HideCharacterMenu();
+
+	UFUNCTION()
 	void UpgradeStrongArms();
 
 	UFUNCTION()
@@ -144,8 +156,16 @@ public:
 	void BlockMilestone(int _tier);
 	
 	ADwarfPawn* pawn;
-	Cave* currentCave;
+	Cave* currentCave = nullptr;
 	Cave caves[2];
+
+	// Dwarf Stats
+	int Level;
+	int Experience;
+	int RequiredExperience;
+	void IncreaseExp(int _value);
+	void LevelUp();
+	int TalentPoints;
 
 	float GlobalYieldMultiplier = 1.0f;
 	float resourceYieldMultiplier[RESOURCE_COUNT];

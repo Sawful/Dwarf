@@ -1,12 +1,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/ListView.h"
 #include "Components/HorizontalBox.h"
+#include "Components/Image.h"
+
 #include "ResourceEntryWidget.h"
 #include "ResourceEntryData.h"
+#include "ExpBarWidget.h"
+
 #include "Block.h"
 
 #include "DwarfUserWidget.generated.h"
@@ -31,10 +36,21 @@ public:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* SaveButton;
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* MenuButton;
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* RebirthButton;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* CharacterMenuButton;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UExpBarWidget* ExpBar;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UImage* TechPointIndicator;
 
 protected:
 

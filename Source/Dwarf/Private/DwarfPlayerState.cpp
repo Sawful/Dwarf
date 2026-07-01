@@ -31,7 +31,6 @@ void ADwarfPlayerState::SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, T
 	FString costDelName = "Cost";
 	costDelName += upgrade.upgradeFunctionName;
 	del.BindStatic(InFunc);
-	//del.BindRaw(InFunc);
 	upgrade.costDelegate = del;
 }
 
@@ -89,6 +88,9 @@ void ADwarfPlayerState::BeginPlay()
 		HUD->SaveButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::SaveCurrentState);
 		HUD->RebirthButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::Rebirth);
 		HUD->MenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::ZoomMenu);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("before")));
+		HUD->CharacterMenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::ShowCharacterMenu);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("After")));
 		HUD->Populate();
 		HUD->AddToViewport();
 	}
@@ -97,6 +99,17 @@ void ADwarfPlayerState::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Could not create HUD")));
 	}
 
+	if (CharacterMenuClass)
+	{
+		CharacterMenu = CreateWidget<UCharacterMenuWidget>(GetPlayerController(), CharacterMenuClass);
+		CharacterMenu->ExitButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::HideCharacterMenu);
+		CharacterMenu->SetVisibility(ESlateVisibility::Hidden); 
+		CharacterMenu->AddToViewport();
+	}
+	else 
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Could not create CharacterMenuClass")));
+	}
 	CameraActor = GetWorld()->SpawnActor<ADwarfCameraActor>(ADwarfCameraActor::StaticClass(), FVector(), FRotator(), FActorSpawnParameters());
 	CameraActor->pawn = pawn;
 	ZoomMenu();
@@ -105,6 +118,8 @@ void ADwarfPlayerState::BeginPlay()
 	currentCave = new Cave();
 	currentCave->player = this;
 	currentCave->GenerateStart();
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("After cave gen")));
 
 	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
@@ -134,8 +149,8 @@ void ADwarfPlayerState::Tick(float _dt)
 	{
 		DrillClock = DrillDowntime;
 
-		CreateDamageText(DrillDamage, AUTO);
-		Damage(DrillDamage);
+		//CreateDamageText(DrillDamage, AUTO);
+		//Damage(DrillDamage);
 	}
 }
 
@@ -174,6 +189,8 @@ void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 User
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(resourceUpgrades[upgrade].upgradeLevel));
 		upgrade = (UpgradeType)(1 + upgrade);
 	}
+
+	DrillClock = DrillDowntime;
 
 	// Resources
 	memcpy(resources, save->resources, sizeof(int) * RESOURCE_COUNT);
@@ -221,7 +238,7 @@ void ADwarfPlayerState::SaveCurrentState()
 	// Set all values
 	
 	// Upgrades
-	for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT;)
+	for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT; upgrade = (UpgradeType)(upgrade + 1))
 	{
 		save->upgradeLevels[upgrade] = resourceUpgrades[upgrade].upgradeLevel;	// Set level
 	}
@@ -368,6 +385,33 @@ void ADwarfPlayerState::BlockMilestone(int _tier)
 	}
 }
 
+void ADwarfPlayerState::IncreaseExp(int _value)
+{
+	Experience += _value;
+	while (Experience >= RequiredExperience)
+	{
+		Experience -= RequiredExperience;
+
+		// Increase level
+		LevelUp();
+	}
+
+	HUD->ExpBar->SetCompletion((float)Experience / (float)RequiredExperience);
+}
+
+void ADwarfPlayerState::LevelUp()
+{
+	Level++;
+	// Do stuff per level (ex: Give tech point, check for level milestone, etc.)
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, "Level up");
+	TalentPoints++;
+	// Show the tech point
+	HUD->TechPointIndicator->SetVisibility(ESlateVisibility::Visible);
+
+	// Compute new Req exp
+	RequiredExperience = (Level + 1) * (Level + 1);
+}
+
 int ADwarfPlayerState::GetClickDamage()
 {
 	int DamageDelta = MaxDamage - MinDamage;
@@ -391,10 +435,16 @@ void ADwarfPlayerState::Hit()
 
 void ADwarfPlayerState::Damage(int _damage)
 {
+	if (!currentCave) return;
+	if (!currentCave->first) return;
+
 	BlockData currentBlockData = currentCave->first->Data;
 	if (currentCave->DamageFirst(_damage))
 	{
 		IncreaseBlocks();
+
+		//DEBUG PURPOSES ONLY
+		IncreaseExp(1);
 
 		for (auto currentYield : currentBlockData.yield)
 		{
@@ -431,6 +481,16 @@ void ADwarfPlayerState::ZoomMenu()
 	MainMenu->SetVisibility(ESlateVisibility::Visible);
 }
 
+void ADwarfPlayerState::ShowCharacterMenu()
+{
+	CharacterMenu->SetVisibility(ESlateVisibility::Visible);
+}
+
+void ADwarfPlayerState::HideCharacterMenu()
+{
+	CharacterMenu->SetVisibility(ESlateVisibility::Hidden);
+}
+
 void ADwarfPlayerState::IncreaseBlocks()
 {
 	savedStats.blocksBroken.value++;
@@ -446,6 +506,8 @@ void ADwarfPlayerState::IncreaseWalk()
 void ADwarfPlayerState::CreateDamageText(int _damage, DamageTextType _type)
 {
 	if (!DamageTextClass) return;
+	if (!currentCave) return;
+	if (!currentCave->first) return;
 
 	FVector position = currentCave->first->GetActorLocation();
 	position.X += -55;
