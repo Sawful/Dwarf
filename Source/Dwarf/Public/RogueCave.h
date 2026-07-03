@@ -9,7 +9,4 @@ class DWARF_API RogueCave: public Cave
 {
 public:
 	virtual ABlock* GenerateBlock(FVector _pos) override;
-
-	RogueCave();
-	~RogueCave();
 };

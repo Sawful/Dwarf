@@ -15,8 +15,10 @@ class DWARF_API ADwarfPlayerController : public APlayerController
 	ADwarfPlayerController();
 
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;
+	void TryStartGame();
+
+	bool validStart = false;
 public:
 	UPROPERTY(VisibleAnywhere)
 	ADwarfPawn* DwarfPawn;

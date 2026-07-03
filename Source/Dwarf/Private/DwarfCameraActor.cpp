@@ -21,6 +21,7 @@ void ADwarfCameraActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	if (!pawn) return;
 	switch (cameraState)
 	{
 	case MENU:
@@ -40,6 +41,7 @@ void ADwarfCameraActor::Tick(float DeltaTime)
 
 void ADwarfCameraActor::ForcePos()
 {
+	if (!pawn) return;
 	switch (cameraState)
 	{
 	case MENU:
@@ -58,6 +60,7 @@ void ADwarfCameraActor::ForcePos()
 
 void ADwarfCameraActor::SetState(CameraState _camState)
 {
+	if (!pawn) return;
 	cameraState = _camState;
 	switch (cameraState)
 	{

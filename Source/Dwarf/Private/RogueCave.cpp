@@ -41,10 +41,3 @@ ABlock* RogueCave::GenerateBlock(FVector _pos)
 	return block;
 }
 
-RogueCave::RogueCave()
-{
-}
-
-RogueCave::~RogueCave()
-{
-}

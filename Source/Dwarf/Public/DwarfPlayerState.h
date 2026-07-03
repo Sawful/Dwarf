@@ -93,6 +93,8 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	void SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData>(* InFunc)(int));
 	void SetupMilestones();
 
+	bool gameLoaded = false;
+
 	// Main camera (follows the dwarf)
 	UPROPERTY(EditAnywhere)
 	ADwarfCameraActor* CameraActor;
@@ -114,6 +116,8 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	ResourceUpgrade resourceUpgrades[UPGRADE_COUNT];
 
 public:
+	void StartGame();
+
 	void OnSaveFinished(const FString& _name, const int32 _userIndex, bool _success);
 	void OnLoadFinished(const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData);
 	

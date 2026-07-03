@@ -46,6 +46,37 @@ void ADwarfPlayerState::SetupMilestones()
 
 void ADwarfPlayerState::BeginPlay()
 {
+	Super::BeginPlay();
+}
+
+void ADwarfPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	SaveCurrentState(); // Doesn't work obv
+}
+
+void ADwarfPlayerState::Tick(float _dt)
+{
+	Super::Tick(_dt);
+	if (gameLoaded == false)
+	{
+		return;
+	}
+
+	DrillClock -= _dt;
+
+	if (DrillClock <= 0)
+	{
+		DrillClock = DrillDowntime;
+
+		CreateDamageText(DrillDamage, AUTO);
+		Damage(DrillDamage);
+	}
+}
+
+void ADwarfPlayerState::StartGame()
+{
+	gameLoaded = true;
+
 	SetupMilestones();
 	SetupResourceUpgrades();
 
@@ -81,16 +112,14 @@ void ADwarfPlayerState::BeginPlay()
 			UUpgradeEntryData* data = NewObject<UUpgradeEntryData>(this);
 			data->upgradeName = resourceUpgrades[i].displayName;
 			data->upgradeDelegate = delegate;
-			
+
 			HUD->UpgradeBox->AddItem(data);
 		}
-		
+
 		HUD->SaveButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::SaveCurrentState);
 		HUD->RebirthButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::Rebirth);
 		HUD->MenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::ZoomMenu);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("before")));
 		HUD->CharacterMenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::ShowCharacterMenu);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("After")));
 		HUD->Populate();
 		HUD->AddToViewport();
 	}
@@ -103,10 +132,10 @@ void ADwarfPlayerState::BeginPlay()
 	{
 		CharacterMenu = CreateWidget<UCharacterMenuWidget>(GetPlayerController(), CharacterMenuClass);
 		CharacterMenu->ExitButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::HideCharacterMenu);
-		CharacterMenu->SetVisibility(ESlateVisibility::Hidden); 
+		CharacterMenu->SetVisibility(ESlateVisibility::Hidden);
 		CharacterMenu->AddToViewport();
 	}
-	else 
+	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Could not create CharacterMenuClass")));
 	}
@@ -118,8 +147,6 @@ void ADwarfPlayerState::BeginPlay()
 	currentCave = new Cave();
 	currentCave->player = this;
 	currentCave->GenerateStart();
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("After cave gen")));
 
 	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
@@ -134,24 +161,6 @@ void ADwarfPlayerState::BeginPlay()
 	FAsyncLoadGameFromSlotDelegate LoadedDelegate;
 	LoadedDelegate.BindUObject(this, &ADwarfPlayerState::OnLoadFinished);
 	UGameplayStatics::AsyncLoadGameFromSlot("SaveSlot", 0, LoadedDelegate);
-}
-
-void ADwarfPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	SaveCurrentState();
-}
-
-void ADwarfPlayerState::Tick(float _dt)
-{
-	DrillClock -= _dt;
-
-	if (DrillClock <= 0)
-	{
-		DrillClock = DrillDowntime;
-
-		//CreateDamageText(DrillDamage, AUTO);
-		//Damage(DrillDamage);
-	}
 }
 
 void ADwarfPlayerState::OnSaveFinished(const FString& _name, const int32 _userIndex, bool _success)
@@ -469,14 +478,14 @@ void ADwarfPlayerState::SetRogue()
 
 void ADwarfPlayerState::ZoomIdle()
 {
-	CameraActor->SetState(ADwarfCameraActor::IDLE);
+	if (CameraActor) CameraActor->SetState(ADwarfCameraActor::IDLE);
 	MainMenu->SetVisibility(ESlateVisibility::Hidden);
 	HUD->SetVisibility(ESlateVisibility::Visible);
 }
 
 void ADwarfPlayerState::ZoomMenu()
 {
-	CameraActor->SetState(ADwarfCameraActor::MENU);
+	if(CameraActor) CameraActor->SetState(ADwarfCameraActor::MENU);
 	HUD->SetVisibility(ESlateVisibility::Hidden);
 	MainMenu->SetVisibility(ESlateVisibility::Visible);
 }
