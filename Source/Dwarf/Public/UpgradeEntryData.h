@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+#include "ResourceData.h"
 #include "UpgradeEntryData.generated.h"
+DECLARE_MULTICAST_DELEGATE(FOnUpgradeChanged);
 
 UCLASS()
 class DWARF_API UUpgradeEntryData : public UObject
@@ -16,4 +18,18 @@ public:
 
 	UPROPERTY()
 	FString upgradeName;
+
+	UPROPERTY()
+	int level = 0;
+
+	UPROPERTY()
+	FString damageText;
+	UPROPERTY()
+	FString costText;
+
+	FOnUpgradeChanged OnUpgradeChanged;
+
+	void SetLevel(int _level);
+	void SetCostText(TArray<ResourceData> cost);
+	void SetDamageText(FString _damageText);
 };

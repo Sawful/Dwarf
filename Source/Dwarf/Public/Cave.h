@@ -9,9 +9,9 @@
 #define BLOCK_SIZE 100
 #define BLOCK_OFFSET_Y BLOCK_SIZE/2
 #define BLOCK_COUNT_X 5
-#define BLOCK_COUNT_Y 3
+#define BLOCK_COUNT_Y 4
 
-class ADwarfPlayerState;
+class ADwarfPawn;
 
 class DWARF_API Cave
 {
@@ -28,11 +28,15 @@ protected:
 	TSubclassOf<ABlock> BP_BlockClass = nullptr;
 
 	bool caveVisible = true;
+	float blockHealthMult;
 
+	int columnsBroken = 0;
 public:
 	ABlock* first = nullptr;
-	ADwarfPlayerState* player;
+	ADwarfPawn* dwarfPawn;
 
+	int GetColumnsBroken() { return columnsBroken; };
+	void DestroyCave();
 	void ResetCave();
 	void SetCaveVisible(bool _visible);
 	virtual ABlock* GenerateBlock(FVector _pos);

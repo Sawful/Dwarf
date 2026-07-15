@@ -50,6 +50,11 @@ public:
 	UExpBarWidget* ExpBar;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UExpBarWidget* DrillProgressBar;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UExpBarWidget* BoomProgressBar;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UImage* TechPointIndicator;
 
 protected:

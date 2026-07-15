@@ -14,5 +14,8 @@ class DWARF_API UMainMenuWidget : public UUserWidget
 public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* IdleButton;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* RunButton;
 	virtual void NativeConstruct() override;
 };

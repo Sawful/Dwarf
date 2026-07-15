@@ -8,21 +8,24 @@
 
 #include "DwarfCameraActor.h"
 
-#include "DwarfUserWidget.h"
 #include "MainMenuWidget.h"
+#include "DwarfUserWidget.h"
 #include "CharacterMenuWidget.h"
+#include "RogueHUD.h"
 
 #include "Block.h"
 #include "Cave.h"
+#include "DwarfPawn.h"
 #include "DwarfPlayerState.generated.h"
 
 class USaveGame;
-class ADwarfPawn;
+class UUpgradeEntryData;
 
 enum UpgradeType
 {
 	STRONG_ARMS = 0,
 	DRILL,
+	BOOM,
 
 	UPGRADE_COUNT
 };
@@ -50,6 +53,7 @@ struct ResourceUpgrade
 
 TArray<ResourceData> CostStrongArms(int _level);
 TArray<ResourceData> CostDrill(int _level);
+TArray<ResourceData> CostBoom(int _level);
 
 DECLARE_DELEGATE_OneParam(FOnMilestoneTier, int);
 template <typename T>
@@ -66,7 +70,6 @@ struct Milestone
 	void CheckTier();
 };
 
-
 struct SavedStats
 {
 	UPROPERTY()
@@ -77,6 +80,32 @@ struct SavedStats
 	Milestone<int> metersWalked = 0;
 	UPROPERTY()
 	Milestone<int> rebirthCount = 0;
+};
+
+enum DamageTextType
+{
+	NORMAL,
+	AUTO,
+	CRITICAL
+};
+
+struct DamageSource
+{
+	float BlockDamageMultiplier[BLOCK_COUNT];
+	DamageTextType TextType;
+	DamageSource() { std::fill_n(BlockDamageMultiplier, BLOCK_COUNT, 1.0f); };
+};
+
+struct AutomaticDamager
+{
+	int Damage = 0;
+	float Downtime = 2;
+	float Clock;
+	bool active = false;
+	DamageSource source;
+	UExpBarWidget* progressBar;
+	bool IsHitting();
+	float GetDPS() { return (float)Damage / Downtime; };
 };
 
 UCLASS()
@@ -92,8 +121,10 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	void SetupResourceUpgrades();
 	void SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData>(* InFunc)(int));
 	void SetupMilestones();
+	void InitializeAutomaticDamagers();
 
 	bool gameLoaded = false;
+	bool inRun = false;
 
 	// Main camera (follows the dwarf)
 	UPROPERTY(EditAnywhere)
@@ -103,15 +134,24 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	TSubclassOf <ATextRenderActor> DamageTextClass;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UDwarfUserWidget> HUDClass;
-	UPROPERTY(EditAnywhere)
 	TSubclassOf<UMainMenuWidget> MenuClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UDwarfUserWidget> HUDClass;
+
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCharacterMenuWidget> CharacterMenuClass;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<URogueHUD> RogueHUDClass;
+
+	UMainMenuWidget* MainMenu; 
 	UDwarfUserWidget* HUD;
-	UMainMenuWidget* MainMenu;
 	UCharacterMenuWidget* CharacterMenu;
+	URogueHUD* RogueHUD;
+
+	UPROPERTY()
+	TArray<UUpgradeEntryData*> UpgradeItems;
 
 	ResourceUpgrade resourceUpgrades[UPGRADE_COUNT];
 
@@ -124,6 +164,7 @@ public:
 	void ResetDwarfStats();
 
 	UFUNCTION()
+	void SaveCurrentStateAsync();
 	void SaveCurrentState();
 
 	UFUNCTION()
@@ -132,17 +173,24 @@ public:
 	bool CheckCost(const TArray<ResourceData>& _cost);
 	bool PayCost(const TArray<ResourceData>& _cost);
 	void BuyResourceUpgrade(UpgradeType _upgrade);
-	void IncreaseResourceUpgrade(UpgradeType _upgrade);
+	void ApplyResourceUpgrade(UpgradeType _upgrade, int _level);
 
 	void MoveForward();
 
 	UFUNCTION()
-	void SetRogue();
+	void ZoomIdle();
 
 	UFUNCTION()
-	void ZoomIdle();
+	void ZoomRogue();
+
 	UFUNCTION()
 	void ZoomMenu();
+	
+	UFUNCTION()
+	void StartRun();
+
+	UFUNCTION()
+	void EndRun();
 
 	UFUNCTION()
 	void ShowCharacterMenu();
@@ -152,16 +200,21 @@ public:
 
 	UFUNCTION()
 	void UpgradeStrongArms();
-
 	UFUNCTION()
 	void UpgradeDrill();
+	UFUNCTION()
+	void UpgradeBoom();
 
 	UFUNCTION()
 	void BlockMilestone(int _tier);
 	
-	ADwarfPawn* pawn;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ADwarfPawn> DwarfPawnClass;
+
+	ADwarfPawn* currentPawn;
+	ADwarfPawn* idlePawn;
 	Cave* currentCave = nullptr;
-	Cave caves[2];
+	Cave idleCave;
 
 	// Dwarf Stats
 	int Level;
@@ -175,24 +228,22 @@ public:
 	float resourceYieldMultiplier[RESOURCE_COUNT];
 	float blockYieldMultiplier[BLOCK_COUNT];
 
+	FString GetUpgradeDamageText(UpgradeType _upgrade);
+
+	DamageSource ClickSource;
 	int MinDamage = 10;
 	int MaxDamage = 15;
 	int GetClickDamage();
 
-	// Drill data
-	int DrillDamage = 0;
-	float DrillDowntime = 2;
-	float DrillClock;
+	AutomaticDamager Drill;
+	AutomaticDamager Boom;
 
-	enum DamageTextType
-	{
-		NORMAL,
-		AUTO,
-		CRITICAL
-	};
+	void UpdateDamager(AutomaticDamager& _damager, float _dt);
+
 	void CreateDamageText(int _damage, DamageTextType _type);
 	void Hit();
-	void Damage(int _damage);
+	void Damage(int _damage, DamageSource _source, Cave* _cave);
+	void DamageIdleCave(int _damage, DamageSource _source);
 
 	// Stored stats
 	SavedStats savedStats;

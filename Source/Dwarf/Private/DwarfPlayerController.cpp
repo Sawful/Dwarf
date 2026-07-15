@@ -47,7 +47,7 @@ void ADwarfPlayerController::TryStartGame()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "PState");
 		return;
 	}
-	PState->pawn = DwarfPawn;
+	PState->idlePawn = DwarfPawn;
 
 	GState = (ADwarfGameState*)GetWorld()->GetGameState();
 	if (!GState) 

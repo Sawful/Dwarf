@@ -22,13 +22,24 @@ class DWARF_API UUpgradeEntryWidget : public UUserWidget, public IUserObjectList
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* Button;
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* Name;
+
+public:
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* Level;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* Damage;
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* Cost;
 
 	void SetCost(TArray<ResourceData> cost);
 
+	UFUNCTION()
+	void UpdateText();
 protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 };

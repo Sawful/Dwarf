@@ -5,8 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "C:\Program Files\Epic Games\UE_5.7\Engine\Plugins\2D\Paper2D\Source\Paper2D\Classes\PaperSpriteComponent.h"
-#include "DwarfPlayerState.h"
 #include "DwarfPawn.generated.h"
+
+class Cave;
 
 UCLASS()
 class DWARF_API ADwarfPawn : public APawn
@@ -25,14 +26,14 @@ protected:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* Dwarf;
 
-	ADwarfPlayerState* playerState;
 	float metersWalked = 0;
 	float targetMetersWalked = 0;
-	float movementSpeed = 30;
+	float movementSpeed = 5;
 
 	FVector initialPosition;
 public:	
 	virtual void Tick(float DeltaTime) override;
 	void MoveForward();
 	void ResetDwarfPawn();
+	void PositionToCave(Cave* _cave);
 };

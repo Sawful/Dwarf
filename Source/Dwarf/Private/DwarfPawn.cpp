@@ -34,7 +34,8 @@ void ADwarfPawn::Tick(float DeltaTime)
 	if (metersWalked >= targetMetersWalked) return;
 
 	FVector newPos = GetActorLocation();
-	newPos += GetActorRightVector() * DeltaTime * movementSpeed * BLOCK_SIZE;
+	float progressMade = std::min(DeltaTime * movementSpeed, targetMetersWalked - metersWalked);
+	newPos += GetActorRightVector() * progressMade * BLOCK_SIZE;
 	metersWalked += DeltaTime * movementSpeed;
 	SetActorLocation(newPos);
 }
@@ -49,5 +50,13 @@ void ADwarfPawn::ResetDwarfPawn()
 	metersWalked = 0;
 	targetMetersWalked = 0;
 	SetActorLocation(initialPosition);
+}
+
+void ADwarfPawn::PositionToCave(Cave* _cave)
+{
+	targetMetersWalked = _cave->GetColumnsBroken();
+	metersWalked = targetMetersWalked;
+	//SetActorLocation(initialPosition + GetActorRightVector() * metersWalked * BLOCK_SIZE);
+	SetActorLocation(_cave->first->GetActorLocation() - FVector(0, BLOCK_SIZE, 0));
 }
 

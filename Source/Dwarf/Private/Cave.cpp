@@ -2,10 +2,12 @@
 
 
 #include "Cave.h"
-#include "DwarfPlayerState.h"
+#include "DwarfPawn.h"
 
 void Cave::GenerateStart()
 {
+	blockHealthMult = 1.0f;
+
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Tried generating cave")));
 	if (BP_BlockClass == nullptr)
 	{
@@ -30,9 +32,9 @@ void Cave::GenerateStart()
 	lastGridPos[1] = BLOCK_COUNT_Y;
 }
 
-void Cave::ResetCave()
+void Cave::DestroyCave()
 {
-	// Destroy every block
+	if (!first) return;
 	while (first->next)
 	{
 		ABlock* temp = first;
@@ -40,24 +42,34 @@ void Cave::ResetCave()
 		temp->Destroy();
 	}
 	first->Destroy();
+}
 
+void Cave::ResetCave()
+{
+	DestroyCave();
 	GenerateStart();
 }
 
 void Cave::SetCaveVisible(bool _visible)
 {
-	while (first->next)
+	if (!first) return;
+	ABlock* nextToHide = first;
+
+	while (nextToHide->next)
 	{
-		first->SetActorHiddenInGame(!_visible);
-		first = first->next;
+		nextToHide->SetActorHiddenInGame(!_visible);
+		nextToHide = nextToHide->next;
 	}
-	first->SetActorHiddenInGame(!_visible);
+	nextToHide->SetActorHiddenInGame(!_visible);
+
+	dwarfPawn->SetActorHiddenInGame(!_visible);
+
 	caveVisible = _visible;
 }
 
 ABlock* Cave::GenerateBlock(FVector _pos)
 {
-	ABlock* block = player->GetWorld()->SpawnActor<ABlock>(BP_BlockClass, _pos, FRotator(), FActorSpawnParameters());
+	ABlock* block = dwarfPawn->GetWorld()->SpawnActor<ABlock>(BP_BlockClass, _pos, FRotator(), FActorSpawnParameters());
 	if (!block)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Error creating block")));
@@ -72,19 +84,24 @@ ABlock* Cave::GenerateBlock(FVector _pos)
 	switch (block->Data.type)
 	{
 	case DIRT_BLOCK:
+		block->Data.health = 25;
 		block->Data.yield.Push({ DIRT, rand() % 3 + 2 });
 		block->mesh->SetMaterial(0, DirtMat);
 		break;
 	case STONE_BLOCK:
+		block->Data.health = 50;
 		block->Data.yield.Push({ STONE, rand() % 2 + 1 });
 		block->mesh->SetMaterial(0, StoneMat);
 		break;
 	case ORE_BLOCK:
+		block->Data.health = 75;
 		block->Data.yield.Push({ STONE, rand() % 2 + 1 });
 		block->Data.yield.Push({ ORE, rand() % 2 + 1 });
 		block->mesh->SetMaterial(0, OreMat);
 		break;
 	}
+
+	block->Data.health *= blockHealthMult;
 	return block;
 }
 
@@ -97,6 +114,8 @@ void Cave::BreakFirst()
 	{
 		lastGridPos[0]++;
 		lastGridPos[1] = 0;
+
+		blockHealthMult += 0.05f;
 	}
 	
 	else
@@ -104,7 +123,8 @@ void Cave::BreakFirst()
 		lastGridPos[1]++;
 		if (lastGridPos[1] == BLOCK_COUNT_Y - 1)
 		{
-			player->MoveForward();
+			columnsBroken++;
+			dwarfPawn->MoveForward();
 		}
 	}
 
