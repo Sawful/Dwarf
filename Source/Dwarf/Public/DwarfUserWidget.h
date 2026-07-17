@@ -10,7 +10,7 @@
 
 #include "ResourceEntryWidget.h"
 #include "ResourceEntryData.h"
-#include "ExpBarWidget.h"
+#include "AutoAttackerDisplay.h"
 
 #include "Block.h"
 
@@ -50,9 +50,9 @@ public:
 	UExpBarWidget* ExpBar;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UExpBarWidget* DrillProgressBar;
+	UAutoAttackerDisplay* DrillDisplay;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UExpBarWidget* BoomProgressBar;
+	UAutoAttackerDisplay* BoomDisplay;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UImage* TechPointIndicator;

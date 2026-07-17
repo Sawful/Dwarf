@@ -13,6 +13,8 @@
 #include "CharacterMenuWidget.h"
 #include "RogueHUD.h"
 
+#include "RogueItem.h"
+#include "Upgrade.h"
 #include "Block.h"
 #include "Cave.h"
 #include "DwarfPawn.h"
@@ -20,36 +22,6 @@
 
 class USaveGame;
 class UUpgradeEntryData;
-
-enum UpgradeType
-{
-	STRONG_ARMS = 0,
-	DRILL,
-	BOOM,
-
-	UPGRADE_COUNT
-};
-
-DECLARE_DELEGATE_RetVal_OneParam(TArray<ResourceData>, FOnGetCost, int)
-struct ResourceUpgrade
-{
-	UPROPERTY()
-	FString upgradeFunctionName;
-
-	UPROPERTY()
-	FString displayName;
-
-	UPROPERTY()
-	int upgradeLevel;
-
-	UPROPERTY()
-	TArray<ResourceData> costCached;
-
-	FOnGetCost costDelegate;
-
-	TArray<ResourceData> GetCost();
-
-};
 
 TArray<ResourceData> CostStrongArms(int _level);
 TArray<ResourceData> CostDrill(int _level);
@@ -103,9 +75,25 @@ struct AutomaticDamager
 	float Clock;
 	bool active = false;
 	DamageSource source;
-	UExpBarWidget* progressBar;
+	UAutoAttackerDisplay* Display;
 	bool IsHitting();
 	float GetDPS() { return (float)Damage / Downtime; };
+	void SetDamagerActive(bool _active);
+};
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageCalc, int&);
+struct RoguePlayerData
+{
+	int level = 1;
+	int experience = 0;
+	int experienceRequired = 8;
+	TArray<RogueItem*> items;
+
+	DamageSource ClickSource;
+	int MinDamage = 10;
+	int MaxDamage = 15;
+	FOnDamageCalc OnDamageCalc;
+	void LevelUpRogue();
 };
 
 UCLASS()
@@ -124,7 +112,6 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	void InitializeAutomaticDamagers();
 
 	bool gameLoaded = false;
-	bool inRun = false;
 
 	// Main camera (follows the dwarf)
 	UPROPERTY(EditAnywhere)
@@ -155,6 +142,10 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 
 	ResourceUpgrade resourceUpgrades[UPGRADE_COUNT];
 
+	// ROGUE //
+	bool inRun = false;
+	RoguePlayerData rogueData;
+
 public:
 	void StartGame();
 
@@ -178,13 +169,13 @@ public:
 	void MoveForward();
 
 	UFUNCTION()
-	void ZoomIdle();
+	void FocusIdle();
 
 	UFUNCTION()
-	void ZoomRogue();
+	void FocusRogue();
 
 	UFUNCTION()
-	void ZoomMenu();
+	void FocusMenu();
 	
 	UFUNCTION()
 	void StartRun();
@@ -222,6 +213,7 @@ public:
 	int RequiredExperience;
 	void IncreaseExp(int _value);
 	void LevelUp();
+	void IncreaseRogueExp(int _value);
 	int TalentPoints;
 
 	float GlobalYieldMultiplier = 1.0f;
@@ -244,6 +236,10 @@ public:
 	void Hit();
 	void Damage(int _damage, DamageSource _source, Cave* _cave);
 	void DamageIdleCave(int _damage, DamageSource _source);
+
+	void BlockRewardIdle(BlockData _data);
+	void BlockRewardRogue(BlockData _data);
+
 
 	// Stored stats
 	SavedStats savedStats;

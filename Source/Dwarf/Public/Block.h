@@ -18,6 +18,7 @@ enum BlockType {
 struct BlockData
 {
 	int health = 50;
+	int expValue = 1;
 	BlockType type;
 	TArray<ResourceData> yield;
 };

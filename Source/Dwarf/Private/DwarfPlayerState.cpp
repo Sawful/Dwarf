@@ -12,6 +12,15 @@
 ADwarfPlayerState::ADwarfPlayerState()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	for (int i = 0; i < RESOURCE_COUNT; i++)
+	{
+		resourceYieldMultiplier[i] = 1.0f;
+	}
+	for (int i = 0; i < BLOCK_COUNT; i++)
+	{
+		blockYieldMultiplier[i] = 1.0f;
+	}
 }
 
 void ADwarfPlayerState::SetupResourceUpgrades()
@@ -75,10 +84,10 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 	Drill.Downtime = 2.0f;
 	Drill.Clock = Drill.Downtime;
 
-	Drill.progressBar = HUD->DrillProgressBar;
-	Drill.progressBar->SetCompletion((Drill.Downtime - Drill.Clock) / Drill.Downtime);
+	Drill.Display = HUD->DrillDisplay;
+	Drill.Display->ProgressBar->SetCompletion((Drill.Downtime - Drill.Clock) / Drill.Downtime);
 
-	Drill.active = false;
+	Drill.SetDamagerActive(false);
 	Drill.source.TextType = AUTO;
 
 	Drill.source.BlockDamageMultiplier[ORE_BLOCK] = 5; // TESTING
@@ -87,10 +96,10 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 	Boom.Downtime = 10.0f;
 	Boom.Clock = Boom.Downtime;
 
-	Boom.progressBar = HUD->BoomProgressBar;
-	Boom.progressBar->SetCompletion((Boom.Downtime - Boom.Clock) / Boom.Downtime);
+	Boom.Display = HUD->BoomDisplay;
+	Boom.Display->ProgressBar->SetCompletion((Boom.Downtime - Boom.Clock) / Boom.Downtime);
 
-	Boom.active = false;
+	Boom.SetDamagerActive(false);
 	Boom.source.TextType = AUTO;
 }
 
@@ -135,12 +144,17 @@ void ADwarfPlayerState::StartGame()
 		RogueHUD->SetVisibility(ESlateVisibility::Hidden);
 		RogueHUD->AddToViewport();
 	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Could not create RogueHUD")));
+		return;
+	}
 
 	if (MenuClass)
 	{
 		MainMenu = CreateWidget<UMainMenuWidget>(GetPlayerController(), MenuClass);
 
-		MainMenu->IdleButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::ZoomIdle);
+		MainMenu->IdleButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::FocusIdle);
 		MainMenu->RunButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::StartRun);
 
 		MainMenu->AddToViewport();
@@ -157,7 +171,7 @@ void ADwarfPlayerState::StartGame()
 
 		HUD->SaveButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::SaveCurrentStateAsync);
 		HUD->RebirthButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::Rebirth);
-		HUD->MenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::ZoomMenu);
+		HUD->MenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::FocusMenu);
 		HUD->CharacterMenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::ShowCharacterMenu);
 		HUD->Populate();
 		HUD->AddToViewport();
@@ -190,21 +204,14 @@ void ADwarfPlayerState::StartGame()
 
 	CameraActor = GetWorld()->SpawnActor<ADwarfCameraActor>(ADwarfCameraActor::StaticClass(), FVector(), FRotator(), FActorSpawnParameters());
 	CameraActor->pawn = currentPawn;
-	ZoomMenu();
 	CameraActor->ForcePos();
 
 	idleCave.dwarfPawn = idlePawn;
+	idleCave.BlockBreakDelegate.BindUObject(this, &ADwarfPlayerState::BlockRewardIdle);
 	idleCave.GenerateStart();
 	currentCave = &idleCave;
 
-	for (int i = 0; i < RESOURCE_COUNT; i++)
-	{
-		resourceYieldMultiplier[i] = 1.0f;
-	}
-	for (int i = 0; i < BLOCK_COUNT; i++)
-	{
-		blockYieldMultiplier[i] = 1.0f;
-	}
+	FocusMenu();
 
 	// Load
 	FAsyncLoadGameFromSlotDelegate LoadedDelegate;
@@ -412,7 +419,7 @@ void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, int _level)
 		switch (_level)
 		{
 		case 1:
-			Drill.active = true;
+			Drill.SetDamagerActive(true);
 			break;
 		case 10:
 			Drill.Damage *= 2;
@@ -436,7 +443,7 @@ void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, int _level)
 		switch (_level)
 		{
 		case 1:
-			Boom.active = true;
+			Boom.SetDamagerActive(true);
 			break;
 		case 10:
 			Boom.Damage *= 2;
@@ -554,6 +561,19 @@ void ADwarfPlayerState::LevelUp()
 	RequiredExperience = (Level + 1) * (Level + 1);
 }
 
+void ADwarfPlayerState::IncreaseRogueExp(int _value)
+{
+	rogueData.experience += _value;
+
+	while (rogueData.experience > rogueData.experienceRequired)
+	{
+		rogueData.LevelUpRogue();
+
+		RogueHUD->LevelText->SetText(FText::FromString("Rogue Level: " + FString::FromInt(rogueData.level)));
+	}
+	RogueHUD->LevelProgress->SetCompletion((float)rogueData.experience / (float)rogueData.experienceRequired);
+}
+
 FString ADwarfPlayerState::GetUpgradeDamageText(UpgradeType _upgrade)
 {
 	switch (_upgrade)
@@ -567,6 +587,18 @@ FString ADwarfPlayerState::GetUpgradeDamageText(UpgradeType _upgrade)
 
 int ADwarfPlayerState::GetClickDamage()
 {
+	if (inRun)
+	{
+		int DamageDelta = rogueData.MaxDamage - rogueData.MinDamage;
+		int DamageBonus = rand() % (DamageDelta + 1);
+		
+		// Damage Items //
+		int damage = rogueData.MinDamage + DamageBonus;
+		rogueData.OnDamageCalc.Broadcast(damage);
+
+		return damage;
+	}
+
 	int DamageDelta = MaxDamage - MinDamage;
 	int DamageBonus = rand() % (DamageDelta + 1);
 	return MinDamage + DamageBonus;
@@ -597,21 +629,21 @@ void ADwarfPlayerState::Damage(int _damage, DamageSource _source, Cave* _cave)
 		}
 	}
 
-	BlockData currentBlockData = _cave->first->Data;
+	_cave->DamageFirst(_damage);
+
+	/*BlockData currentBlockData = _cave->first->Data;
 	if (_cave->DamageFirst(_damage))
 	{
-		IncreaseBlocks();
-
-		//DEBUG PURPOSES ONLY
-		IncreaseExp(1);
-
-		for (auto currentYield : currentBlockData.yield)
+		if (inRun)
 		{
-			resources[currentYield.Type] += currentYield.Amount * GlobalYieldMultiplier * resourceYieldMultiplier[currentYield.Type];
+			BlockRewardRogue(currentBlockData);
 		}
 
-		HUD->UpdateResources(resources);
-	}
+		else
+		{
+			BlockRewardIdle(currentBlockData);
+		}
+	}*/
 }
 
 void ADwarfPlayerState::DamageIdleCave(int _damage, DamageSource _source)
@@ -647,57 +679,93 @@ void ADwarfPlayerState::DamageIdleCave(int _damage, DamageSource _source)
 	}
 }
 
-void ADwarfPlayerState::ZoomIdle()
+void ADwarfPlayerState::BlockRewardIdle(BlockData _data)
 {
-	//if (currentCave != &idleCave) EndRun();
+	IncreaseBlocks();
 
+	//DEBUG PURPOSES ONLY
+	IncreaseExp(1);
+
+	for (auto currentYield : _data.yield)
+	{
+		resources[currentYield.Type] += currentYield.Amount * GlobalYieldMultiplier * resourceYieldMultiplier[currentYield.Type];
+	}
+
+	HUD->UpdateResources(resources);
+}
+
+void ADwarfPlayerState::BlockRewardRogue(BlockData _data)
+{
+	IncreaseRogueExp(_data.expValue);
+}
+
+void ADwarfPlayerState::FocusIdle()
+{
 	CameraActor->SetState(ADwarfCameraActor::IDLE);
 	MainMenu->SetVisibility(ESlateVisibility::Hidden);
 	HUD->SetVisibility(ESlateVisibility::Visible);
+
+	CameraActor->pawn = currentCave->dwarfPawn;
 }
 
-void ADwarfPlayerState::ZoomRogue()
+void ADwarfPlayerState::FocusRogue()
 {
 	CameraActor->SetState(ADwarfCameraActor::IDLE);
 	MainMenu->SetVisibility(ESlateVisibility::Hidden);
-	// Show rogue HUD...
+	RogueHUD->SetVisibility(ESlateVisibility::Visible);
+
+	CameraActor->pawn = currentCave->dwarfPawn;
 }
 
-void ADwarfPlayerState::ZoomMenu()
+void ADwarfPlayerState::FocusMenu()
 {
 	CameraActor->SetState(ADwarfCameraActor::MENU);
 	HUD->SetVisibility(ESlateVisibility::Hidden);
 	MainMenu->SetVisibility(ESlateVisibility::Visible);
+
+	CameraActor->pawn = currentCave->dwarfPawn;
 }
 
 void ADwarfPlayerState::StartRun()
 {
 	inRun = true;
+	rogueData = RoguePlayerData();
+	DamageRogueItem* debugItem = new DamageRogueItem();
+	debugItem->Bind(&rogueData);
+	debugItem->Bind(&rogueData);
+	debugItem->Bind(&rogueData);
+
 	// Hide idle cave
 	idleCave.SetCaveVisible(false);
 
-	ZoomRogue();
-
-	RogueHUD->SetVisibility(ESlateVisibility::Visible);
-
 	// Create new rogue cave
 	currentCave = new RogueCave(); // TODO: Create once and reset between runs
-	FActorSpawnParameters param = FActorSpawnParameters();
+
+	FActorSpawnParameters param;
 	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
 	currentCave->dwarfPawn = GetWorld()->SpawnActor<ADwarfPawn>(DwarfPawnClass, FVector(), FRotator(), param);
 	if (!currentCave->dwarfPawn)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, "Cannot instanciate pawn");
 		return;
 	}
+
+	currentCave->BlockBreakDelegate.BindUObject(this, &ADwarfPlayerState::BlockRewardRogue);
 	currentCave->GenerateStart();
 	currentCave->dwarfPawn->PositionToCave(currentCave);
+
+	RogueHUD->LevelText->SetText(FText::FromString("Rogue Level: " + FString::FromInt(rogueData.level)));
+	RogueHUD->LevelProgress->SetCompletion((float)rogueData.experience / (float)rogueData.experienceRequired);
+
+	FocusRogue();
 }
 
 void ADwarfPlayerState::EndRun()
 {
 	if (currentCave)
 	{
+		currentCave->dwarfPawn->Destroy();
 		currentCave->DestroyCave();
 	}
 
@@ -706,7 +774,7 @@ void ADwarfPlayerState::EndRun()
 	currentCave = &idleCave;
 
 	RogueHUD->SetVisibility(ESlateVisibility::Hidden);
-	ZoomMenu();
+	FocusMenu();
 }
 
 void ADwarfPlayerState::ShowCharacterMenu()
@@ -736,7 +804,7 @@ void ADwarfPlayerState::UpdateDamager(AutomaticDamager& _damager, float _dt)
 	if (_damager.active)
 	{
 		_damager.Clock -= _dt;
-		_damager.progressBar->SetCompletion((_damager.Downtime - _damager.Clock) / _damager.Downtime);
+		_damager.Display->ProgressBar->SetCompletion((_damager.Downtime - _damager.Clock) / _damager.Downtime);
 		if (_damager.IsHitting())
 		{
 			Damage(_damager.Damage, _damager.source, &idleCave);
@@ -783,12 +851,6 @@ void ADwarfPlayerState::CreateDamageText(int _damage, DamageTextType _type)
 	textRender->SetText(FText::FromString(FString::FromInt(_damage)));
 }
 
-TArray<ResourceData> ResourceUpgrade::GetCost()
-{
-	costCached = costDelegate.Execute(upgradeLevel);
-	return costCached;
-}
-
 bool AutomaticDamager::IsHitting()
 {
 	bool isHitting = Clock <= 0;
@@ -799,4 +861,24 @@ bool AutomaticDamager::IsHitting()
 	}
 
 	return isHitting;
+}
+
+void AutomaticDamager::SetDamagerActive(bool _active)
+{
+	if (_active)
+	{
+		Display->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		Display->SetVisibility(ESlateVisibility::Hidden);
+	}
+	active = _active;
+}
+
+void RoguePlayerData::LevelUpRogue()
+{
+	level++;
+	experience -= experienceRequired;
+	experienceRequired *= 1.4f;
 }

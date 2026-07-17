@@ -8,11 +8,12 @@
 
 #define BLOCK_SIZE 100
 #define BLOCK_OFFSET_Y BLOCK_SIZE/2
-#define BLOCK_COUNT_X 5
+#define BLOCK_COUNT_X 15
 #define BLOCK_COUNT_Y 4
 
 class ADwarfPawn;
 
+DECLARE_DELEGATE_OneParam(FOnBlockBreak, BlockData);
 class DWARF_API Cave
 {
 protected:
@@ -34,6 +35,7 @@ protected:
 public:
 	ABlock* first = nullptr;
 	ADwarfPawn* dwarfPawn;
+	FOnBlockBreak BlockBreakDelegate;
 
 	int GetColumnsBroken() { return columnsBroken; };
 	void DestroyCave();
@@ -42,6 +44,8 @@ public:
 	virtual ABlock* GenerateBlock(FVector _pos);
 	void GenerateStart();
 	bool DamageFirst(int _damage);
+	void GenerateTail();
+	void SetBlockDataByType(ABlock* _block, BlockType _type);
 
 	Cave();
 };

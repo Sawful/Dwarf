@@ -79,27 +79,7 @@ ABlock* Cave::GenerateBlock(FVector _pos)
 	block->mesh = block->GetComponentByClass<UStaticMeshComponent>();
 	block->SetActorHiddenInGame(!caveVisible);
 
-	block->Data.type = BlockType(rand() % 3);
-
-	switch (block->Data.type)
-	{
-	case DIRT_BLOCK:
-		block->Data.health = 25;
-		block->Data.yield.Push({ DIRT, rand() % 3 + 2 });
-		block->mesh->SetMaterial(0, DirtMat);
-		break;
-	case STONE_BLOCK:
-		block->Data.health = 50;
-		block->Data.yield.Push({ STONE, rand() % 2 + 1 });
-		block->mesh->SetMaterial(0, StoneMat);
-		break;
-	case ORE_BLOCK:
-		block->Data.health = 75;
-		block->Data.yield.Push({ STONE, rand() % 2 + 1 });
-		block->Data.yield.Push({ ORE, rand() % 2 + 1 });
-		block->mesh->SetMaterial(0, OreMat);
-		break;
-	}
+	SetBlockDataByType(block, BlockType(rand() % 3));
 
 	block->Data.health *= blockHealthMult;
 	return block;
@@ -109,6 +89,9 @@ void Cave::BreakFirst()
 {
 	ABlock* broken = first;
 	first = first->next;
+
+	BlockBreakDelegate.Execute(broken->Data);
+
 	broken->Destroy();
 	if (lastGridPos[1] >= BLOCK_COUNT_Y - 1)
 	{
@@ -128,8 +111,7 @@ void Cave::BreakFirst()
 		}
 	}
 
-	last->next = GenerateBlock(FVector(0, (lastGridPos[0]) * BLOCK_SIZE, (BLOCK_COUNT_Y - 1 - lastGridPos[1]) * BLOCK_SIZE + BLOCK_OFFSET_Y));
-	last = last->next;
+	GenerateTail();
 }
 
 
@@ -143,6 +125,36 @@ bool Cave::DamageFirst(int _damage)
 	}
 
 	return false;
+}
+
+void Cave::GenerateTail()
+{
+	last->next = GenerateBlock(FVector(0, (lastGridPos[0]) * BLOCK_SIZE, (BLOCK_COUNT_Y - 1 - lastGridPos[1]) * BLOCK_SIZE + BLOCK_OFFSET_Y));
+	last = last->next;
+}
+
+void Cave::SetBlockDataByType(ABlock* _block, BlockType _type)
+{
+	_block->Data.type = _type;
+	switch (_type)
+	{
+	case DIRT_BLOCK:
+		_block->Data.health = 25;
+		_block->Data.yield.Push({ DIRT, rand() % 3 + 2 });
+		_block->mesh->SetMaterial(0, DirtMat);
+		break;
+	case STONE_BLOCK:
+		_block->Data.health = 50;
+		_block->Data.yield.Push({ STONE, rand() % 2 + 1 });
+		_block->mesh->SetMaterial(0, StoneMat);
+		break;
+	case ORE_BLOCK:
+		_block->Data.health = 75;
+		_block->Data.yield.Push({ STONE, rand() % 2 + 1 });
+		_block->Data.yield.Push({ ORE, rand() % 2 + 1 });
+		_block->mesh->SetMaterial(0, OreMat);
+		break;
+	}
 }
 
 Cave::Cave()

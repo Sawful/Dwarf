@@ -4,20 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Button.h"
-#include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "ExpBarWidget.h"
-#include "RogueHUD.generated.h"
+#include "AutoAttackerDisplay.generated.h"
+
 
 UCLASS()
-class DWARF_API URogueHUD : public UUserWidget
+class DWARF_API UAutoAttackerDisplay : public UUserWidget
 {
 	GENERATED_BODY()
+	
 public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UButton* MenuButton;
+	UImage* Image;
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UTextBlock* LevelText;
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UExpBarWidget* LevelProgress;
+	UExpBarWidget* ProgressBar;
 };

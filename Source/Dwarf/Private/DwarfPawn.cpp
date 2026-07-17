@@ -6,6 +6,7 @@
 #include "Components/Widget.h"
 #include "GameFramework/HUD.h"
 #include "Cave.h"
+#include "DwarfPlayerState.h"
 
 // Sets default values
 ADwarfPawn::ADwarfPawn()
@@ -22,7 +23,7 @@ ADwarfPawn::ADwarfPawn()
 void ADwarfPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	initialPosition = GetActorLocation();
+	initialPosition = FVector(0, 0, 92);
 }
 
 // Called every frame
@@ -56,7 +57,6 @@ void ADwarfPawn::PositionToCave(Cave* _cave)
 {
 	targetMetersWalked = _cave->GetColumnsBroken();
 	metersWalked = targetMetersWalked;
-	//SetActorLocation(initialPosition + GetActorRightVector() * metersWalked * BLOCK_SIZE);
-	SetActorLocation(_cave->first->GetActorLocation() - FVector(0, BLOCK_SIZE, 0));
+	SetActorLocation(initialPosition + (_cave->first->GetActorLocation() * FVector(1, 1, 0)) - FVector(0, BLOCK_SIZE, 0));
 }
 
