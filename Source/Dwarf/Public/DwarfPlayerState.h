@@ -165,6 +165,7 @@ public:
 	bool PayCost(const TArray<ResourceData>& _cost);
 	void BuyResourceUpgrade(UpgradeType _upgrade);
 	void ApplyResourceUpgrade(UpgradeType _upgrade, int _level);
+	FString CreateCostText(const TArray<ResourceData>& _cost);
 
 	void MoveForward();
 
@@ -195,6 +196,19 @@ public:
 	void UpgradeDrill();
 	UFUNCTION()
 	void UpgradeBoom();
+
+	int upgradeMultiplier = 1;
+	UFUNCTION()
+	void SetUpgradeMult1();
+	UFUNCTION()
+	void SetUpgradeMult5();
+	UFUNCTION()
+	void SetUpgradeMult10();
+	UFUNCTION()
+	void SetUpgradeMult25();
+	UFUNCTION()
+	void SetUpgradeMult100();
+
 
 	UFUNCTION()
 	void BlockMilestone(int _tier);

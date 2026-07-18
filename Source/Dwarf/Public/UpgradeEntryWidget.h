@@ -11,6 +11,7 @@
 
 class UButton;
 class UTextBlock;
+class URichTextBlock;
 
 UCLASS()
 class DWARF_API UUpgradeEntryWidget : public UUserWidget, public IUserObjectListEntry
@@ -34,9 +35,7 @@ public:
 	UTextBlock* Damage;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UTextBlock* Cost;
-
-	void SetCost(TArray<ResourceData> cost);
+	URichTextBlock* Cost;
 
 	UFUNCTION()
 	void UpdateText();

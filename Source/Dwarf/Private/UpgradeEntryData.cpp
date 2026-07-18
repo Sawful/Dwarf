@@ -10,18 +10,9 @@ void UUpgradeEntryData::SetLevel(int _level)
 	OnUpgradeChanged.Broadcast();
 }
 
-void UUpgradeEntryData::SetCostText(TArray<ResourceData> cost)
+void UUpgradeEntryData::SetCostText(FString _costText)
 {
-	FString string = "Cost: \n";
-	for (auto resource : cost)
-	{
-		string += GetResourceName(resource.Type);
-		string += ": ";
-		string += FString::FromInt(resource.Amount);
-		string += "\n";
-	}
-
-	costText = string;
+	costText = _costText;
 	OnUpgradeChanged.Broadcast();
 }
 

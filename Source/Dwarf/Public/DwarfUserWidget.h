@@ -57,6 +57,17 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UImage* TechPointIndicator;
 
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* ButtonMult1;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* ButtonMult5;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* ButtonMult10;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* ButtonMult25;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* ButtonMult100;
+
 protected:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))

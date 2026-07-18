@@ -52,7 +52,7 @@ void ADwarfPlayerState::SetupResourceUpgrades()
 		data->upgradeName = resourceUpgrades[i].displayName;
 		data->upgradeDelegate = delegate;
 		data->SetLevel(resourceUpgrades[i].upgradeLevel);
-		data->SetCostText(resourceUpgrades[i].GetCost());
+		data->SetCostText(CreateCostText(resourceUpgrades[i].GetCost(upgradeMultiplier)));
 		data->SetDamageText(GetUpgradeDamageText((UpgradeType)i));
 		UpgradeItems.Add(data);
 		HUD->UpgradeBox->AddItem(data);
@@ -122,6 +122,12 @@ void ADwarfPlayerState::Tick(float _dt)
 		return;
 	}
 
+	// Check upgrade costs
+	for (int i = 0; i < UPGRADE_COUNT; i++)
+	{
+		UpgradeItems[i]->SetCostText(CreateCostText(resourceUpgrades[i].GetCost(upgradeMultiplier)));
+	}
+
 	// Idle auto damagers
 	UpdateDamager(Drill, _dt);
 	UpdateDamager(Boom, _dt);
@@ -133,8 +139,6 @@ void ADwarfPlayerState::Tick(float _dt)
 
 void ADwarfPlayerState::StartGame()
 {
-	gameLoaded = true;
-
 	if (RogueHUDClass)
 	{
 		RogueHUD = CreateWidget<URogueHUD>(GetPlayerController(), RogueHUDClass);
@@ -173,6 +177,13 @@ void ADwarfPlayerState::StartGame()
 		HUD->RebirthButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::Rebirth);
 		HUD->MenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::FocusMenu);
 		HUD->CharacterMenuButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::ShowCharacterMenu);
+
+		HUD->ButtonMult1->OnClicked.AddDynamic(this, &ADwarfPlayerState::SetUpgradeMult1);
+		HUD->ButtonMult5->OnClicked.AddDynamic(this, &ADwarfPlayerState::SetUpgradeMult5);
+		HUD->ButtonMult10->OnClicked.AddDynamic(this, &ADwarfPlayerState::SetUpgradeMult10);
+		HUD->ButtonMult25->OnClicked.AddDynamic(this, &ADwarfPlayerState::SetUpgradeMult25);
+		HUD->ButtonMult100->OnClicked.AddDynamic(this, &ADwarfPlayerState::SetUpgradeMult100);
+
 		HUD->Populate();
 		HUD->AddToViewport();
 	}
@@ -234,6 +245,7 @@ void ADwarfPlayerState::OnSaveFinished(const FString& _name, const int32 _userIn
 
 void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData)
 {
+	gameLoaded = true;
 	UDwarfSaveGame* save = Cast<UDwarfSaveGame>(LoadedGameData);
 	if (save == nullptr)
 	{
@@ -385,7 +397,7 @@ bool ADwarfPlayerState::PayCost(const TArray<ResourceData>& _cost)
 
 void ADwarfPlayerState::BuyResourceUpgrade(UpgradeType _upgrade)
 {
-	TArray<ResourceData> cost = resourceUpgrades[_upgrade].GetCost();
+	TArray<ResourceData> cost = resourceUpgrades[_upgrade].GetCost(upgradeMultiplier);
 	if (PayCost(cost) == false)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Not enough resources"); 
@@ -393,10 +405,14 @@ void ADwarfPlayerState::BuyResourceUpgrade(UpgradeType _upgrade)
 	}
 
 	// Give upgrade reward based on type
-	resourceUpgrades[_upgrade].upgradeLevel++;
-	ApplyResourceUpgrade(_upgrade, resourceUpgrades[_upgrade].upgradeLevel);
+	for (int i = 0; i < upgradeMultiplier; i++)
+	{
+		resourceUpgrades[_upgrade].upgradeLevel++;
+		ApplyResourceUpgrade(_upgrade, resourceUpgrades[_upgrade].upgradeLevel);
+	}
+	
 	UpgradeItems[_upgrade]->SetLevel(resourceUpgrades[_upgrade].upgradeLevel);
-	UpgradeItems[_upgrade]->SetCostText(resourceUpgrades[_upgrade].GetCost());
+	UpgradeItems[_upgrade]->SetCostText(CreateCostText(resourceUpgrades[_upgrade].GetCost(upgradeMultiplier)));
 	UpgradeItems[_upgrade]->SetDamageText(GetUpgradeDamageText(_upgrade));
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Bought upgrade " + FString::FromInt(_upgrade));
 }
@@ -464,6 +480,29 @@ void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, int _level)
 	}
 }
 
+FString ADwarfPlayerState::CreateCostText(const TArray<ResourceData>& _cost)
+{
+	FString string = "Cost: \n";
+	for (auto resource : _cost)
+	{
+		bool resourceAvailable = true;
+		if (resources[resource.Type] < resource.Amount)
+		{
+			resourceAvailable = false;
+			string += "<UnavailableEmphasis>";
+		}
+
+		string += GetResourceName(resource.Type);
+		string += ": ";
+		string += FString::FromInt(resource.Amount);
+		if (resourceAvailable == false) string += "</>";
+		string += "\n";
+
+	}
+
+	return string;
+}
+
 void ADwarfPlayerState::UpgradeStrongArms()
 {
 	BuyResourceUpgrade(STRONG_ARMS);
@@ -499,6 +538,71 @@ void ADwarfPlayerState::UpgradeDrill()
 void ADwarfPlayerState::UpgradeBoom()
 {
 	BuyResourceUpgrade(BOOM);
+}
+
+void ADwarfPlayerState::SetUpgradeMult1()
+{
+	upgradeMultiplier = 1;
+
+	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
+	FSlateColor Highlight = FSlateColor(FLinearColor(1, 1, 0, 1));
+	Cast<UTextBlock>(HUD->ButtonMult1->GetChildAt(0))->SetColorAndOpacity(Highlight);
+	Cast<UTextBlock>(HUD->ButtonMult5->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult10->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult25->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Default);
+}
+
+void ADwarfPlayerState::SetUpgradeMult5()
+{
+	upgradeMultiplier = 5;
+
+	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
+	FSlateColor Highlight = FSlateColor(FLinearColor(1, 1, 0, 1));
+	Cast<UTextBlock>(HUD->ButtonMult1->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult5->GetChildAt(0))->SetColorAndOpacity(Highlight);
+	Cast<UTextBlock>(HUD->ButtonMult10->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult25->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Default);
+}
+
+void ADwarfPlayerState::SetUpgradeMult10()
+{
+	upgradeMultiplier = 10;
+
+	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
+	FSlateColor Highlight = FSlateColor(FLinearColor(1, 1, 0, 1));
+	Cast<UTextBlock>(HUD->ButtonMult1->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult5->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult10->GetChildAt(0))->SetColorAndOpacity(Highlight);
+	Cast<UTextBlock>(HUD->ButtonMult25->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Default);
+}
+
+void ADwarfPlayerState::SetUpgradeMult25()
+{
+	upgradeMultiplier = 25;
+
+	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
+	FSlateColor Highlight = FSlateColor(FLinearColor(1, 1, 0, 1));
+	Cast<UTextBlock>(HUD->ButtonMult1->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult5->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult10->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult25->GetChildAt(0))->SetColorAndOpacity(Highlight);
+	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Default);
+}
+
+void ADwarfPlayerState::SetUpgradeMult100()
+{
+	upgradeMultiplier = 100;
+
+	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
+	FSlateColor Highlight = FSlateColor(FLinearColor(1, 1, 0, 1));
+	Cast<UTextBlock>(HUD->ButtonMult1->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult5->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult10->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult25->GetChildAt(0))->SetColorAndOpacity(Default);
+	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Highlight);
 }
 
 void ADwarfPlayerState::BlockMilestone(int _tier)

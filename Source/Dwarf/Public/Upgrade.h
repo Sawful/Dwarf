@@ -31,6 +31,6 @@ struct ResourceUpgrade
 
 	FOnGetCost costDelegate;
 
-	TArray<ResourceData> GetCost();
+	TArray<ResourceData> GetCost(int _count);
 
 };

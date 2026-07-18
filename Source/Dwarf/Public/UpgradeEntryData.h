@@ -30,6 +30,6 @@ public:
 	FOnUpgradeChanged OnUpgradeChanged;
 
 	void SetLevel(int _level);
-	void SetCostText(TArray<ResourceData> cost);
+	void SetCostText(FString _costText);
 	void SetDamageText(FString _damageText);
 };
