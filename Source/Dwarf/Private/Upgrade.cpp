@@ -2,8 +2,9 @@
 
 
 #include "Upgrade.h"
+#include "Components/RichTextBlock.h"
 
-TArray<ResourceData> ResourceUpgrade::GetCost(int _count = 1)
+TArray<ResourceData> ResourceUpgrade::GetCostAndCache(int _count = 1)
 {
 	costCached.Empty(costCached.Num());
 	costCached = costDelegate.Execute(upgradeLevel);
@@ -19,3 +20,11 @@ TArray<ResourceData> ResourceUpgrade::GetCost(int _count = 1)
 	
 	return costCached;
 }
+
+void ResourceUpgrade::UpdateTooltipText()
+{
+	widget->level = upgradeLevel;
+	widget->LevelText->SetText(FText::FromString(FString::FromInt(upgradeLevel)));
+	widget->name = displayName;
+}
+

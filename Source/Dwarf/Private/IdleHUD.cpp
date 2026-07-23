@@ -1,25 +1,25 @@
-#include "DwarfUserWidget.h"
+#include "IdleHUD.h"
 
-void UDwarfUserWidget::NativeConstruct()
+void UIdleHUD::NativeConstruct()
 {
 	Super::NativeConstruct();
 	TechPointIndicator->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void UDwarfUserWidget::Populate()
+void UIdleHUD::Populate()
 {
 	ResourceList->ClearListItems();
 	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
 		UResourceEntryData* Item = NewObject<UResourceEntryData>(this);
-		Item->ResourceName = GetResourceName((ResourceType)i);
+		Item->ResourceIcon = GetResourceIcon((ResourceType)i);
 		Item->Amount = 0;
 		ResourceItems.Add(Item);
 		ResourceList->AddItem(Item);
 	}
 }
 
-void UDwarfUserWidget::UpdateResources(int(&_resources)[RESOURCE_COUNT])
+void UIdleHUD::UpdateResources(int(&_resources)[RESOURCE_COUNT])
 {
 	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
@@ -27,12 +27,12 @@ void UDwarfUserWidget::UpdateResources(int(&_resources)[RESOURCE_COUNT])
 	}
 }
 
-void UDwarfUserWidget::SetResource(int _type, int _value)
+void UIdleHUD::SetResource(int _type, int _value)
 {
 	ResourceItems[_type]->SetAmount(_value);
 }
 
-void UDwarfUserWidget::AddResource(int _type, int _value)
+void UIdleHUD::AddResource(int _type, int _value)
 {
 	ResourceItems[_type]->AddAmount(_value);
 }

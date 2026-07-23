@@ -14,7 +14,7 @@ class DWARF_API UResourceEntryData : public UObject
 
 public:
     UPROPERTY(BlueprintReadWrite)
-    FString ResourceName;
+    FString ResourceIcon;
 
     UPROPERTY(BlueprintReadWrite)
     int32 Amount;

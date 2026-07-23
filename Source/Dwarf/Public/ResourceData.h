@@ -6,8 +6,12 @@
 
 enum ResourceType {
 	DIRT = 0,
-	STONE = 1,
-	ORE = 2,
+	STONE,
+	ORE,
+	ORE2,
+	ORE3,
+	ORE4,
+	ORE5,
 
 	RESOURCE_COUNT
 };

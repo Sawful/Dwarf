@@ -11,14 +11,15 @@
 #include "ResourceEntryWidget.h"
 #include "ResourceEntryData.h"
 #include "AutoAttackerDisplay.h"
+#include "UpgradeEntryWidget.h"
 
 #include "Block.h"
 
-#include "DwarfUserWidget.generated.h"
+#include "IdleHUD.generated.h"
 
 
 UCLASS()
-class DWARF_API UDwarfUserWidget : public UUserWidget
+class DWARF_API UIdleHUD : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -30,9 +31,6 @@ public:
 	void Populate();
 
 	void UpdateResources(int (&_resources)[RESOURCE_COUNT]);
-
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UListView* UpgradeBox;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* SaveButton;
@@ -58,6 +56,13 @@ public:
 	UImage* TechPointIndicator;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* ClickUpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* DrillUpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* BoomUpgradeBox;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* ButtonMult1;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* ButtonMult5;
@@ -67,6 +72,8 @@ public:
 	UButton* ButtonMult25;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* ButtonMult100;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* ButtonMultMax;
 
 protected:
 

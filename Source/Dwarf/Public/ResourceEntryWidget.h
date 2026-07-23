@@ -8,7 +8,7 @@
 #include "ResourceEntryData.h"
 #include "ResourceEntryWidget.generated.h"
 
-class UTextBlock;
+class URichTextBlock;
 
 UCLASS()
 class DWARF_API UResourceEntryWidget : public UUserWidget, public IUserObjectListEntry
@@ -16,7 +16,7 @@ class DWARF_API UResourceEntryWidget : public UUserWidget, public IUserObjectLis
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UTextBlock* ResourceText;
+	URichTextBlock* ResourceText;
 
 	UPROPERTY()
 	UResourceEntryData* CurrentData;

@@ -6,13 +6,6 @@
 #include "Components/RichTextBlock.h"
 #include "Components/Button.h"
 
-void UUpgradeEntryWidget::UpdateText()
-{
-	if (CurrentData == nullptr) return;
-	Level->SetText(FText::FromString("Level " + FString::FromInt(CurrentData->level)));
-	Cost->SetText(FText::FromString(CurrentData->costText));
-	Damage->SetText(FText::FromString(CurrentData->damageText));
-}
 
 void UUpgradeEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
@@ -20,9 +13,9 @@ void UUpgradeEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 	if (CurrentData == nullptr) return;
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(CurrentData->level));
 
-	Name->SetText(FText::FromString(CurrentData->upgradeName));
+	//Name->SetText(FText::FromString(CurrentData->upgradeName));
 	Button->OnClicked.Add(CurrentData->upgradeDelegate);
 
-	CurrentData->OnUpgradeChanged.AddUObject(this, &UUpgradeEntryWidget::UpdateText);
-	UpdateText();
+	//CurrentData->OnUpgradeChanged.AddUObject(this, &UUpgradeEntryWidget::UpdateText);
+	//UpdateText();
 }

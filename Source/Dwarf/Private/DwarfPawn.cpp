@@ -37,7 +37,7 @@ void ADwarfPawn::Tick(float DeltaTime)
 	FVector newPos = GetActorLocation();
 	float progressMade = std::min(DeltaTime * movementSpeed, targetMetersWalked - metersWalked);
 	newPos += GetActorRightVector() * progressMade * BLOCK_SIZE;
-	metersWalked += DeltaTime * movementSpeed;
+	metersWalked += progressMade;
 	SetActorLocation(newPos);
 }
 

@@ -43,3 +43,4 @@ public:
 };
 
 FString GetResourceName(ResourceType _type);
+FString GetResourceIcon(ResourceType _type);

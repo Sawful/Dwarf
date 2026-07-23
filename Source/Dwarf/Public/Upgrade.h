@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ResourceData.h"
+#include "UpgradeEntryWidget.h"
 
 enum UpgradeType
 {
@@ -29,8 +30,14 @@ struct ResourceUpgrade
 	UPROPERTY()
 	TArray<ResourceData> costCached;
 
+	// Texture/Image
+	UTexture* icon;
+
+	UUpgradeEntryWidget* widget;
+
 	FOnGetCost costDelegate;
 
-	TArray<ResourceData> GetCost(int _count);
+	TArray<ResourceData> GetCostAndCache(int _count);
+	void UpdateTooltipText();
 
 };

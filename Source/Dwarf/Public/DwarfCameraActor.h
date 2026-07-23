@@ -17,7 +17,7 @@ class DWARF_API ADwarfCameraActor : public ACameraActor
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	AActor* pawn;
+	AActor* pawn = nullptr;
 
 	void ForcePos();
 	enum CameraState

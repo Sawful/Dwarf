@@ -21,6 +21,15 @@ FString GetResourceName(ResourceType _type)
 	case DIRT: return "Dirt";
 	case STONE: return "Stone";
 	case ORE: return "Ore";
+	case ORE2: return "Ore";
+	case ORE3: return "Ore";
+	case ORE4: return "Ore";
+	case ORE5: return "Ore";
 	}
 	return FString();
+}
+
+FString GetResourceIcon(ResourceType _type)
+{
+	return "<img id=\"Resource." + GetResourceName(_type) + "\"/>";
 }

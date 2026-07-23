@@ -9,7 +9,7 @@
 #include "DwarfCameraActor.h"
 
 #include "MainMenuWidget.h"
-#include "DwarfUserWidget.h"
+#include "IdleHUD.h"
 #include "CharacterMenuWidget.h"
 #include "RogueHUD.h"
 
@@ -124,7 +124,7 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	TSubclassOf<UMainMenuWidget> MenuClass;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UDwarfUserWidget> HUDClass;
+	TSubclassOf<UIdleHUD> HUDClass;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCharacterMenuWidget> CharacterMenuClass;
@@ -133,12 +133,12 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	TSubclassOf<URogueHUD> RogueHUDClass;
 
 	UMainMenuWidget* MainMenu; 
-	UDwarfUserWidget* HUD;
+	UIdleHUD* HUD;
 	UCharacterMenuWidget* CharacterMenu;
 	URogueHUD* RogueHUD;
 
-	UPROPERTY()
-	TArray<UUpgradeEntryData*> UpgradeItems;
+	//UPROPERTY()
+	//TArray<UUpgradeEntryData*> UpgradeItems;
 
 	ResourceUpgrade resourceUpgrades[UPGRADE_COUNT];
 
@@ -165,7 +165,11 @@ public:
 	bool PayCost(const TArray<ResourceData>& _cost);
 	void BuyResourceUpgrade(UpgradeType _upgrade);
 	void ApplyResourceUpgrade(UpgradeType _upgrade, int _level);
-	FString CreateCostText(const TArray<ResourceData>& _cost);
+	FString CreateCostText(UpgradeType _upgrade, const TArray<ResourceData>& _cost);
+	void RebuildCostCache(UpgradeType _upgrade);
+	int GetMaxUpgradeMult(UpgradeType _upgrade);
+
+	bool resourcesDirty = false;
 
 	void MoveForward();
 
@@ -197,7 +201,8 @@ public:
 	UFUNCTION()
 	void UpgradeBoom();
 
-	int upgradeMultiplier = 1;
+	bool maxMultiplier = false;
+	int upgradeMultiplier[UPGRADE_COUNT];
 	UFUNCTION()
 	void SetUpgradeMult1();
 	UFUNCTION()
@@ -208,6 +213,8 @@ public:
 	void SetUpgradeMult25();
 	UFUNCTION()
 	void SetUpgradeMult100();
+	UFUNCTION()
+	void SetUpgradeMultMax();
 
 
 	UFUNCTION()
