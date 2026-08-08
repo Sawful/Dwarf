@@ -26,5 +26,6 @@ void ResourceUpgrade::UpdateTooltipText()
 	widget->level = upgradeLevel;
 	widget->LevelText->SetText(FText::FromString(FString::FromInt(upgradeLevel)));
 	widget->name = displayName;
+	widget->descriptionText = description;
 }
 

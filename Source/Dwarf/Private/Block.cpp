@@ -18,15 +18,18 @@ FString GetResourceName(ResourceType _type)
 {
 	switch (_type)
 	{
-	case DIRT: return "Dirt";
-	case STONE: return "Stone";
-	case ORE: return "Ore";
-	case ORE2: return "Ore";
-	case ORE3: return "Ore";
-	case ORE4: return "Ore";
-	case ORE5: return "Ore";
+	case MUDROCK: return "Mudrock";
+	case COAL: return "Coal";
+	case COPPER: return "Copper";
+	case TIN: return "Tin";
+	case IRON: return "Iron";
+	case SULFUR: return "Sulfur";
+	case SILVER: return "Silver";
+	case OBSIDIAN: return "Obsidian";
+	case PLATINUM: return "Platinum";
+	case DIAMOND: return "Diamond";
 	}
-	return FString();
+	return "?Unknown Resource?";
 }
 
 FString GetResourceIcon(ResourceType _type)

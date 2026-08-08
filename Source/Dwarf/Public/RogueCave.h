@@ -9,6 +9,7 @@ class DWARF_API RogueCave: public Cave
 {
 	int blocksGenerated = 0;
 public:
+	virtual void BreakFirst();
 	virtual ABlock* GenerateBlock(FVector _pos) override;
-
+	virtual void GenerateTail();
 };

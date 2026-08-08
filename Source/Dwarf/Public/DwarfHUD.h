@@ -15,9 +15,6 @@ UCLASS()
 class DWARF_API ADwarfHUD : public AHUD
 {
 	GENERATED_BODY()
-	
-	/*UPROPERTY(EditAnywhere)
-	TObjectPtr<UEditableText> resourceText;*/
 
 	void BeginPlay();
 };

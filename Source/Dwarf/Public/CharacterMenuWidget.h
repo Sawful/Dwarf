@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
+#include "Components/Slider.h"
 #include "CharacterMenuWidget.generated.h"
 
 UCLASS()
@@ -14,4 +15,6 @@ class DWARF_API UCharacterMenuWidget : public UUserWidget
 public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* ExitButton;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	USlider* DifficultySlider;
 };

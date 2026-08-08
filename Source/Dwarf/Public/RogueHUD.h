@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Components/WrapBox.h"
 #include "ExpBarWidget.h"
 #include "RogueHUD.generated.h"
 
@@ -20,4 +21,7 @@ public:
 	UTextBlock* LevelText;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UExpBarWidget* LevelProgress;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UWrapBox* ItemBox;
 };

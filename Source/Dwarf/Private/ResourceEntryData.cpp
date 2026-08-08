@@ -3,14 +3,16 @@
 
 #include "ResourceEntryData.h"
 
-void UResourceEntryData::SetAmount(int32 _NewAmount)
+void UResourceEntryData::SetAmount(BigNumber _NewAmount)
 {
     Amount = _NewAmount;
+    AmountString = Amount.ToString();
     OnResourceChanged.Broadcast();
 }
 
-void UResourceEntryData::AddAmount(int32 _Add)
+void UResourceEntryData::AddAmount(BigNumber _Add)
 {
     Amount += _Add;
+    AmountString = Amount.ToString();
     OnResourceChanged.Broadcast();
 }

@@ -12,6 +12,7 @@
 #include "IdleHUD.h"
 #include "CharacterMenuWidget.h"
 #include "RogueHUD.h"
+#include "RogueCardSelection.h"
 
 #include "RogueItem.h"
 #include "Upgrade.h"
@@ -23,9 +24,9 @@
 class USaveGame;
 class UUpgradeEntryData;
 
-TArray<ResourceData> CostStrongArms(int _level);
-TArray<ResourceData> CostDrill(int _level);
-TArray<ResourceData> CostBoom(int _level);
+TArray<ResourceData> CostStrongArms(unsigned int _level);
+TArray<ResourceData> CostDrill(unsigned int _level);
+TArray<ResourceData> CostBoom(unsigned int _level);
 
 DECLARE_DELEGATE_OneParam(FOnMilestoneTier, int);
 template <typename T>
@@ -44,13 +45,9 @@ struct Milestone
 
 struct SavedStats
 {
-	UPROPERTY()
 	Milestone<int> damageDone = 0;
-	UPROPERTY()
 	Milestone<int> blocksBroken = 0;
-	UPROPERTY()
 	Milestone<int> metersWalked = 0;
-	UPROPERTY()
 	Milestone<int> rebirthCount = 0;
 };
 
@@ -71,6 +68,7 @@ struct DamageSource
 struct AutomaticDamager
 {
 	int Damage = 0;
+	float MilestoneDamageMult = 1;
 	float Downtime = 2;
 	float Clock;
 	bool active = false;
@@ -82,18 +80,27 @@ struct AutomaticDamager
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageCalc, int&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCooldownCalc, float&);
 struct RoguePlayerData
 {
 	int level = 1;
 	int experience = 0;
 	int experienceRequired = 8;
 	TArray<RogueItem*> items;
+	TArray<UUpgradeEntryWidget*> itemWidgets;
+
+	bool timePaused = false;
+
+	float clickCooldown = 1.0f;
+	float clickTimer = 1.0f;
 
 	DamageSource ClickSource;
 	int MinDamage = 10;
 	int MaxDamage = 15;
 	FOnDamageCalc OnDamageCalc;
+	FOnCooldownCalc OnCooldownCalc;
 	void LevelUpRogue();
+	float GetHitCooldown();
 };
 
 UCLASS()
@@ -107,7 +114,7 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	virtual void Tick(float DeltaTime) override;
 
 	void SetupResourceUpgrades();
-	void SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData>(* InFunc)(int));
+	void SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData>(* InFunc)(unsigned int));
 	void SetupMilestones();
 	void InitializeAutomaticDamagers();
 
@@ -130,21 +137,37 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	TSubclassOf<UCharacterMenuWidget> CharacterMenuClass;
 
 	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> TooltipClass;
+
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<URogueHUD> RogueHUDClass;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUpgradeEntryWidget> UpgradeBoxClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUpgradeEntryWidget> ItemBoxClass;
 
 	UMainMenuWidget* MainMenu; 
 	UIdleHUD* HUD;
 	UCharacterMenuWidget* CharacterMenu;
 	URogueHUD* RogueHUD;
 
-	//UPROPERTY()
-	//TArray<UUpgradeEntryData*> UpgradeItems;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<URogueCardSelection> CardSelectionClass;
+	URogueCardSelection* CardSelection;
 
 	ResourceUpgrade resourceUpgrades[UPGRADE_COUNT];
 
 	// ROGUE //
 	bool inRun = false;
 	RoguePlayerData rogueData;
+	TArray<RogueItem*> unlockedItemPool;
+	TArray<RogueItem*> currentItemPool;
+	int itemsSelection[3];
+
+	bool TimeBoost = false;
+	float TimeBoostFactor = 5.0f;
+	float TimeBoostLeft = 10.0f;
 
 public:
 	void StartGame();
@@ -164,14 +187,21 @@ public:
 	bool CheckCost(const TArray<ResourceData>& _cost);
 	bool PayCost(const TArray<ResourceData>& _cost);
 	void BuyResourceUpgrade(UpgradeType _upgrade);
-	void ApplyResourceUpgrade(UpgradeType _upgrade, int _level);
+	void ApplyResourceUpgrade(UpgradeType _upgrade, unsigned int _level);
 	FString CreateCostText(UpgradeType _upgrade, const TArray<ResourceData>& _cost);
 	void RebuildCostCache(UpgradeType _upgrade);
 	int GetMaxUpgradeMult(UpgradeType _upgrade);
 
-	bool resourcesDirty = false;
+	UFUNCTION()
+	void CardSelectLeft();
+	UFUNCTION()
+	void CardSelectMiddle();
+	UFUNCTION()
+	void CardSelectRight();
+	void AddItem(RogueItem* _item);
+	void AddItemFromPool(unsigned int _index);
 
-	void MoveForward();
+	bool resourcesDirty = false;
 
 	UFUNCTION()
 	void FocusIdle();
@@ -216,17 +246,18 @@ public:
 	UFUNCTION()
 	void SetUpgradeMultMax();
 
-
 	UFUNCTION()
 	void BlockMilestone(int _tier);
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ADwarfPawn> DwarfPawnClass;
 
-	ADwarfPawn* currentPawn;
 	ADwarfPawn* idlePawn;
 	Cave* currentCave = nullptr;
 	Cave idleCave;
+	int difficulty = 1;
+	UFUNCTION()
+	void ChangeDifficulty(float _value);
 
 	// Dwarf Stats
 	int Level;
@@ -234,6 +265,7 @@ public:
 	int RequiredExperience;
 	void IncreaseExp(int _value);
 	void LevelUp();
+	void LevelUpRogue();
 	void IncreaseRogueExp(int _value);
 	int TalentPoints;
 
@@ -244,9 +276,11 @@ public:
 	FString GetUpgradeDamageText(UpgradeType _upgrade);
 
 	DamageSource ClickSource;
-	int MinDamage = 10;
-	int MaxDamage = 15;
+	int MinDamage = 1;
+	int MaxDamage = 1; // MaxDamage is MinDamage * DamageWindow
+	float DamageWindow = 1.0f;
 	int GetClickDamage();
+	int GetRogueClickDamage();
 
 	AutomaticDamager Drill;
 	AutomaticDamager Boom;
@@ -260,7 +294,7 @@ public:
 
 	void BlockRewardIdle(BlockData _data);
 	void BlockRewardRogue(BlockData _data);
-
+	int GetRogueExp(int _exp);
 
 	// Stored stats
 	SavedStats savedStats;
@@ -268,7 +302,7 @@ public:
 	void IncreaseBlocks();
 	void IncreaseWalk();
 
-	int resources[RESOURCE_COUNT];
+	BigNumber resources[RESOURCE_COUNT];
 };
 
 template<typename T>

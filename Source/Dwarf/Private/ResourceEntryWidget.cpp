@@ -13,16 +13,19 @@ void UResourceEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 	// When Broadcast -> Call OnDataChanged()
 	CurrentData->OnResourceChanged.AddUObject(this, &UResourceEntryWidget::OnDataChanged);
 
+	SetVisibility(ESlateVisibility::Hidden);
+
 	UpdateText();
 }
 
 void UResourceEntryWidget::OnDataChanged()
 {
+	SetVisibility(ESlateVisibility::HitTestInvisible);
 	UpdateText();
 }
 
 void UResourceEntryWidget::UpdateText()
 {
 	if (CurrentData == nullptr) return;
-	ResourceText->SetText(FText::FromString(CurrentData->ResourceIcon + ": " + FString::FromInt(CurrentData->Amount)));
+	ResourceText->SetText(FText::FromString(CurrentData->ResourceIcon + ": " + CurrentData->Amount.ToString()));
 }

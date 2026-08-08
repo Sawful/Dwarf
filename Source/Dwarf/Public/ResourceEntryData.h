@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+#include "BigNumber.h"
 #include "ResourceEntryData.generated.h"
 DECLARE_MULTICAST_DELEGATE(FOnResourceChanged);
 
@@ -17,10 +18,11 @@ public:
     FString ResourceIcon;
 
     UPROPERTY(BlueprintReadWrite)
-    int32 Amount;
+    FString AmountString;
+    BigNumber Amount;
 
     FOnResourceChanged OnResourceChanged;
 
-    void SetAmount(int32 _NewAmount);
-    void AddAmount(int32 _Add);
+    void SetAmount(BigNumber _NewAmount);
+    void AddAmount(BigNumber _Add);
 };

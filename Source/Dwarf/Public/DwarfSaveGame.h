@@ -19,4 +19,12 @@ public:
 
 	UPROPERTY()
 	int savedStats[4];
+
+	UPROPERTY()
+	int level;
+	UPROPERTY()
+	int exp;
+
+	UPROPERTY()
+	uint32 saveTime;
 };

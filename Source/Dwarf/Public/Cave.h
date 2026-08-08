@@ -5,11 +5,13 @@
 #include "CoreMinimal.h" 
 #include "Materials/Material.h"
 #include "Block.h"
+#include "Engine/StaticMeshActor.h"
 
 #define BLOCK_SIZE 100
 #define BLOCK_OFFSET_Y BLOCK_SIZE/2
 #define BLOCK_COUNT_X 15
 #define BLOCK_COUNT_Y 4
+#define FLOOR_LENGTH 25600
 
 class ADwarfPawn;
 
@@ -18,13 +20,22 @@ class DWARF_API Cave
 {
 protected:
 	int lastGridPos[2];
+	int weight[BLOCK_COUNT];
 	ABlock* last = nullptr;
 
-	void BreakFirst();
+	virtual void BreakFirst();
 
-	UMaterialInterface* DirtMat;
-	UMaterialInterface* StoneMat;
-	UMaterialInterface* OreMat;
+	UMaterialInterface* MudrockMat;
+	UMaterialInterface* CoalMat;
+	UMaterialInterface* CopperMat;
+	UMaterialInterface* TinMat;
+	UMaterialInterface* IronMat;
+	UMaterialInterface* SulfurMat;
+	UMaterialInterface* SilverMat;
+	UMaterialInterface* ObsidianMat;
+	UMaterialInterface* PlatinumMat;
+	UMaterialInterface* DiamondMat;
+	UMaterialInterface* MagicMat;
 
 	TSubclassOf<ABlock> BP_BlockClass = nullptr;
 
@@ -32,10 +43,25 @@ protected:
 	float blockHealthMult;
 
 	int columnsBroken = 0;
+
+	const float blockHealthDiffScaling = 2.5f;
+	const float blockRewardsDiffScaling = 1.75f;
+
 public:
+	TSubclassOf<AStaticMeshActor> FloorClass = nullptr;
+	AStaticMeshActor* repeatableFloors[4];
+
+	AStaticMeshActor* Floor1;
+	AStaticMeshActor* Floor2;
+	AStaticMeshActor* Roof1;
+	AStaticMeshActor* Roof2;
+
 	ABlock* first = nullptr;
 	ADwarfPawn* dwarfPawn;
 	FOnBlockBreak BlockBreakDelegate;
+
+	int difficultyLevel = 1;
+	float yieldMultiplier = 1.0f;
 
 	int GetColumnsBroken() { return columnsBroken; };
 	void DestroyCave();
@@ -44,8 +70,12 @@ public:
 	virtual ABlock* GenerateBlock(FVector _pos);
 	void GenerateStart();
 	bool DamageFirst(int _damage);
-	void GenerateTail();
+	virtual void GenerateTail();
 	void SetBlockDataByType(ABlock* _block, BlockType _type);
+	void CheckMoveFloor();
+
+	BlockType PickRandomType();
 
 	Cave();
+	virtual ~Cave();
 };

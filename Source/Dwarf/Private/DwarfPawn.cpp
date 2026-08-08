@@ -23,13 +23,27 @@ ADwarfPawn::ADwarfPawn()
 void ADwarfPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	initialPosition = FVector(0, 0, 92);
+	SpriteComponent->SetSprite(idle);
+	SetActorLocation(pawnOffset);
+	isHitting = false;
 }
 
 // Called every frame
 void ADwarfPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	DeltaTime *= TimeFactor;
+	if (isHitting)
+	{
+		hitAnimationClock -= DeltaTime;
+		if (hitAnimationClock <= 0)
+		{
+			SpriteComponent->SetSprite(idle);
+			isHitting = false;
+		}
+	}
+	
 
 	// Only walk if block broken
 	if (metersWalked >= targetMetersWalked) return;
@@ -50,13 +64,20 @@ void ADwarfPawn::ResetDwarfPawn()
 {
 	metersWalked = 0;
 	targetMetersWalked = 0;
-	SetActorLocation(initialPosition);
+	SetActorLocation(pawnOffset);
 }
 
 void ADwarfPawn::PositionToCave(Cave* _cave)
 {
 	targetMetersWalked = _cave->GetColumnsBroken();
 	metersWalked = targetMetersWalked;
-	SetActorLocation(initialPosition + (_cave->first->GetActorLocation() * FVector(1, 1, 0)) - FVector(0, BLOCK_SIZE, 0));
+	SetActorLocation(pawnOffset + (_cave->first->GetActorLocation() * FVector(1, 1, 0)) - FVector(0, BLOCK_SIZE, 0));
+}
+
+void ADwarfPawn::HitAnimation()
+{
+	SpriteComponent->SetSprite(hit);
+	hitAnimationClock = hitAnimationDuration;
+	isHitting = true;
 }
 

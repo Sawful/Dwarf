@@ -9,6 +9,7 @@ void UIdleHUD::NativeConstruct()
 void UIdleHUD::Populate()
 {
 	ResourceList->ClearListItems();
+	ResourceItems.Empty(RESOURCE_COUNT);
 	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
 		UResourceEntryData* Item = NewObject<UResourceEntryData>(this);
@@ -19,20 +20,21 @@ void UIdleHUD::Populate()
 	}
 }
 
-void UIdleHUD::UpdateResources(int(&_resources)[RESOURCE_COUNT])
+void UIdleHUD::UpdateResources(BigNumber(&_resources)[RESOURCE_COUNT])
 {
 	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
+		if (_resources[i] == 0) continue;
 		ResourceItems[i]->SetAmount(_resources[i]);
 	}
 }
 
-void UIdleHUD::SetResource(int _type, int _value)
+void UIdleHUD::SetResource(int _type, BigNumber _value)
 {
 	ResourceItems[_type]->SetAmount(_value);
 }
 
-void UIdleHUD::AddResource(int _type, int _value)
+void UIdleHUD::AddResource(int _type, BigNumber _value)
 {
 	ResourceItems[_type]->AddAmount(_value);
 }

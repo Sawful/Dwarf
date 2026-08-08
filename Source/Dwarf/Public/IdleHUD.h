@@ -6,12 +6,14 @@
 #include "Components/Button.h"
 #include "Components/ListView.h"
 #include "Components/HorizontalBox.h"
+#include "Components/WrapBox.h"
 #include "Components/Image.h"
 
 #include "ResourceEntryWidget.h"
 #include "ResourceEntryData.h"
 #include "AutoAttackerDisplay.h"
 #include "UpgradeEntryWidget.h"
+#include "BigNumber.h"
 
 #include "Block.h"
 
@@ -26,11 +28,12 @@ class DWARF_API UIdleHUD : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
-	void SetResource(int _type, int _value);
-	void AddResource(int _type, int _value);
+	void SetResource(int _type, BigNumber _value);
+	void AddResource(int _type, BigNumber _value);
 	void Populate();
+	void HideResources();
 
-	void UpdateResources(int (&_resources)[RESOURCE_COUNT]);
+	void UpdateResources(BigNumber (&_resources)[RESOURCE_COUNT]);
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* SaveButton;
@@ -40,6 +43,18 @@ public:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* RebirthButton;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UWrapBox* RelicBox;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UWrapBox* UpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* ClickUpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* DrillUpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* BoomUpgradeBox;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* CharacterMenuButton;
@@ -56,13 +71,6 @@ public:
 	UImage* TechPointIndicator;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UUpgradeEntryWidget* ClickUpgradeBox;
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UUpgradeEntryWidget* DrillUpgradeBox;
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	UUpgradeEntryWidget* BoomUpgradeBox;
-
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* ButtonMult1;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* ButtonMult5;
@@ -74,6 +82,8 @@ public:
 	UButton* ButtonMult100;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* ButtonMultMax;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UTextBlock* DistanceTraveledText;
 
 protected:
 

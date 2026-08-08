@@ -34,6 +34,10 @@ public:
 	FString costText;
 	UPROPERTY(BlueprintReadOnly)
 	FString damageText;
+	UPROPERTY(BlueprintReadOnly)
+	FString milestoneText;
+	UPROPERTY(BlueprintReadOnly)
+	FString descriptionText;
 
 protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;

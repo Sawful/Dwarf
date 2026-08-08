@@ -3,15 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BigNumber.h"
 
 enum ResourceType {
-	DIRT = 0,
-	STONE,
-	ORE,
-	ORE2,
-	ORE3,
-	ORE4,
-	ORE5,
+	MUDROCK = 0,
+	COAL,
+	COPPER,
+	TIN,
+	IRON,
+	SULFUR,
+	SILVER,
+	OBSIDIAN,
+	PLATINUM,
+	DIAMOND,
 
 	RESOURCE_COUNT
 };
@@ -19,5 +23,5 @@ enum ResourceType {
 struct DWARF_API ResourceData
 {
 	ResourceType Type;
-	int Amount;
+	BigNumber Amount;
 };

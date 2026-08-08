@@ -8,9 +8,16 @@
 #include "Block.generated.h"
 
 enum BlockType {
-	DIRT_BLOCK = 0,
-	STONE_BLOCK = 1,
-	ORE_BLOCK = 2,
+	MUDROCK_BLOCK = 0,
+	COAL_BLOCK,
+	COPPER_BLOCK,
+	TIN_BLOCK,
+	IRON_BLOCK,
+	SULFUR_BLOCK,
+	SILVER_BLOCK,
+	OBSIDIAN_BLOCK,
+	PLATINUM_BLOCK,
+	DIAMOND_BLOCK,
 
 	BLOCK_COUNT
 };
@@ -40,6 +47,7 @@ public:
 	UStaticMeshComponent* mesh;
 	BlockData Data;
 	ABlock* next = nullptr;
+	int xPos;
 };
 
 FString GetResourceName(ResourceType _type);

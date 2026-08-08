@@ -15,7 +15,7 @@ enum UpgradeType
 	UPGRADE_COUNT
 };
 
-DECLARE_DELEGATE_RetVal_OneParam(TArray<ResourceData>, FOnGetCost, int)
+DECLARE_DELEGATE_RetVal_OneParam(TArray<ResourceData>, FOnGetCost, unsigned int)
 struct ResourceUpgrade
 {
 	UPROPERTY()
@@ -25,7 +25,10 @@ struct ResourceUpgrade
 	FString displayName;
 
 	UPROPERTY()
-	int upgradeLevel;
+	FString description;
+
+	UPROPERTY()
+	unsigned int upgradeLevel;
 
 	UPROPERTY()
 	TArray<ResourceData> costCached;

@@ -3,13 +3,49 @@
 
 #include "DwarfPlayerState.h"
 #include "RogueCave.h"
-#include "IdleHUD.h"
 #include "Components/TextRenderComponent.h"
 #include "Components/TextBlock.h"
-#include "UpgradeEntryData.h"
+#include "Components/RichTextBlock.h"
 #include "DwarfSaveGame.h"
 
 #define MAX_MULTIPLIER_VALUE 10000
+
+uint64 MagicFunction(const unsigned int _level, const uint64 _baseValue, const float _s1, const float _s2)
+{
+	return uint64(_baseValue * powf((_level + _s2) / _s2, _s2 * _s1));
+}
+
+TArray<ResourceData> CostStrongArms(unsigned int _level)
+{
+	const uint64 baseValueDirt = 1;
+	const uint64 baseValueStone = 2;
+	const float s1 = 0.4f;
+	const float s2 = 20;
+	TArray<ResourceData> cost;
+	cost.Add({ MUDROCK, MagicFunction(_level, baseValueDirt, s1, s2) });
+	cost.Add({ COAL, MagicFunction(_level, baseValueStone, s1, s2) });
+	return cost;
+}
+
+TArray<ResourceData> CostDrill(unsigned int _level)
+{
+	const uint64 baseValue = 3;
+	const float s1 = 0.4f;
+	const float s2 = 15;
+	TArray<ResourceData> cost;
+	cost.Add({ COPPER, MagicFunction(_level, baseValue, s1, s2) });
+	return cost;
+}
+
+TArray<ResourceData> CostBoom(unsigned int _level)
+{
+	const uint64 baseValue = 25;
+	const float s1 = 0.45f;
+	const float s2 = 14;
+	TArray<ResourceData> cost;
+	cost.Add({ COPPER, MagicFunction(_level, baseValue, s1, s2) });
+	return cost;
+}
 
 ADwarfPlayerState::ADwarfPlayerState()
 {
@@ -33,16 +69,19 @@ void ADwarfPlayerState::SetupResourceUpgrades()
 {
 	resourceUpgrades[0].upgradeFunctionName = "StrongArms";
 	resourceUpgrades[0].displayName = "Strong Arms";
+	resourceUpgrades[0].description = "Increases click damage by 2.";
 	resourceUpgrades[0].widget = HUD->ClickUpgradeBox;
 	SetupResourceUpgradeDelegate(resourceUpgrades[0], &CostStrongArms);
 
 	resourceUpgrades[1].upgradeFunctionName = "Drill";
 	resourceUpgrades[1].displayName = "Drill";
+	resourceUpgrades[1].description = "An automatic drill that will hit for you.";
 	resourceUpgrades[1].widget = HUD->DrillUpgradeBox;
 	SetupResourceUpgradeDelegate(resourceUpgrades[1], &CostDrill);
 
 	resourceUpgrades[2].upgradeFunctionName = "Boom";
 	resourceUpgrades[2].displayName = "Boom";
+	resourceUpgrades[2].description = "A slow automatic hit that deals heavy damage.";
 	resourceUpgrades[2].widget = HUD->BoomUpgradeBox;
 	SetupResourceUpgradeDelegate(resourceUpgrades[2], &CostBoom);
 
@@ -59,18 +98,10 @@ void ADwarfPlayerState::SetupResourceUpgrades()
 		resourceUpgrades[i].widget->Button->OnClicked.Add(delegate);
 		resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
 		resourceUpgrades[i].UpdateTooltipText();
-		/*UUpgradeEntryData* data = NewObject<UUpgradeEntryData>(this);
-		data->upgradeName = resourceUpgrades[i].displayName;
-		data->upgradeDelegate = delegate;
-		data->SetLevel(resourceUpgrades[i].upgradeLevel);
-		data->SetCostText(CreateCostText((UpgradeType)i, resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i])));
-		data->SetDamageText(GetUpgradeDamageText((UpgradeType)i));
-		UpgradeItems.Add(data);
-		HUD->UpgradeBox->AddItem(data);*/
 	}
 }
 
-void ADwarfPlayerState::SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData> (*InFunc)(int))
+void ADwarfPlayerState::SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData> (*InFunc)(unsigned int))
 {
 	FOnGetCost del;
 	FString costDelName = "Cost";
@@ -101,7 +132,7 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 	Drill.SetDamagerActive(false);
 	Drill.source.TextType = AUTO;
 
-	Drill.source.BlockDamageMultiplier[ORE_BLOCK] = 5; // TESTING
+	Drill.source.BlockDamageMultiplier[COPPER_BLOCK] = 5; // TESTING
 
 	Boom.Damage = 0;
 	Boom.Downtime = 10.0f;
@@ -128,6 +159,18 @@ void ADwarfPlayerState::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ADwarfPlayerState::Tick(float _dt)
 {
 	Super::Tick(_dt);
+
+	if (TimeBoost)
+	{
+		TimeBoostLeft -= _dt;
+		if (TimeBoostLeft <= 0)
+		{
+			currentCave->dwarfPawn->TimeFactor = 1.0f;
+			TimeBoost = false;
+		}
+		_dt *= TimeBoostFactor;
+	}
+
 	if (gameLoaded == false)
 	{
 		return;
@@ -151,34 +194,27 @@ void ADwarfPlayerState::Tick(float _dt)
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
 		bool upgradeAvailable = true;
-		FString string = "Cost (x" + FString::FromInt(upgradeMultiplier[i]) + "): \n";
+		FString costString = "Cost (x" + FString::FromInt(upgradeMultiplier[i]) + "): \n";
 		for (auto resource : resourceUpgrades[i].costCached)
 		{
 			bool resourceAvailable = true;
 
-			string += GetResourceIcon(resource.Type);
-			if (resources[resource.Type] < resource.Amount)
+			costString += GetResourceIcon(resource.Type);
+			if (resource.Amount > resources[resource.Type])
 			{
 				resourceAvailable = false;
 				upgradeAvailable = false;
-				string += "<UnavailableEmphasis>";
+				costString += "<UnavailableEmphasis>: " + resource.Amount.ToString() + "</>\n";
 			}
-			string += ": ";
-			string += FString::FromInt(resource.Amount);
-			if (resourceAvailable == false) string += "</>";
-			string += "\n";
-
+			else
+			{
+				costString += ": " + resource.Amount.ToString() + "\n";
+			}
 		}
 
-		if (upgradeAvailable)
-		{
-			resourceUpgrades[i].widget->SetColorAndOpacity(FLinearColor(1, 1, 1, 1));
-		}
-		else
-		{
-			resourceUpgrades[i].widget->SetColorAndOpacity(FLinearColor(0.1, 0.1, 0.1, 1));
-		}
-		resourceUpgrades[i].widget->costText = string;
+		FLinearColor availabilityTint = upgradeAvailable ? FLinearColor(1, 1, 1, 1) : FLinearColor(0.1, 0.1, 0.1, 1);
+		resourceUpgrades[i].widget->SetColorAndOpacity(availabilityTint);
+		resourceUpgrades[i].widget->costText = costString;
 	}
 
 	// Idle auto damagers
@@ -186,13 +222,29 @@ void ADwarfPlayerState::Tick(float _dt)
 	UpdateDamager(Boom, _dt);
 
 	if (inRun == false) return;
+	if (rogueData.timePaused) return;
 	// Run auto damagers
-
+	rogueData.clickTimer -= _dt;
+	if (rogueData.clickTimer <= 0)
+	{
+		currentCave->dwarfPawn->HitAnimation();
+		rogueData.clickTimer = rogueData.GetHitCooldown();
+		Damage(GetRogueClickDamage(), ClickSource, currentCave);
+	}
 }
 
 void ADwarfPlayerState::StartGame()
 {
-	GlobalYieldMultiplier = 100000;
+	if (TooltipClass)
+	{
+		UUserWidget* tooltip = CreateWidget<UUserWidget>(GetPlayerController(), TooltipClass);
+		tooltip->SetVisibility(ESlateVisibility::Hidden);
+		tooltip->AddToViewport(1);
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Could not create Tooltip")));
+	}
 
 	if (RogueHUDClass)
 	{
@@ -222,6 +274,22 @@ void ADwarfPlayerState::StartGame()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Could not create Main Menu")));
 		return;
+	}
+
+	if (CardSelectionClass)
+	{
+		CardSelection = CreateWidget<URogueCardSelection>(GetPlayerController(), CardSelectionClass);
+
+		CardSelection->CardLeft->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::CardSelectLeft);
+		CardSelection->CardMiddle->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::CardSelectMiddle);
+		CardSelection->CardRight->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::CardSelectRight);
+
+		CardSelection->SetVisibility(ESlateVisibility::Hidden);
+		CardSelection->AddToViewport();
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("!!! Could not create CardSelection")));
 	}
 
 	if (HUDClass)
@@ -255,6 +323,7 @@ void ADwarfPlayerState::StartGame()
 	{
 		CharacterMenu = CreateWidget<UCharacterMenuWidget>(GetPlayerController(), CharacterMenuClass);
 		CharacterMenu->ExitButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::HideCharacterMenu);
+		CharacterMenu->DifficultySlider->OnValueChanged.AddDynamic(this, &ADwarfPlayerState::ChangeDifficulty);
 		CharacterMenu->SetVisibility(ESlateVisibility::Hidden);
 		CharacterMenu->AddToViewport();
 	}
@@ -269,16 +338,14 @@ void ADwarfPlayerState::StartGame()
 
 	ClickSource.TextType = NORMAL;
 
-	currentPawn = idlePawn;
-
-	CameraActor = GetWorld()->SpawnActor<ADwarfCameraActor>(ADwarfCameraActor::StaticClass(), FVector(), FRotator(), FActorSpawnParameters());
-	CameraActor->pawn = currentPawn;
-	CameraActor->ForcePos();
-
 	idleCave.dwarfPawn = idlePawn;
 	idleCave.BlockBreakDelegate.BindUObject(this, &ADwarfPlayerState::BlockRewardIdle);
 	idleCave.GenerateStart();
 	currentCave = &idleCave;
+
+	CameraActor = GetWorld()->SpawnActor<ADwarfCameraActor>(ADwarfCameraActor::StaticClass(), FVector(), FRotator(), FActorSpawnParameters());
+	CameraActor->pawn = currentCave->dwarfPawn;
+	CameraActor->ForcePos();
 
 	FocusMenu();
 
@@ -317,7 +384,7 @@ void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 User
 	for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT;)
 	{
 		resourceUpgrades[upgrade].upgradeLevel = save->upgradeLevels[upgrade];	// Get level
-		for (int i = 1; i <= resourceUpgrades[upgrade].upgradeLevel; i++)		// Re-apply upgrade
+		for (unsigned int i = 1; i <= resourceUpgrades[upgrade].upgradeLevel; i++)		// Re-apply upgrade
 		{
 			ApplyResourceUpgrade(upgrade, i);
 		}
@@ -343,6 +410,18 @@ void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 User
 	savedStats.metersWalked.CheckTier();
 	savedStats.rebirthCount.value = save->savedStats[3];
 	savedStats.rebirthCount.CheckTier();
+
+	Level = save->level;
+	Experience = save->exp;
+
+	// Get time since last connection
+	unsigned long timeSince = difftime(time(nullptr), save->saveTime);
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, "Time since last connection: " + FString::FromInt(timeSince) + "s");
+	Tick(timeSince); // IS THIS EVEN ALLOWED??? TODO: see if this should be the way to catchup or not
+	/*TimeBoost = true;
+	TimeBoostLeft = 10.f;
+	TimeBoostFactor = 60.0f;
+	currentCave->dwarfPawn->TimeFactor = TimeBoostFactor;*/
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString(TEXT("Finished loading!")));
 }
@@ -372,7 +451,6 @@ void ADwarfPlayerState::SaveCurrentStateAsync()
 	SavedDelegate.BindUObject(this, &ADwarfPlayerState::OnSaveFinished);
 
 	UDwarfSaveGame* save = (UDwarfSaveGame*)UGameplayStatics::CreateSaveGameObject(UDwarfSaveGame::StaticClass());
-	// Set all values
 	
 	// Upgrades
 	for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT; upgrade = (UpgradeType)(upgrade + 1))
@@ -380,19 +458,21 @@ void ADwarfPlayerState::SaveCurrentStateAsync()
 		save->upgradeLevels[upgrade] = resourceUpgrades[upgrade].upgradeLevel;	// Set level
 	}
 	memcpy(save->resources, resources, sizeof(int) * RESOURCE_COUNT);
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(save->upgradeLevels[0]));
 	save->savedStats[0] = savedStats.blocksBroken.value;
 	save->savedStats[1] = savedStats.damageDone.value;
 	save->savedStats[2] = savedStats.metersWalked.value;
 	save->savedStats[3] = savedStats.rebirthCount.value;
+	// Experience
+	save->level = Level;
+	save->exp = Experience;
+	// Time
+	save->saveTime = time(nullptr);
 
 	UGameplayStatics::AsyncSaveGameToSlot(save, "SaveSlot", 0, SavedDelegate);
 }
 
 void ADwarfPlayerState::SaveCurrentState()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString(TEXT("Saving...")));
-
 	UDwarfSaveGame* save = (UDwarfSaveGame*)UGameplayStatics::CreateSaveGameObject(UDwarfSaveGame::StaticClass());
 	
 	//// Set all values ////
@@ -402,13 +482,16 @@ void ADwarfPlayerState::SaveCurrentState()
 	{
 		save->upgradeLevels[upgrade] = resourceUpgrades[upgrade].upgradeLevel;	// Set level
 	}
-
 	memcpy(save->resources, resources, sizeof(int) * RESOURCE_COUNT);
 	save->savedStats[0] = savedStats.blocksBroken.value;
 	save->savedStats[1] = savedStats.damageDone.value;
 	save->savedStats[2] = savedStats.metersWalked.value;
 	save->savedStats[3] = savedStats.rebirthCount.value;
 
+	save->level = Level;
+	save->exp = Experience;
+	save->saveTime = time(nullptr);
+	
 	UGameplayStatics::SaveGameToSlot(save, "SaveSlot", 0);
 }
 
@@ -418,18 +501,18 @@ void ADwarfPlayerState::Rebirth()
 	{
 		resourceUpgrades[i].upgradeLevel = 0;
 		resourceUpgrades[i].UpdateTooltipText();
-		//UpgradeItems[i]->SetCostText(CreateCostText((UpgradeType)i, resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i])));
-		//UpgradeItems[i]->SetDamageText(GetUpgradeDamageText((UpgradeType)i));
+		resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
 	}
 	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
 		resources[i] = 0;
 	}
+	HUD->Populate();
 
 	ResetDwarfStats();
+	currentCave->difficultyLevel = difficulty;
 	currentCave->ResetCave();
 	idlePawn->ResetDwarfPawn();
-	HUD->UpdateResources(resources);
 	resourcesDirty = true;
 
 	savedStats.rebirthCount.value++;
@@ -477,11 +560,10 @@ void ADwarfPlayerState::BuyResourceUpgrade(UpgradeType _upgrade)
 	
 	resourceUpgrades[_upgrade].UpdateTooltipText();
 	resourceUpgrades[_upgrade].GetCostAndCache(upgradeMultiplier[_upgrade]);
-	//UpgradeItems[_upgrade]->SetDamageText(GetUpgradeDamageText(_upgrade));
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Bought upgrade " + FString::FromInt(_upgrade));
 }
 
-void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, int _level)
+void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, unsigned int _level)
 {
 	switch (_upgrade)
 	{
@@ -494,22 +576,23 @@ void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, int _level)
 	}
 	case DRILL:
 	{
-		Drill.Damage += 1;
+		Drill.Damage = MagicFunction(_level, 5, 0.2, 10);
+		Drill.Damage *= Drill.MilestoneDamageMult;
 		switch (_level)
 		{
 		case 1:
 			Drill.SetDamagerActive(true);
 			break;
 		case 10:
-			Drill.Damage *= 2;
+			Drill.MilestoneDamageMult *= 2;
 			Drill.Downtime *= 0.8;
 			break;
 		case 25:
-			Drill.Damage *= 3;
+			Drill.MilestoneDamageMult *= 3;
 			Drill.Downtime *= 0.8;
 			break;
 		case 50:
-			Drill.Damage *= 5;
+			Drill.MilestoneDamageMult *= 5;
 			Drill.Downtime *= 0.8;
 			break;
 		}
@@ -517,22 +600,23 @@ void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, int _level)
 	}
 	case BOOM:
 	{
-		Boom.Damage += 10;
+		Boom.Damage = MagicFunction(_level, 25, 0.25, 10);
+		Boom.Damage *= Boom.MilestoneDamageMult;
 		switch (_level)
 		{
 		case 1:
 			Boom.SetDamagerActive(true);
 			break;
 		case 10:
-			Boom.Damage *= 2;
+			Boom.MilestoneDamageMult *= 2;
 			Boom.Downtime *= 0.8;
 			break;
 		case 25:
-			Boom.Damage *= 3;
+			Boom.MilestoneDamageMult *= 3;
 			Boom.Downtime *= 0.8;
 			break;
 		case 50:
-			Boom.Damage *= 5;
+			Boom.MilestoneDamageMult *= 5;
 			Boom.Downtime *= 0.8;
 			break;
 		}
@@ -556,7 +640,7 @@ FString ADwarfPlayerState::CreateCostText(UpgradeType _upgrade, const TArray<Res
 			string += "<UnavailableEmphasis>";
 		}
 		string += ": ";
-		string += FString::FromInt(resource.Amount);
+		string += resource.Amount.ToString();
 		if (resourceAvailable == false) string += "</>";
 		string += "\n";
 
@@ -589,36 +673,71 @@ int ADwarfPlayerState::GetMaxUpgradeMult(UpgradeType _upgrade)
 	return maxMult;
 }
 
+void ADwarfPlayerState::CardSelectLeft()
+{
+	CardSelection->SetVisibility(ESlateVisibility::Hidden);
+	rogueData.timePaused = false;
+	AddItemFromPool(itemsSelection[0]);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Left selected")));
+}
+
+void ADwarfPlayerState::CardSelectMiddle()
+{
+	CardSelection->SetVisibility(ESlateVisibility::Hidden);
+	rogueData.timePaused = false;
+	AddItemFromPool(itemsSelection[1]);
+}
+
+void ADwarfPlayerState::CardSelectRight()
+{
+	CardSelection->SetVisibility(ESlateVisibility::Hidden);
+	rogueData.timePaused = false;
+	AddItemFromPool(itemsSelection[2]);
+}
+
+void ADwarfPlayerState::AddItem(RogueItem* _item)
+{
+	// Check if Item already exists
+	int itemIndex = rogueData.items.Find(_item);
+	if (itemIndex != INDEX_NONE)
+	{ 
+		rogueData.items[itemIndex]->level++;
+
+		UUpgradeEntryWidget* widget = rogueData.itemWidgets[itemIndex];
+		widget->level++;
+		widget->LevelText->SetText(FText::FromString(FString::FromInt(widget->level)));
+	}
+
+	else
+	{
+		// New item: Bind and add widget
+		_item->Bind(&rogueData);
+		_item->level = 1;
+
+		UUpgradeEntryWidget* widget = CreateWidget<UUpgradeEntryWidget, UWrapBox*>(RogueHUD->ItemBox, ItemBoxClass);
+		widget->level = 1;
+		widget->name = _item->name;
+		widget->SetPadding(16);
+		widget->LevelText->SetText(FText::FromString(FString::FromInt(widget->level)));
+		widget->descriptionText = _item->description;
+		RogueHUD->ItemBox->AddChild(widget);
+
+		rogueData.itemWidgets.Add(widget);
+	}
+}
+
+void ADwarfPlayerState::AddItemFromPool(unsigned int _index)
+{
+	AddItem(currentItemPool[_index]);
+	if (currentItemPool[_index]->level >= MAX_ITEM_LEVEL)
+	{
+		currentItemPool.RemoveAt(_index);
+	}
+}
+
 void ADwarfPlayerState::UpgradeStrongArms()
 {
 	BuyResourceUpgrade(STRONG_ARMS);
-}
-
-TArray<ResourceData> CostStrongArms(int _level)
-{
-	TArray<ResourceData> cost;
-	cost.Add({ DIRT, 1 + _level });
-	cost.Add({ STONE, 1 + 2 * _level });
-	cost.Add({ ORE, 1 + 2 * _level });
-	cost.Add({ ORE2, 1 + 2 * _level });
-	cost.Add({ ORE3, 1 + 2 * _level });
-	cost.Add({ ORE4, 1 + 2 * _level });
-	cost.Add({ ORE5, 1 + 2 * _level });
-	return cost;
-}
-
-TArray<ResourceData> CostDrill(int _level)
-{
-	TArray<ResourceData> cost;
-	cost.Add({ ORE, 5 + 2 * _level });
-	return cost;
-}
-
-TArray<ResourceData> CostBoom(int _level)
-{
-	TArray<ResourceData> cost;
-	cost.Add({ ORE, 5 + 2 * _level });
-	return cost;
 }
 
 void ADwarfPlayerState::UpgradeDrill()
@@ -796,15 +915,43 @@ void ADwarfPlayerState::LevelUp()
 	RequiredExperience = (Level + 1) * (Level + 1);
 }
 
+void ADwarfPlayerState::LevelUpRogue()
+{
+	rogueData.LevelUpRogue();
+	TArray<int> tempPool;
+	for (int i = 0; i < currentItemPool.Num(); i++) tempPool.Add(i);
+
+	if (currentItemPool.Num() < 3) return;
+
+	// Item TODO: Create actual item random (with at least 1 level up, rarity weight, and max level restriction)
+	int randIndex = rand() % tempPool.Num();
+	itemsSelection[0] = tempPool[randIndex];
+	tempPool.RemoveAt(randIndex);
+	CardSelection->CardLeft->SetItemInfo(currentItemPool[itemsSelection[0]]);
+
+	randIndex = rand() % tempPool.Num();
+	itemsSelection[1] = tempPool[randIndex];
+	tempPool.RemoveAt(randIndex);
+	CardSelection->CardMiddle->SetItemInfo(currentItemPool[itemsSelection[1]]);
+
+	randIndex = rand() % tempPool.Num();
+	itemsSelection[2] = tempPool[randIndex];
+	tempPool.RemoveAt(randIndex);
+	CardSelection->CardRight->SetItemInfo(currentItemPool[itemsSelection[2]]);
+
+	RogueHUD->LevelText->SetText(FText::FromString("Rogue Level: " + FString::FromInt(rogueData.level)));
+
+	rogueData.timePaused = true;
+	CardSelection->SetVisibility(ESlateVisibility::Visible);
+}
+
 void ADwarfPlayerState::IncreaseRogueExp(int _value)
 {
 	rogueData.experience += _value;
 
-	while (rogueData.experience > rogueData.experienceRequired)
+	while (rogueData.experience >= rogueData.experienceRequired)
 	{
-		rogueData.LevelUpRogue();
-
-		RogueHUD->LevelText->SetText(FText::FromString("Rogue Level: " + FString::FromInt(rogueData.level)));
+		LevelUpRogue();
 	}
 	RogueHUD->LevelProgress->SetCompletion((float)rogueData.experience / (float)rogueData.experienceRequired);
 }
@@ -822,25 +969,29 @@ FString ADwarfPlayerState::GetUpgradeDamageText(UpgradeType _upgrade)
 
 int ADwarfPlayerState::GetClickDamage()
 {
-	if (inRun)
-	{
-		int DamageDelta = rogueData.MaxDamage - rogueData.MinDamage;
-		int DamageBonus = rand() % (DamageDelta + 1);
-		
-		// Damage Items //
-		int damage = rogueData.MinDamage + DamageBonus;
-		rogueData.OnDamageCalc.Broadcast(damage);
-
-		return damage;
-	}
-
 	int DamageDelta = MaxDamage - MinDamage;
 	int DamageBonus = rand() % (DamageDelta + 1);
 	return MinDamage + DamageBonus;
 }
 
+int ADwarfPlayerState::GetRogueClickDamage()
+{
+	int DamageDelta = rogueData.MaxDamage - rogueData.MinDamage;
+	int DamageBonus = rand() % (DamageDelta + 1);
+
+	// Damage Items //
+	int damage = rogueData.MinDamage + DamageBonus;
+	rogueData.OnDamageCalc.Broadcast(damage);
+
+	return damage;
+}
+
 void ADwarfPlayerState::Hit()
 {
+	if (inRun) return;
+
+	currentCave->dwarfPawn->HitAnimation();
+
 	int damage = GetClickDamage();
 	Damage(damage,  ClickSource, currentCave);
 }
@@ -891,21 +1042,28 @@ void ADwarfPlayerState::BlockRewardIdle(BlockData _data)
 {
 	IncreaseBlocks();
 
-	//DEBUG PURPOSES ONLY
-	IncreaseExp(1);
-
 	for (auto currentYield : _data.yield)
 	{
-		resources[currentYield.Type] += currentYield.Amount * GlobalYieldMultiplier * resourceYieldMultiplier[currentYield.Type];
+		resources[currentYield.Type] += currentYield.Amount * GlobalYieldMultiplier * resourceYieldMultiplier[currentYield.Type] * idleCave.yieldMultiplier;
+		HUD->SetResource(currentYield.Type, resources[currentYield.Type]);
 	}
 
-	HUD->UpdateResources(resources);
 	resourcesDirty = true;
+
+	HUD->DistanceTraveledText->SetText(FText::FromString("Distance Traveled: " + FString::FromInt(currentCave->dwarfPawn->targetMetersWalked) + "m"));
 }
 
 void ADwarfPlayerState::BlockRewardRogue(BlockData _data)
 {
 	IncreaseRogueExp(_data.expValue);
+}
+
+int ADwarfPlayerState::GetRogueExp(int _exp)
+{
+	int expValue = _exp;
+	// Pass through multipliers
+	// Call delegate
+	return expValue;
 }
 
 void ADwarfPlayerState::FocusIdle()
@@ -939,10 +1097,12 @@ void ADwarfPlayerState::StartRun()
 {
 	inRun = true;
 	rogueData = RoguePlayerData();
-	DamageRogueItem* debugItem = new DamageRogueItem();
-	debugItem->Bind(&rogueData);
-	debugItem->Bind(&rogueData);
-	debugItem->Bind(&rogueData);
+
+	// Build the item pool
+	unlockedItemPool.Add(new DamageRogueItem());
+	unlockedItemPool.Add(new CooldownRogueItem());
+	unlockedItemPool.Add(new MultihitRogueItem());
+	currentItemPool = unlockedItemPool;
 
 	// Hide idle cave
 	idleCave.SetCaveVisible(false);
@@ -978,6 +1138,14 @@ void ADwarfPlayerState::EndRun()
 		currentCave->DestroyCave();
 	}
 
+	currentItemPool.Empty();
+	rogueData.items.Empty();
+	for (int i = 0; i < rogueData.itemWidgets.Num(); i++)
+	{
+		rogueData.itemWidgets[i]->RemoveFromParent();
+	}
+	rogueData.itemWidgets.Empty();
+
 	inRun = false;
 	idleCave.SetCaveVisible(true);
 	currentCave = &idleCave;
@@ -994,6 +1162,11 @@ void ADwarfPlayerState::ShowCharacterMenu()
 void ADwarfPlayerState::HideCharacterMenu()
 {
 	CharacterMenu->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void ADwarfPlayerState::ChangeDifficulty(float _value)
+{
+	difficulty = _value;
 }
 
 void ADwarfPlayerState::IncreaseBlocks()
@@ -1090,4 +1263,11 @@ void RoguePlayerData::LevelUpRogue()
 	level++;
 	experience -= experienceRequired;
 	experienceRequired *= 1.4f;
+}
+
+float RoguePlayerData::GetHitCooldown()
+{
+	float cd = clickCooldown;
+	OnCooldownCalc.Broadcast(cd);
+	return cd;
 }
