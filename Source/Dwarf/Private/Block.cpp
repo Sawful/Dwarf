@@ -14,6 +14,12 @@ void ABlock::BeginPlay()
 	Super::BeginPlay();
 }
 
+void ABlock::DisconnectFromList()
+{
+	if (next) { next->previous = previous; }
+	if (previous) { previous->next = next; }
+}
+
 FString GetResourceName(ResourceType _type)
 {
 	switch (_type)

@@ -55,6 +55,10 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UUpgradeEntryWidget* BoomUpgradeBox;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* EarthquakeUpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* LaserUpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UUpgradeEntryWidget* CritUpgradeBox;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UUpgradeEntryWidget* YieldUpgradeBox;
@@ -69,6 +73,10 @@ public:
 	UAutoAttackerDisplay* DrillDisplay;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UAutoAttackerDisplay* BoomDisplay;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UAutoAttackerDisplay* EarthquakeDisplay;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UAutoAttackerDisplay* LaserDisplay;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UImage* TechPointIndicator;

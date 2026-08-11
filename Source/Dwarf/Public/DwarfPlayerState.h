@@ -19,6 +19,7 @@
 #include "Upgrade.h"
 #include "Block.h"
 #include "Cave.h"
+#include "DamageSource.h"
 #include "DwarfPawn.h"
 #include "DwarfPlayerState.generated.h"
 
@@ -28,6 +29,8 @@ class UUpgradeEntryData;
 TArray<ResourceData> CostStrongArms(unsigned int _level);
 TArray<ResourceData> CostDrill(unsigned int _level);
 TArray<ResourceData> CostBoom(unsigned int _level);
+TArray<ResourceData> CostLaser(unsigned int _level);
+TArray<ResourceData> CostEarthquake(unsigned int _level);
 
 DECLARE_DELEGATE_OneParam(FOnMilestoneTier, int);
 template <typename T>
@@ -50,20 +53,6 @@ struct SavedStats
 	Milestone<int> blocksBroken = 0;
 	Milestone<int> metersWalked = 0;
 	Milestone<int> rebirthCount = 0;
-};
-
-enum DamageTextType
-{
-	NORMAL,
-	AUTO,
-	CRITICAL
-};
-
-struct DamageSource
-{
-	float BlockDamageMultiplier[BLOCK_COUNT];
-	DamageTextType TextType;
-	DamageSource() { std::fill_n(BlockDamageMultiplier, BLOCK_COUNT, 1.0f); };
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageCalc, int&);
@@ -141,6 +130,15 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	TArray<IdleRelic*> relics;
 
 	bool gameLoaded = false;
+
+	UTexture2D* StrongArmsIcon;
+	UTexture2D* PrecisionIcon;
+	UTexture2D* GoldLoverIcon;
+	UTexture2D* PlaceholderIcon;
+	UTexture2D* DrillIcon;
+	UTexture2D* TNTIcon;
+	UTexture2D* EarthquakeIcon;
+	UTexture2D* LaserIcon;
 
 	// Main camera (follows the dwarf)
 	UPROPERTY(EditAnywhere)
@@ -276,6 +274,10 @@ public:
 	void UpgradeDrill();
 	UFUNCTION()
 	void UpgradeBoom();
+	UFUNCTION()
+	void UpgradeLaser();
+	UFUNCTION()
+	void UpgradeEarthquake();
 
 	bool maxMultiplier = false;
 	int upgradeMultiplier[UPGRADE_COUNT];
@@ -324,6 +326,8 @@ public:
 	DamageSource ClickSource;
 	int MinDamage = 1;
 	int MaxDamage = 1; // MaxDamage is MinDamage * DamageWindow
+	float CritMultiplier;
+	int CritChance;
 	float DamageWindow = 1.0f;
 	float ClickDamageMultiplier = 1.0f;
 	int GetClickDamage();
@@ -331,12 +335,14 @@ public:
 
 	AutomaticDamager Drill;
 	AutomaticDamager Boom;
+	AutomaticDamager Laser;
+	AutomaticDamager EarthquakeTotem;
 
 	void UpdateDamager(AutomaticDamager& _damager, float _dt);
 
-	void CreateDamageText(int _damage, DamageTextType _type);
 	void Hit(bool _silent);
 	void Damage(int _damage, DamageSource _source, Cave* _cave);
+	void DamageColumn(int _damage, DamageSource _source, Cave* _cave);
 	void DamageIdleCave(int _damage, DamageSource _source);
 
 	void BlockRewardIdle(BlockData _data);

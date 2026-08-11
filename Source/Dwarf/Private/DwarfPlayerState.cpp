@@ -6,6 +6,7 @@
 #include "Components/TextRenderComponent.h"
 #include "Components/TextBlock.h"
 #include "Components/RichTextBlock.h"
+#include "Components/Image.h"
 #include "DwarfSaveGame.h"
 
 #define MAX_MULTIPLIER_VALUE 10000
@@ -50,6 +51,24 @@ TArray<ResourceData> CostBoom(unsigned int _level)
 	cost.Add({ SULFUR, MagicFunction(_level, baseValue, s1, s2) });
 	return cost;
 }
+TArray<ResourceData> CostLaser(unsigned int _level)
+{
+	const uint64 baseValue = 5;
+	const float s1 = 0.45f;
+	const float s2 = 14;
+	TArray<ResourceData> cost;
+	cost.Add({ DIAMOND, MagicFunction(_level, baseValue, s1, s2) });
+	return cost;
+}
+TArray<ResourceData> CostEarthquake(unsigned int _level)
+{
+	const uint64 baseValue = 15;
+	const float s1 = 0.45f;
+	const float s2 = 15;
+	TArray<ResourceData> cost;
+	cost.Add({ IRON, MagicFunction(_level, baseValue, s1, s2) });
+	return cost;
+}
 TArray<ResourceData> CostCrit(unsigned int _level)
 {
 	const uint64 baseValue = 20;
@@ -85,6 +104,16 @@ ADwarfPlayerState::ADwarfPlayerState()
 	{
 		upgradeMultiplier[i] = 1;
 	}
+
+	StrongArmsIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/StrongArms.StrongArms"));
+	//PrecisionIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
+	//GoldLoverIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
+	//PlaceholderIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
+	//DrillIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
+	//TNTIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
+	//EarthquakeIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
+	//LaserIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
+
 }
 
 void ADwarfPlayerState::SetupResourceUpgrades()
@@ -93,6 +122,7 @@ void ADwarfPlayerState::SetupResourceUpgrades()
 	resourceUpgrades[0].displayName = "Strong Arms";
 	resourceUpgrades[0].description = "Increases click damage by 2.";
 	resourceUpgrades[0].widget = HUD->ClickUpgradeBox;
+	resourceUpgrades[0].widget->Icon->SetBrushFromTexture(StrongArmsIcon);
 	SetupResourceUpgradeDelegate(resourceUpgrades[0], &CostStrongArms);
 
 	resourceUpgrades[1].upgradeFunctionName = "Drill";
@@ -107,17 +137,29 @@ void ADwarfPlayerState::SetupResourceUpgrades()
 	resourceUpgrades[2].widget = HUD->BoomUpgradeBox;
 	SetupResourceUpgradeDelegate(resourceUpgrades[2], &CostBoom);
 
-	resourceUpgrades[3].upgradeFunctionName = "Crit";
-	resourceUpgrades[3].displayName = "Precision";
-	resourceUpgrades[3].description = "Gives you 10% chance to deal 5x damage on click.";
-	resourceUpgrades[3].widget = HUD->CritUpgradeBox;
-	SetupResourceUpgradeDelegate(resourceUpgrades[3], &CostCrit);
+	resourceUpgrades[3].upgradeFunctionName = "Earthquake";
+	resourceUpgrades[3].displayName = "Earthquake Totem";
+	resourceUpgrades[3].description = "Shakes up the ground in front of you to clear any rubble standing in your way.";
+	resourceUpgrades[3].widget = HUD->EarthquakeUpgradeBox;
+	SetupResourceUpgradeDelegate(resourceUpgrades[3], &CostEarthquake);
 
-	resourceUpgrades[4].upgradeFunctionName = "Yield";
-	resourceUpgrades[4].displayName = "Gold Lover";
-	resourceUpgrades[4].description = "Increases your global yield by 10%"; 
-	resourceUpgrades[4].widget = HUD->YieldUpgradeBox;
-	SetupResourceUpgradeDelegate(resourceUpgrades[4], &CostYield);
+	resourceUpgrades[4].upgradeFunctionName = "Laser";
+	resourceUpgrades[4].displayName = "Mining Laser";
+	resourceUpgrades[4].description = "Constantly piercing through in front of it.";
+	resourceUpgrades[4].widget = HUD->LaserUpgradeBox;
+	SetupResourceUpgradeDelegate(resourceUpgrades[4], &CostLaser);
+
+	resourceUpgrades[5].upgradeFunctionName = "Crit";
+	resourceUpgrades[5].displayName = "Precision";
+	resourceUpgrades[5].description = "Gives you 10% chance to deal 5x damage on click.";
+	resourceUpgrades[5].widget = HUD->CritUpgradeBox;
+	SetupResourceUpgradeDelegate(resourceUpgrades[5], &CostCrit);
+
+	resourceUpgrades[6].upgradeFunctionName = "Yield";
+	resourceUpgrades[6].displayName = "Gold Lover";
+	resourceUpgrades[6].description = "Increases your global yield by 10%"; 
+	resourceUpgrades[6].widget = HUD->YieldUpgradeBox;
+	SetupResourceUpgradeDelegate(resourceUpgrades[6], &CostYield);
 	// Setup Upgrade delegates and buttons
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
@@ -158,6 +200,7 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 	Drill.Damage = 0;
 	Drill.Downtime = 2.0f;
 	Drill.Clock = Drill.Downtime;
+	Drill.damageType = FIRST;
 
 	Drill.Display = HUD->DrillDisplay;
 	Drill.Display->ProgressBar->SetCompletion((Drill.Downtime - Drill.Clock) / Drill.Downtime);
@@ -172,6 +215,7 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 	Boom.Damage = 0;
 	Boom.Downtime = 10.0f;
 	Boom.Clock = Boom.Downtime;
+	Boom.damageType = COLUMN;
 
 	Boom.Display = HUD->BoomDisplay;
 	Boom.Display->ProgressBar->SetCompletion((Boom.Downtime - Boom.Clock) / Boom.Downtime);
@@ -182,6 +226,36 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 
 	Boom.SetDamagerActive(false);
 	Boom.source.TextType = AUTO;
+
+	EarthquakeTotem.Damage = 0;
+	EarthquakeTotem.Downtime = 5.0f;
+	EarthquakeTotem.Clock = EarthquakeTotem.Downtime;
+	EarthquakeTotem.damageType = AREA;
+
+	EarthquakeTotem.Display = HUD->EarthquakeDisplay;
+	EarthquakeTotem.Display->ProgressBar->SetCompletion((EarthquakeTotem.Downtime - EarthquakeTotem.Clock) / EarthquakeTotem.Downtime);
+	EarthquakeTotem.Display->Name = "Earthquake Totem";
+	EarthquakeTotem.Display->Description = "Shakes up the ground in front of you to clear any rubble standing in your way.";
+	EarthquakeTotem.Display->damage = EarthquakeTotem.Damage;
+	EarthquakeTotem.Display->hitCooldown = EarthquakeTotem.Downtime;
+
+	EarthquakeTotem.SetDamagerActive(false);
+	EarthquakeTotem.source.TextType = AUTO;
+
+	Laser.Damage = 0;
+	Laser.Downtime = 5.0f;
+	Laser.Clock = EarthquakeTotem.Downtime;
+	Laser.damageType = AREA;
+
+	Laser.Display = HUD->LaserDisplay;
+	Laser.Display->ProgressBar->SetCompletion((Laser.Downtime - Laser.Clock) / Laser.Downtime);
+	Laser.Display->Name = "Mining Laser";
+	Laser.Display->Description = "Constantly piercing through in front of it.";
+	Laser.Display->damage = Laser.Damage;
+	Laser.Display->hitCooldown = Laser.Downtime;
+
+	Laser.SetDamagerActive(false);
+	Laser.source.TextType = AUTO;
 }
 
 void ADwarfPlayerState::InitRelicsArray()
@@ -265,6 +339,8 @@ void ADwarfPlayerState::Tick(float _dt)
 	// Idle auto damagers
 	UpdateDamager(Drill, _dt);
 	UpdateDamager(Boom, _dt);
+	UpdateDamager(EarthquakeTotem, _dt);
+	UpdateDamager(Laser, _dt);
 
 	if (inRun == false) return;
 	if (rogueData.timePaused) return;
@@ -411,6 +487,7 @@ void ADwarfPlayerState::StartGame()
 
 	idleCave.dwarfPawn = idlePawn;
 	idleCave.BlockBreakDelegate.BindUObject(this, &ADwarfPlayerState::BlockRewardIdle);
+	idleCave.DamageTextClass = DamageTextClass;
 	currentCave = &idleCave;
 
 	CameraActor = GetWorld()->SpawnActor<ADwarfCameraActor>(ADwarfCameraActor::StaticClass(), FVector(), FRotator(), FActorSpawnParameters());
@@ -464,8 +541,6 @@ void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 User
 	}
 
 	SetupResourceUpgrades();
-
-	Drill.Clock = Drill.Downtime;
 
 	// Resources
 	memcpy(resources, save->resources, sizeof(int) * RESOURCE_COUNT);
@@ -688,6 +763,14 @@ void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, unsigned int 
 	}
 	case PRECISION:
 	{
+		CritMultiplier = MagicFunctionf(_level - 1, 2, 0.2, 10);
+		switch (_level)
+		{
+		case 1:
+			CritChance = 5;
+			break;
+		}
+		
 		break;
 	}
 	case GOLD_LOVER:
@@ -745,6 +828,58 @@ void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, unsigned int 
 		}
 
 		Boom.UpdateDisplayTooltip(_level);
+		break;
+	}
+	case EARTHQUAKE:
+	{
+		EarthquakeTotem.Damage = MagicFunction(_level-1, 10, 0.3, 10);
+		EarthquakeTotem.Damage *= EarthquakeTotem.MilestoneDamageMult;
+		switch (_level)
+		{
+		case 1:
+			EarthquakeTotem.SetDamagerActive(true);
+			break;
+		case 10:
+			EarthquakeTotem.MilestoneDamageMult *= 2;
+			EarthquakeTotem.Downtime *= 0.8;
+			break;
+		case 25:
+			EarthquakeTotem.MilestoneDamageMult *= 3;
+			EarthquakeTotem.Downtime *= 0.8;
+			break;
+		case 50:
+			EarthquakeTotem.MilestoneDamageMult *= 5;
+			EarthquakeTotem.Downtime *= 0.8;
+			break;
+		}
+
+		EarthquakeTotem.UpdateDisplayTooltip(_level);
+		break;
+	}
+	case LASER:
+	{
+		Laser.Damage = MagicFunction(_level-1, 5, 0.4, 10);
+		Laser.Damage *= Laser.MilestoneDamageMult;
+		switch (_level)
+		{
+		case 1:
+			Laser.SetDamagerActive(true);
+			break;
+		case 10:
+			Laser.MilestoneDamageMult *= 2;
+			Laser.Downtime *= 0.8;
+			break;
+		case 25:
+			Laser.MilestoneDamageMult *= 3;
+			Laser.Downtime *= 0.8;
+			break;
+		case 50:
+			Laser.MilestoneDamageMult *= 5;
+			Laser.Downtime *= 0.8;
+			break;
+		}
+
+		Laser.UpdateDisplayTooltip(_level);
 		break;
 	}
 	}
@@ -939,6 +1074,14 @@ void ADwarfPlayerState::UpgradeStrongArms()
 void ADwarfPlayerState::UpgradeDrill()
 {
 	BuyResourceUpgrade(DRILL);
+}
+void ADwarfPlayerState::UpgradeEarthquake()
+{
+	BuyResourceUpgrade(EARTHQUAKE);
+}
+void ADwarfPlayerState::UpgradeLaser()
+{
+	BuyResourceUpgrade(LASER);
 }
 
 void ADwarfPlayerState::UpgradeCrit()
@@ -1180,7 +1323,16 @@ int ADwarfPlayerState::GetClickDamage()
 	MaxDamage = finalMinDamage * DamageWindow;
 	int DamageDelta = MaxDamage - finalMinDamage;
 	int DamageBonus = rand() % (DamageDelta + 1);
-	return finalMinDamage + DamageBonus;
+	int finalDamage = finalMinDamage + DamageBonus;
+
+	int critChanceTemp = CritChance; // Allows for "overcrit"
+	while (rand() % 100 < critChanceTemp)
+	{
+		finalDamage *= CritMultiplier;
+		critChanceTemp -= 100;
+	}
+
+	return finalDamage;
 }
 
 int ADwarfPlayerState::GetRogueClickDamage()
@@ -1215,19 +1367,17 @@ void ADwarfPlayerState::Damage(int _damage, DamageSource _source, Cave* _cave)
 
 	_damage *= _source.BlockDamageMultiplier[_cave->first->Data.type];
 
-	if(_cave == currentCave) // Only show text if the cave damaged is displayed
-	{
-		if (_source.TextType == ClickSource.TextType && _damage == MaxDamage)
-		{
-			CreateDamageText(_damage, CRITICAL);
-		}
-		else
-		{
-			CreateDamageText(_damage, _source.TextType);
-		}
-	}
+	_cave->DamageFirst(_damage, _source);
+}
 
-	_cave->DamageFirst(_damage);
+void ADwarfPlayerState::DamageColumn(int _damage, DamageSource _source, Cave* _cave)
+{
+	if (!_cave) return;
+	if (!_cave->first) return;
+
+	_damage *= _source.BlockDamageMultiplier[_cave->first->Data.type];
+
+	_cave->DamageFirstColumn(_damage, _source);
 }
 
 void ADwarfPlayerState::DamageIdleCave(int _damage, DamageSource _source)
@@ -1235,19 +1385,7 @@ void ADwarfPlayerState::DamageIdleCave(int _damage, DamageSource _source)
 	BlockData currentBlockData = idleCave.first->Data;
 	_damage *= _source.BlockDamageMultiplier[currentBlockData.type];
 
-	if (&idleCave == currentCave) // Only show text if the cave damaged is displayed
-	{
-		if (_source.TextType == ClickSource.TextType && _damage == MaxDamage)
-		{
-			CreateDamageText(_damage, CRITICAL);
-		}
-		else
-		{
-			CreateDamageText(_damage, _source.TextType);
-		}
-	}
-
-	idleCave.DamageFirst(_damage);
+	idleCave.DamageFirst(_damage, _source);
 }
 
 void ADwarfPlayerState::BlockRewardIdle(BlockData _data)
@@ -1340,6 +1478,7 @@ void ADwarfPlayerState::StartRun()
 	}
 
 	currentCave->BlockBreakDelegate.BindUObject(this, &ADwarfPlayerState::BlockRewardRogue);
+	currentCave->DamageTextClass = DamageTextClass;
 	currentCave->GenerateStart();
 	currentCave->dwarfPawn->PositionToCave(currentCave);
 
@@ -1474,7 +1613,7 @@ void ADwarfPlayerState::UpdateDamager(AutomaticDamager& _damager, float _dt)
 			}
 			case COLUMN:
 			{
-				Damage(damage, _damager.source, &idleCave);
+				DamageColumn(damage, _damager.source, &idleCave);
 				break;
 			}
 			case AREA:
@@ -1496,45 +1635,6 @@ void ADwarfPlayerState::UpdateDamager(AutomaticDamager& _damager, float _dt)
 			
 		}
 	}
-}
-
-void ADwarfPlayerState::CreateDamageText(int _damage, DamageTextType _type)
-{
-	if (!DamageTextClass) return;
-
-	FVector position = currentCave->first->GetActorLocation();
-	position.X += -55;
-	position.Y += ((float)((rand() % 100) - 50));
-	position.Z += ((float)((rand() % 100) - 50));
-
-	FRotator rotator;
-	rotator.Yaw = 180;
-	ATextRenderActor* damageText = GetWorld()->SpawnActor<ATextRenderActor>(DamageTextClass, position, rotator, FActorSpawnParameters());
-	UTextRenderComponent* textRender = damageText->GetTextRender();
-	switch (_type)
-	{
-	case NORMAL:
-	{
-		textRender->SetTextRenderColor(FColor(0xFFFF0000));
-		textRender->WorldSize = 40;
-		break;
-	}
-	case AUTO:
-	{
-		textRender->SetTextRenderColor(FColor(0xFF0F0F0F));
-		textRender->WorldSize = 30;
-		break;
-	}
-	case CRITICAL:
-	{
-		textRender->SetTextRenderColor(FColor(0xFFF0F000));
-		textRender->WorldSize = 60;
-		break;
-	}
-
-	}
-		
-	textRender->SetText(FText::FromString(FString::FromInt(_damage)));
 }
 
 bool AutomaticDamager::IsHitting()

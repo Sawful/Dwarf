@@ -3,9 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h" 
+
 #include "Materials/Material.h"
-#include "Block.h"
+#include "Engine/TextRenderActor.h"
 #include "Engine/StaticMeshActor.h"
+
+#include "Block.h"
+#include "DamageSource.h"
 
 #define BLOCK_SIZE 100
 #define BLOCK_OFFSET_Y BLOCK_SIZE/2
@@ -21,13 +25,14 @@ class DWARF_API Cave
 protected:
 	int lastGridPos[2];
 	int weight[BLOCK_COUNT];
-	bool resourceActive[BLOCK_COUNT];
+	//bool resourceActive[BLOCK_COUNT];
 	int caveRank = 0;
 	ABlock* last = nullptr;
 
 	ABlock* GetBlock(int _index);
 	virtual void BreakFirst();
 	virtual void Break(int _index);
+	virtual void Break(ABlock* _broken);
 	//virtual void Break(int _x, int _y);
 
 	UMaterialInterface* MudrockMat;
@@ -56,6 +61,7 @@ protected:
 public:
 	bool CheckRank();
 	TSubclassOf<AStaticMeshActor> FloorClass = nullptr;
+	TSubclassOf <ATextRenderActor> DamageTextClass;
 	AStaticMeshActor* repeatableFloors[4];
 
 	AStaticMeshActor* Floor1;
@@ -79,8 +85,9 @@ public:
 	void SetCaveVisible(bool _visible);
 	virtual ABlock* GenerateBlock(FVector _pos);
 	void GenerateStart();
-	bool DamageFirst(int _damage, DamageSource _source);
-	bool Damage(int _damage, int _index);
+	void CreateDamageText(int _damage, DamageTextType _type, FVector _position);
+	void DamageFirst(int _damage, DamageSource _source);
+	void DamageFirstColumn(int _damage, DamageSource _source);
 	virtual void GenerateTail();
 	void SetBlockDataByType(ABlock* _block, BlockType _type);
 	void CheckMoveFloor();

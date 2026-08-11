@@ -4,6 +4,7 @@
 #include "Cave.h"
 #include "DwarfPawn.h"
 #include "Engine/StaticMeshActor.h"
+#include "Components/TextRenderComponent.h"
 
 void Cave::GenerateStart()
 {
@@ -103,11 +104,53 @@ ABlock* Cave::GenerateBlock(FVector _pos)
 	return block;
 }
 
+void Cave::CreateDamageText(int _damage, DamageTextType _type, FVector _position)
+{
+	if (!DamageTextClass) return;
+	if (!caveVisible) return;
+
+	// Block offset
+	_position.X += -100;
+	_position.Y += ((float)((rand() % 100) - 50));
+	_position.Z += ((float)((rand() % 100) - 50));
+
+	FRotator rotator;
+	rotator.Yaw = 180;
+	ATextRenderActor* damageText = dwarfPawn->GetWorld()->SpawnActor<ATextRenderActor>(DamageTextClass, _position, rotator, FActorSpawnParameters());
+	damageText->SetActorRotation(rotator);
+	UTextRenderComponent* textRender = damageText->GetTextRender();
+	switch (_type)
+	{
+	case NORMAL:
+	{
+		textRender->SetTextRenderColor(FColor(0xFFFF0000));
+		textRender->WorldSize = 40;
+		break;
+	}
+	case AUTO:
+	{
+		textRender->SetTextRenderColor(FColor(0xFF2F2F2F));
+		textRender->WorldSize = 35;
+		break;
+	}
+	case CRITICAL:
+	{
+		textRender->SetTextRenderColor(FColor(0xFFF0F000));
+		textRender->WorldSize = 50;
+		break;
+	}
+
+	}
+
+	textRender->SetText(FText::FromString(FString::FromInt(_damage)));
+}
+
 void Cave::BreakFirst()
 {
 	ABlock* broken = first;
+	first->DisconnectFromList();
 	first = first->next;
-	dwarfPawn->targetMetersWalked = first->xPos - 1;
+	dwarfPawn->targetMetersWalked = first->pos[0] - 1;
 
 	blocksBroken += broken->Data.value;
 
@@ -132,12 +175,33 @@ void Cave::Break(int _index)
 	}
 
 	ABlock* broken = previous->next;
-	previous->next = broken->next;
+	broken->DisconnectFromList();
 
 	blocksBroken += broken->Data.value;
 
 	BlockBreakDelegate.Execute(broken->Data);
 	broken->Destroy();
+
+	GenerateTail();
+}
+
+void Cave::Break(ABlock* _broken)
+{
+	if (_broken == first)
+	{
+		first = first->next;
+		dwarfPawn->targetMetersWalked = first->pos[0] - 1;
+	}
+	if (_broken == last)
+	{
+		last = last->previous;
+	}
+
+	blocksBroken += _broken->Data.value;
+	BlockBreakDelegate.Execute(_broken->Data);
+	_broken->DisconnectFromList();
+	_broken->Destroy();
+	GenerateTail();
 }
 
 bool Cave::CheckRank()
@@ -148,8 +212,8 @@ bool Cave::CheckRank()
 	{
 		if (blocksGenerated >= 10 * BLOCK_COUNT_Y)
 		{
-			resourceActive[COAL_BLOCK] = true;
-			resourceActive[COPPER_BLOCK] = true;
+			weight[COAL_BLOCK] = 200;
+			weight[COPPER_BLOCK] = 200;
 			caveRank++;
 			return true;
 		}
@@ -158,7 +222,7 @@ bool Cave::CheckRank()
 	{
 		if (blocksGenerated >= 25 * BLOCK_COUNT_Y)
 		{
-			resourceActive[SULFUR_BLOCK] = true;
+			weight[SULFUR_BLOCK] = 200;
 			caveRank++;
 			return true;
 		}
@@ -167,7 +231,7 @@ bool Cave::CheckRank()
 	{
 		if (blocksGenerated >= 50 * BLOCK_COUNT_Y)
 		{
-			resourceActive[TIN_BLOCK] = true;
+			weight[TIN_BLOCK] = 100;
 			weight[MUDROCK_BLOCK] = 750;
 			caveRank++;
 			return true;
@@ -177,8 +241,31 @@ bool Cave::CheckRank()
 	{
 		if (blocksGenerated >= 100 * BLOCK_COUNT_Y)
 		{
-			resourceActive[IRON_BLOCK] = true;
+			weight[IRON_BLOCK] = 50;
 			weight[MUDROCK_BLOCK] = 500;
+			caveRank++;
+			return true;
+		}
+		
+	}
+	case 4:
+	{
+		if (blocksGenerated >= 150 * BLOCK_COUNT_Y)
+		{
+			weight[MUDROCK_BLOCK] = 400;
+			weight[SILVER_BLOCK] = 50;
+			caveRank++;
+			return true;
+		}
+	}
+	case 5:
+	{
+		if (blocksGenerated >= 250 * BLOCK_COUNT_Y)
+		{
+			weight[MUDROCK_BLOCK] = 250;
+			weight[OBSIDIAN_BLOCK] = 20;
+			weight[PLATINUM_BLOCK] = 10;
+			weight[DIAMOND_BLOCK] = 5;
 			caveRank++;
 			return true;
 		}
@@ -187,29 +274,43 @@ bool Cave::CheckRank()
 	return false;
 }
 
-bool Cave::DamageFirst(int _damage)
+void Cave::DamageFirst(int _damage, DamageSource _source)
 {
+	CreateDamageText(_damage, _source.TextType, first->GetActorLocation());
 	first->Data.health -= _damage;
 	if (first->Data.health <= 0)
 	{
-		BreakFirst();
-		return true;
+		Break(first);
 	}
-
-	return false;
 }
 
-bool Cave::Damage(int _damage, int _index)
-{
+void Cave::DamageFirstColumn(int _damage, DamageSource _source)
+{	
+	TArray<ABlock*> tempBroken;
+
+	int column = first->pos[0];
 	ABlock* target = first;
-	first->Data.health -= _damage;
-	if (first->Data.health <= 0)
+	for (int i = 0; i < BLOCK_COUNT_Y; i++)
 	{
-		Break(_index);
-		return true;
+		// As soon as we change column
+		if (target->pos[0] != column) break;
+
+		CreateDamageText(_damage, _source.TextType, target->GetActorLocation());
+		target->Data.health -= _damage;
+		if (target->Data.health <= 0)
+		{
+			tempBroken.Add(target);
+		}
+
+		target = target->next;
 	}
 
-	return false;
+	// Break blocks at the end to avoid messing with the links during the initial loop.
+	for (ABlock* block : tempBroken)
+	{
+		Break(block);
+	}
+
 }
 
 void Cave::GenerateTail()
@@ -233,8 +334,10 @@ void Cave::GenerateTail()
 	distanceHealthMult = 1 + 0.005f * blocksGenerated;
 
 	last->next = GenerateBlock(FVector(0, (lastGridPos[0]) * BLOCK_SIZE, (BLOCK_COUNT_Y - 1 - lastGridPos[1]) * BLOCK_SIZE + BLOCK_OFFSET_Y));
+	last->next->previous = last;
 	last = last->next;
-	last->xPos = lastGridPos[0];
+	last->pos[0] = lastGridPos[0];
+	last->pos[1] = lastGridPos[1];
 }
 
 void Cave::SetBlockDataByType(ABlock* _block, BlockType _type)
@@ -312,7 +415,7 @@ BlockType Cave::PickRandomType()
 	int sum = 0;
 	for (int i = 0; i < BLOCK_COUNT; i++)
 	{
-		if (resourceActive[i] == false) continue;
+		//if (resourceActive[i] == false) continue;
 		sum += weight[i];
 	}
 	int select = rand() % sum;
@@ -320,7 +423,7 @@ BlockType Cave::PickRandomType()
 	sum = 0;
 	for (int i = 0; i < BLOCK_COUNT; i++)
 	{
-		if (resourceActive[i] == false) continue;
+		//if (resourceActive[i] == false) continue;
 		sum += weight[i];
 		if (select < sum)
 		{
@@ -352,14 +455,14 @@ Cave::Cave()
 	DiamondMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Diamond.Diamond"));
 	MagicMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Magic.Magic"));
 
-	weight[MUDROCK_BLOCK] = 1000;	resourceActive[MUDROCK_BLOCK] = true;
-	weight[COAL_BLOCK] = 200;		resourceActive[COAL_BLOCK] = false;
-	weight[COPPER_BLOCK] = 200;		resourceActive[COPPER_BLOCK] = false;
-	weight[TIN_BLOCK] = 100;		resourceActive[TIN_BLOCK] = false;
-	weight[IRON_BLOCK] = 50;		resourceActive[IRON_BLOCK] = false;
-	weight[SILVER_BLOCK] = 50;		resourceActive[SILVER_BLOCK] = false;
-	weight[SULFUR_BLOCK] = 200;		resourceActive[SULFUR_BLOCK] = false;
-	weight[OBSIDIAN_BLOCK] = 20;	resourceActive[OBSIDIAN_BLOCK] = false;
-	weight[PLATINUM_BLOCK] = 10;	resourceActive[PLATINUM_BLOCK] = false;
-	weight[DIAMOND_BLOCK] = 5;		resourceActive[DIAMOND_BLOCK] = false;
+	weight[MUDROCK_BLOCK] = 1000;	//resourceActive[MUDROCK_BLOCK] = true;
+	weight[COAL_BLOCK] = 0;		//resourceActive[COAL_BLOCK] = false;
+	weight[COPPER_BLOCK] = 0;		//resourceActive[COPPER_BLOCK] = false;
+	weight[TIN_BLOCK] = 0;		//resourceActive[TIN_BLOCK] = false;
+	weight[IRON_BLOCK] = 0;		//resourceActive[IRON_BLOCK] = false;
+	weight[SILVER_BLOCK] = 0;		//resourceActive[SILVER_BLOCK] = false;
+	weight[SULFUR_BLOCK] = 0;		//resourceActive[SULFUR_BLOCK] = false;
+	weight[OBSIDIAN_BLOCK] = 0;	//resourceActive[OBSIDIAN_BLOCK] = false;
+	weight[PLATINUM_BLOCK] = 0;	//resourceActive[PLATINUM_BLOCK] = false;
+	weight[DIAMOND_BLOCK] = 0;		//resourceActive[DIAMOND_BLOCK] = false;
 }

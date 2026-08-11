@@ -10,6 +10,7 @@
 #include "UpgradeEntryWidget.generated.h"
 
 class UButton;
+class UImage;
 class UTextBlock;
 class URichTextBlock;
 
@@ -25,6 +26,8 @@ public:
 	UButton* Button;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	URichTextBlock* LevelText;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UImage* Icon;
 
 	UPROPERTY(BlueprintReadOnly)
 	FString name;

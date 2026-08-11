@@ -48,10 +48,13 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+	void DisconnectFromList();
+
 	UStaticMeshComponent* mesh;
 	BlockData Data;
+	ABlock* previous = nullptr;
 	ABlock* next = nullptr;
-	int xPos;
+	int pos[2];
 };
 
 FString GetResourceName(ResourceType _type);

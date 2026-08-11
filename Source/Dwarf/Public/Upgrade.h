@@ -11,6 +11,8 @@ enum UpgradeType
 	STRONG_ARMS = 0,	// Click damage
 	DRILL,				// Auto dmg
 	BOOM,				// Auto dmg column
+	EARTHQUAKE,			// Auto dmg area
+	LASER,				// Auto dmg row
 	PRECISION,			// Click crit chance
 	GOLD_LOVER,			// Global Yield
 
