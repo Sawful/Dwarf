@@ -26,6 +26,8 @@ protected:
 
 	UFUNCTION()
 	void OnDataChanged();
+	UFUNCTION()
+	void Show(bool _show);
 
 	UFUNCTION()
 	void UpdateText();

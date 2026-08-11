@@ -7,6 +7,7 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/WrapBox.h"
+#include "Components/ProgressBar.h"
 #include "ExpBarWidget.h"
 #include "RogueHUD.generated.h"
 
@@ -24,4 +25,7 @@ public:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UWrapBox* ItemBox;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UProgressBar* PressureBar;
 };

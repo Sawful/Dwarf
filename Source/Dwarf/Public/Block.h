@@ -26,6 +26,10 @@ struct BlockData
 {
 	int health = 50;
 	int expValue = 1;
+	float pressureValue = 0;
+	float pressureRegen = 0;
+	int value = 1;
+	int index;
 	BlockType type;
 	TArray<ResourceData> yield;
 };

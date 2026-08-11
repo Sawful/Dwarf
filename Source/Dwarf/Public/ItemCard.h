@@ -8,6 +8,7 @@
 #include "Components/Image.h"
 
 #include "RogueItem.h"
+#include "IdleRelic.h"
 
 #include "ItemCard.generated.h"
 
@@ -26,4 +27,5 @@ public:
 	UTextBlock* Description;
 
 	void SetItemInfo(RogueItem* _item);
+	void SetRelicInfo(IdleRelic* _item);
 };

@@ -74,7 +74,7 @@ void ADwarfPlayerController::Tick(float DeltaTime)
 
 void ADwarfPlayerController::Hit()
 {
-	PState->Hit();
+	PState->Hit(false);
 }
 
 void ADwarfPlayerController::_AutoclickOn()

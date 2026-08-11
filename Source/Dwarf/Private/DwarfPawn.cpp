@@ -69,8 +69,8 @@ void ADwarfPawn::ResetDwarfPawn()
 
 void ADwarfPawn::PositionToCave(Cave* _cave)
 {
-	targetMetersWalked = _cave->GetColumnsBroken();
-	metersWalked = targetMetersWalked;
+	//targetMetersWalked = _cave->GetColumnsBroken();
+	//metersWalked = targetMetersWalked;
 	SetActorLocation(pawnOffset + (_cave->first->GetActorLocation() * FVector(1, 1, 0)) - FVector(0, BLOCK_SIZE, 0));
 }
 

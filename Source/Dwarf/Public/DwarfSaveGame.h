@@ -16,6 +16,10 @@ public:
 
 	UPROPERTY()
 	int resources[RESOURCE_COUNT];
+	UPROPERTY()
+	int isResourceUnlocked[RESOURCE_COUNT];
+	UPROPERTY()
+	int relicCounts[RELIC_COUNT]; 
 
 	UPROPERTY()
 	int savedStats[4];
@@ -24,7 +28,8 @@ public:
 	int level;
 	UPROPERTY()
 	int exp;
-
+	UPROPERTY()
+	int blockBroken;
 	UPROPERTY()
 	uint32 saveTime;
 };

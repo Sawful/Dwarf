@@ -8,9 +8,11 @@
 
 enum UpgradeType
 {
-	STRONG_ARMS = 0,
-	DRILL,
-	BOOM,
+	STRONG_ARMS = 0,	// Click damage
+	DRILL,				// Auto dmg
+	BOOM,				// Auto dmg column
+	PRECISION,			// Click crit chance
+	GOLD_LOVER,			// Global Yield
 
 	UPGRADE_COUNT
 };

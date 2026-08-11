@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
+#include "Components/Widget.h"
 #include "BigNumber.h"
 #include "ResourceEntryData.generated.h"
 DECLARE_MULTICAST_DELEGATE(FOnResourceChanged);
+DECLARE_DELEGATE_OneParam(FShowDelegate, bool);
 
 UCLASS()
 class DWARF_API UResourceEntryData : public UObject
@@ -22,6 +24,9 @@ public:
     BigNumber Amount;
 
     FOnResourceChanged OnResourceChanged;
+    FShowDelegate ShowDelegate;
+
+    ESlateVisibility defaultVisibility = ESlateVisibility::Hidden;
 
     void SetAmount(BigNumber _NewAmount);
     void AddAmount(BigNumber _Add);

@@ -3,6 +3,7 @@
 #define MAX_ITEM_LEVEL 7
 
 struct RoguePlayerData;
+class IdleRelic;
 
 enum ItemRarity
 {
@@ -19,11 +20,13 @@ public:
 	virtual ~RogueItem() {};
 	virtual void Bind(RoguePlayerData* _player) = 0;
 	virtual void UnBind(RoguePlayerData* _player) = 0;
+	virtual FString GetDescriptionText(int _level) = 0;
+	virtual int GetRelicWeight();
 	int level = 0;
 	ItemRarity rarity;
 	FString name;
-	FString description;
 	UTexture2D* icon;
+	IdleRelic* associatedRelic = nullptr;
 };
 
 class DamageRogueItem : public RogueItem
@@ -31,9 +34,10 @@ class DamageRogueItem : public RogueItem
 	void DamageCalc(int& _damage);
 	FDelegateHandle handle;
 public:
-	DamageRogueItem() { rarity = COMMON; name = "Sharpening stone"; description = "The damage you deal is multiplied by 2x."; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541")); };
+	DamageRogueItem() { rarity = COMMON; name = "Sharpening stone"; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541")); };
 	virtual void Bind(RoguePlayerData* _player);
 	virtual void UnBind(RoguePlayerData* _player);
+	virtual FString GetDescriptionText(int _level);
 };
 
 class MultihitRogueItem : public RogueItem
@@ -44,9 +48,10 @@ class MultihitRogueItem : public RogueItem
 	bool reloading = true;
 	int hitCounter;
 public:
-	MultihitRogueItem() { rarity = COMMON; name = "Another pickaxe"; description = "Everytime you hit, hit a second time.\n\"What if I just attach it to mine?\""; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));};
+	MultihitRogueItem() { rarity = UNCOMMON; name = "Another pickaxe"; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));};
 	virtual void Bind(RoguePlayerData* _player);
 	virtual void UnBind(RoguePlayerData* _player);
+	virtual FString GetDescriptionText(int _level);
 };
 
 class CooldownRogueItem : public RogueItem
@@ -54,7 +59,8 @@ class CooldownRogueItem : public RogueItem
 	void CooldownCalc(float& _cd);
 	FDelegateHandle handle;
 public:
-	CooldownRogueItem() { rarity = COMMON; name = "Desynchronized clock"; description = "Increases your attack speed. \n\"We don't have all day!\""; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));};
+	CooldownRogueItem() { rarity = COMMON; name = "Desynchronized clock"; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));};
 	virtual void Bind(RoguePlayerData* _player);
 	virtual void UnBind(RoguePlayerData* _player);
+	virtual FString GetDescriptionText(int _level);
 };

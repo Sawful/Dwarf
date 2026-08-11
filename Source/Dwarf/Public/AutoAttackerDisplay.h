@@ -20,4 +20,15 @@ public:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UExpBarWidget* ProgressBar;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString Name;
+	UPROPERTY(BlueprintReadWrite)
+	FString Description;
+	UPROPERTY(BlueprintReadWrite)
+	int level;
+	UPROPERTY(BlueprintReadWrite)
+	int damage;
+	UPROPERTY(BlueprintReadWrite)
+	float hitCooldown;
 };

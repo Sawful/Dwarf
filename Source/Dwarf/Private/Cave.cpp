@@ -17,7 +17,7 @@ void Cave::GenerateStart()
 	repeatableFloors[2] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, FLOOR_LENGTH, -400), FRotator(), param);
 	repeatableFloors[3] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, 0, -400), FRotator(), param);
 
-	blockHealthMult = powf(blockHealthDiffScaling, difficultyLevel);
+	diffBlockHealthMult = powf(blockHealthDiffScaling, difficultyLevel);
 	yieldMultiplier = powf(blockRewardsDiffScaling, difficultyLevel);
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Tried generating cave")));
@@ -27,22 +27,16 @@ void Cave::GenerateStart()
 		return;
 	}
 
-	first = GenerateBlock(FVector(0, 1 * BLOCK_SIZE, (BLOCK_COUNT_Y - 1) * BLOCK_SIZE + BLOCK_OFFSET_Y));
+	lastGridPos[0] = 1;
+	lastGridPos[1] = blocksGenerated%4;
+	first = GenerateBlock(FVector(0, lastGridPos[0] * BLOCK_SIZE, (BLOCK_COUNT_Y - 1 - lastGridPos[1]) * BLOCK_SIZE + BLOCK_OFFSET_Y));
 	last = first;
 	int j = 1;
 
-	for (int i = 0; i < BLOCK_COUNT_X; i++)
+	for (int i = 0; i < BLOCK_COUNT_X * BLOCK_COUNT_Y - 1; i++)
 	{
-		for (; j < BLOCK_COUNT_Y; j++)
-		{
-			last->next = GenerateBlock(FVector(0, (i + 1) * BLOCK_SIZE, (BLOCK_COUNT_Y - 1 - j) * BLOCK_SIZE + BLOCK_OFFSET_Y));
-			last = last->next;
-			last->xPos = i+1;
-		}
-		j = 0;
+		GenerateTail();
 	}
-	lastGridPos[0] = BLOCK_COUNT_X;
-	lastGridPos[1] = BLOCK_COUNT_Y;
 }
 
 void Cave::DestroyCave()
@@ -99,6 +93,13 @@ ABlock* Cave::GenerateBlock(FVector _pos)
 	block->SetActorHiddenInGame(!caveVisible);
 
 	SetBlockDataByType(block, PickRandomType());
+
+	block->Data.health *= diffBlockHealthMult * distanceHealthMult;
+
+	block->Data.index = blocksGenerated;
+	blocksGenerated++;
+	while (CheckRank());
+
 	return block;
 }
 
@@ -106,31 +107,85 @@ void Cave::BreakFirst()
 {
 	ABlock* broken = first;
 	first = first->next;
-
-	BlockBreakDelegate.Execute(broken->Data);
-
-	broken->Destroy();
-	if (lastGridPos[1] >= BLOCK_COUNT_Y - 1)
-	{
-		lastGridPos[0]++;
-		lastGridPos[1] = 0;
-	}
-	
-	else
-	{
-		lastGridPos[1]++;
-		if (lastGridPos[1] == BLOCK_COUNT_Y - 1)
-		{
-			columnsBroken++;
-			CheckMoveFloor();
-		}
-	}
-
 	dwarfPawn->targetMetersWalked = first->xPos - 1;
 
+	blocksBroken += broken->Data.value;
+
+	BlockBreakDelegate.Execute(broken->Data);
+	broken->Destroy();
+	
 	GenerateTail();
 }
 
+void Cave::Break(int _index)
+{
+	if (_index == 0)
+	{
+		BreakFirst();
+		return;
+	}
+
+	ABlock* previous = first;
+	for (int i = 0; i < _index - 1; i++)
+	{
+		previous = previous->next;
+	}
+
+	ABlock* broken = previous->next;
+	previous->next = broken->next;
+
+	blocksBroken += broken->Data.value;
+
+	BlockBreakDelegate.Execute(broken->Data);
+	broken->Destroy();
+}
+
+bool Cave::CheckRank()
+{
+	switch (caveRank)
+	{
+	case 0:
+	{
+		if (blocksGenerated >= 10 * BLOCK_COUNT_Y)
+		{
+			resourceActive[COAL_BLOCK] = true;
+			resourceActive[COPPER_BLOCK] = true;
+			caveRank++;
+			return true;
+		}
+	}
+	case 1:
+	{
+		if (blocksGenerated >= 25 * BLOCK_COUNT_Y)
+		{
+			resourceActive[SULFUR_BLOCK] = true;
+			caveRank++;
+			return true;
+		}
+	}
+	case 2:
+	{
+		if (blocksGenerated >= 50 * BLOCK_COUNT_Y)
+		{
+			resourceActive[TIN_BLOCK] = true;
+			weight[MUDROCK_BLOCK] = 750;
+			caveRank++;
+			return true;
+		}
+	}
+	case 3:
+	{
+		if (blocksGenerated >= 100 * BLOCK_COUNT_Y)
+		{
+			resourceActive[IRON_BLOCK] = true;
+			weight[MUDROCK_BLOCK] = 500;
+			caveRank++;
+			return true;
+		}
+	}
+	}
+	return false;
+}
 
 bool Cave::DamageFirst(int _damage)
 {
@@ -144,8 +199,39 @@ bool Cave::DamageFirst(int _damage)
 	return false;
 }
 
+bool Cave::Damage(int _damage, int _index)
+{
+	ABlock* target = first;
+	first->Data.health -= _damage;
+	if (first->Data.health <= 0)
+	{
+		Break(_index);
+		return true;
+	}
+
+	return false;
+}
+
 void Cave::GenerateTail()
 {
+	if (lastGridPos[1] >= BLOCK_COUNT_Y - 1)
+	{
+		lastGridPos[0]++;
+		lastGridPos[1] = 0;
+	}
+
+	else
+	{
+		lastGridPos[1]++;
+		if (lastGridPos[1] == BLOCK_COUNT_Y - 1)
+		{
+			columnsBroken++;
+			CheckMoveFloor();
+		}
+	}
+
+	distanceHealthMult = 1 + 0.005f * blocksGenerated;
+
 	last->next = GenerateBlock(FVector(0, (lastGridPos[0]) * BLOCK_SIZE, (BLOCK_COUNT_Y - 1 - lastGridPos[1]) * BLOCK_SIZE + BLOCK_OFFSET_Y));
 	last = last->next;
 	last->xPos = lastGridPos[0];
@@ -168,55 +254,45 @@ void Cave::SetBlockDataByType(ABlock* _block, BlockType _type)
 		break;
 	case COPPER_BLOCK:
 		_block->Data.health = 35;
-		_block->Data.yield.Push({ MUDROCK, uint64(1) });
 		_block->Data.yield.Push({ COPPER, uint64(1) });
 		_block->mesh->SetMaterial(0, CopperMat);
 		break;
 	case TIN_BLOCK:
 		_block->Data.health = 35;
-		_block->Data.yield.Push({ MUDROCK, uint64(1) });
 		_block->Data.yield.Push({ TIN, uint64(1) });
 		_block->mesh->SetMaterial(0, TinMat);
 		break;
 	case IRON_BLOCK:
 		_block->Data.health = 75;
-		_block->Data.yield.Push({ MUDROCK, uint64(1) });
 		_block->Data.yield.Push({ IRON, uint64(1) });
 		_block->mesh->SetMaterial(0, IronMat);
 		break;
 	case SULFUR_BLOCK:
 		_block->Data.health = 20;
-		_block->Data.yield.Push({ MUDROCK, uint64(1) });
 		_block->Data.yield.Push({ SULFUR, uint64(1) });
 		_block->mesh->SetMaterial(0, SulfurMat);
 		break;
 	case SILVER_BLOCK:
 		_block->Data.health = 100;
-		_block->Data.yield.Push({ MUDROCK, uint64(1) });
 		_block->Data.yield.Push({ SILVER, uint64(1) });
 		_block->mesh->SetMaterial(0, SilverMat);
 		break;
 	case OBSIDIAN_BLOCK:
 		_block->Data.health = 50;
-		_block->Data.yield.Push({ MUDROCK, uint64(1) });
 		_block->Data.yield.Push({ OBSIDIAN, uint64(1) });
 		_block->mesh->SetMaterial(0, ObsidianMat);
 		break;
 	case PLATINUM_BLOCK:
-		_block->Data.health = 750;
-		_block->Data.yield.Push({ MUDROCK, uint64(1) });
+		_block->Data.health = 250;
 		_block->Data.yield.Push({ PLATINUM, uint64(1) });
 		_block->mesh->SetMaterial(0, PlatinumMat);
 		break;
 	case DIAMOND_BLOCK:
-		_block->Data.health = 2500;
-		_block->Data.yield.Push({ MUDROCK, uint64(1) });
+		_block->Data.health = 1000;
 		_block->Data.yield.Push({ DIAMOND, uint64(1) });
 		_block->mesh->SetMaterial(0, DiamondMat);
 		break;
 	}
-
-	_block->Data.health *= blockHealthMult;
 }
 
 void Cave::CheckMoveFloor()
@@ -236,6 +312,7 @@ BlockType Cave::PickRandomType()
 	int sum = 0;
 	for (int i = 0; i < BLOCK_COUNT; i++)
 	{
+		if (resourceActive[i] == false) continue;
 		sum += weight[i];
 	}
 	int select = rand() % sum;
@@ -243,6 +320,7 @@ BlockType Cave::PickRandomType()
 	sum = 0;
 	for (int i = 0; i < BLOCK_COUNT; i++)
 	{
+		if (resourceActive[i] == false) continue;
 		sum += weight[i];
 		if (select < sum)
 		{
@@ -274,14 +352,14 @@ Cave::Cave()
 	DiamondMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Diamond.Diamond"));
 	MagicMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Magic.Magic"));
 
-	weight[MUDROCK_BLOCK] = 1000;
-	weight[COAL_BLOCK] = 100;
-	weight[COPPER_BLOCK] = 100;
-	weight[TIN_BLOCK] = 100;
-	weight[IRON_BLOCK] = 50;
-	weight[SILVER_BLOCK] = 50;
-	weight[SULFUR_BLOCK] = 200;
-	weight[OBSIDIAN_BLOCK] = 20;
-	weight[PLATINUM_BLOCK] = 10;
-	weight[DIAMOND_BLOCK] = 5;
+	weight[MUDROCK_BLOCK] = 1000;	resourceActive[MUDROCK_BLOCK] = true;
+	weight[COAL_BLOCK] = 200;		resourceActive[COAL_BLOCK] = false;
+	weight[COPPER_BLOCK] = 200;		resourceActive[COPPER_BLOCK] = false;
+	weight[TIN_BLOCK] = 100;		resourceActive[TIN_BLOCK] = false;
+	weight[IRON_BLOCK] = 50;		resourceActive[IRON_BLOCK] = false;
+	weight[SILVER_BLOCK] = 50;		resourceActive[SILVER_BLOCK] = false;
+	weight[SULFUR_BLOCK] = 200;		resourceActive[SULFUR_BLOCK] = false;
+	weight[OBSIDIAN_BLOCK] = 20;	resourceActive[OBSIDIAN_BLOCK] = false;
+	weight[PLATINUM_BLOCK] = 10;	resourceActive[PLATINUM_BLOCK] = false;
+	weight[DIAMOND_BLOCK] = 5;		resourceActive[DIAMOND_BLOCK] = false;
 }

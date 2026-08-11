@@ -31,7 +31,6 @@ public:
 	void SetResource(int _type, BigNumber _value);
 	void AddResource(int _type, BigNumber _value);
 	void Populate();
-	void HideResources();
 
 	void UpdateResources(BigNumber (&_resources)[RESOURCE_COUNT]);
 
@@ -55,6 +54,10 @@ public:
 	UUpgradeEntryWidget* DrillUpgradeBox;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UUpgradeEntryWidget* BoomUpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* CritUpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* YieldUpgradeBox;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* CharacterMenuButton;

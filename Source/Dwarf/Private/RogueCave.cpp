@@ -9,26 +9,13 @@ void RogueCave::BreakFirst()
 	ABlock* broken = first;
 	first = first->next;
 
+	blocksBroken += broken->Data.value;
 	BlockBreakDelegate.Execute(broken->Data);
 
 	broken->Destroy();
-	if (lastGridPos[1] >= BLOCK_COUNT_Y - 1)
-	{
-		lastGridPos[0]++;
-		lastGridPos[1] = 0;
-	}
-
-	else
-	{
-		lastGridPos[1]++;
-		if (lastGridPos[1] == BLOCK_COUNT_Y - 1)
-		{
-			columnsBroken++;
-			CheckMoveFloor();
-		}
-	}
 	dwarfPawn->targetMetersWalked = first->xPos - 1;
 	GenerateTail();
+
 }
 
 ABlock* RogueCave::GenerateBlock(FVector _pos)
@@ -45,10 +32,14 @@ ABlock* RogueCave::GenerateBlock(FVector _pos)
 
 	SetBlockDataByType(block, BlockType(rand() % 3));
 
-	blockHealthMult = powf(1.02f, powf(blocksGenerated, 0.5f));
+	diffBlockHealthMult = powf(1.02f, powf(blocksGenerated, 0.5f));
 
-	block->Data.health *= blockHealthMult;
+	block->Data.health *= diffBlockHealthMult;
 	block->Data.health *= (block->Data.health + blocksGenerated) / block->Data.health;
+
+	cavePressure = 1.0f + blocksGenerated * 0.02f;
+	block->Data.pressureValue = cavePressure;
+	block->Data.pressureRegen = cavePressure;
 	blocksGenerated++;
 
 	return block;
@@ -56,6 +47,21 @@ ABlock* RogueCave::GenerateBlock(FVector _pos)
 
 void RogueCave::GenerateTail()
 {
+	if (lastGridPos[1] >= BLOCK_COUNT_Y - 1)
+	{
+		lastGridPos[0]++;
+		lastGridPos[1] = 0;
+	}
+	else
+	{
+		lastGridPos[1]++;
+		if (lastGridPos[1] == BLOCK_COUNT_Y - 1)
+		{
+			columnsBroken++;
+			CheckMoveFloor();
+		}
+	}
+
 	if (lastGridPos[0] % 100 == 0)
 	{
 		FActorSpawnParameters param;
@@ -73,11 +79,15 @@ void RogueCave::GenerateTail()
 		lastGridPos[0] += 3;
 		lastGridPos[1] = BLOCK_COUNT_Y - 1;
 
-		block->Data.health = powf(lastGridPos[0] * 4, 2);
-		block->Data.health *= blockHealthMult;
+		block->Data.health = 1000;
+		block->Data.health *= diffBlockHealthMult;
 		block->Data.expValue = lastGridPos[0] * 4;
 		block->mesh->SetMaterial(0, MagicMat);
 
+		cavePressure = 1.0f + blocksGenerated * 0.02f;
+		block->Data.pressureValue = cavePressure * 8;
+		block->Data.pressureRegen = cavePressure * 8;
+		block->Data.value = BLOCK_COUNT_Y * BLOCK_COUNT_Y;
 		blocksGenerated += BLOCK_COUNT_Y * BLOCK_COUNT_Y;
 		return;
 	}
@@ -93,8 +103,8 @@ void RogueCave::GenerateTail()
 
 		lastGridPos[1] = BLOCK_COUNT_Y - 1;
 
-		block->Data.health = powf(lastGridPos[0], 2);
-		block->Data.health *= blockHealthMult;
+		block->Data.health = 200;
+		block->Data.health *= diffBlockHealthMult;
 		block->Data.expValue = lastGridPos[0];
 		block->mesh->SetMaterial(0, MagicMat);
 
@@ -102,6 +112,10 @@ void RogueCave::GenerateTail()
 		last = last->next;
 		last->xPos = lastGridPos[0];
 
+		cavePressure = 1.0f + blocksGenerated * 0.02f;
+		block->Data.pressureValue = cavePressure * 2;
+		block->Data.pressureRegen = cavePressure * 2;
+		block->Data.value = BLOCK_COUNT_Y;
 		blocksGenerated += BLOCK_COUNT_Y;
 
 		return;

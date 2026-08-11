@@ -18,6 +18,7 @@ void UIdleHUD::Populate()
 		ResourceItems.Add(Item);
 		ResourceList->AddItem(Item);
 	}
+	TakeWidget();
 }
 
 void UIdleHUD::UpdateResources(BigNumber(&_resources)[RESOURCE_COUNT])

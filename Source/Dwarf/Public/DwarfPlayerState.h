@@ -15,6 +15,7 @@
 #include "RogueCardSelection.h"
 
 #include "RogueItem.h"
+#include "IdleRelic.h"
 #include "Upgrade.h"
 #include "Block.h"
 #include "Cave.h"
@@ -65,6 +66,18 @@ struct DamageSource
 	DamageSource() { std::fill_n(BlockDamageMultiplier, BLOCK_COUNT, 1.0f); };
 };
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageCalc, int&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnExpCalc, int&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCooldownCalc, float&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnHit, ADwarfPlayerState*);
+
+enum DamageType
+{
+	FIRST,
+	COLUMN,
+	LINE,
+	AREA
+};
 struct AutomaticDamager
 {
 	int Damage = 0;
@@ -73,14 +86,17 @@ struct AutomaticDamager
 	float Clock;
 	bool active = false;
 	DamageSource source;
+	DamageType damageType;
 	UAutoAttackerDisplay* Display;
+	FOnDamageCalc OnDamageCalc;
+	FOnCooldownCalc OnCooldownCalc;
 	bool IsHitting();
 	float GetDPS() { return (float)Damage / Downtime; };
 	void SetDamagerActive(bool _active);
+	void UpdateDisplayTooltip(int _level);
 };
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageCalc, int&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnCooldownCalc, float&);
+
 struct RoguePlayerData
 {
 	int level = 1;
@@ -97,7 +113,11 @@ struct RoguePlayerData
 	DamageSource ClickSource;
 	int MinDamage = 10;
 	int MaxDamage = 15;
+	float MaxPressure = 100;
+	float Pressure = 100;
+	float PressureResistance = 0; // 0 <=> full damage, 1 <=> invulnerable
 	FOnDamageCalc OnDamageCalc;
+	FOnExpCalc OnExpCalc;
 	FOnCooldownCalc OnCooldownCalc;
 	void LevelUpRogue();
 	float GetHitCooldown();
@@ -117,6 +137,8 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	void SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData>(* InFunc)(unsigned int));
 	void SetupMilestones();
 	void InitializeAutomaticDamagers();
+	void InitRelicsArray();
+	TArray<IdleRelic*> relics;
 
 	bool gameLoaded = false;
 
@@ -156,7 +178,14 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	TSubclassOf<URogueCardSelection> CardSelectionClass;
 	URogueCardSelection* CardSelection;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<URogueCardSelection> RelicSelectionClass;
+	URogueCardSelection* RelicSelection;
+	IdleRelic* relicCardSelection[3];
+
 	ResourceUpgrade resourceUpgrades[UPGRADE_COUNT];
+
+	TArray<IdleRelic*> obtainedRelics;
 
 	// ROGUE //
 	bool inRun = false;
@@ -198,8 +227,18 @@ public:
 	void CardSelectMiddle();
 	UFUNCTION()
 	void CardSelectRight();
+
 	void AddItem(RogueItem* _item);
 	void AddItemFromPool(unsigned int _index);
+
+	UFUNCTION()
+	void RelicCardSelectLeft();
+	UFUNCTION()
+	void RelicCardSelectMiddle();
+	UFUNCTION()
+	void RelicCardSelectRight();
+	void AddRelic(IdleRelic* _relic);
+	void AddRelic(IdleRelic* _relic, int _count);
 
 	bool resourcesDirty = false;
 
@@ -216,6 +255,9 @@ public:
 	void StartRun();
 
 	UFUNCTION()
+	void RunRewards();
+
+	UFUNCTION()
 	void EndRun();
 
 	UFUNCTION()
@@ -226,6 +268,10 @@ public:
 
 	UFUNCTION()
 	void UpgradeStrongArms();
+	UFUNCTION()
+	void UpgradeCrit();
+	UFUNCTION()
+	void UpgradeYield();
 	UFUNCTION()
 	void UpgradeDrill();
 	UFUNCTION()
@@ -279,6 +325,7 @@ public:
 	int MinDamage = 1;
 	int MaxDamage = 1; // MaxDamage is MinDamage * DamageWindow
 	float DamageWindow = 1.0f;
+	float ClickDamageMultiplier = 1.0f;
 	int GetClickDamage();
 	int GetRogueClickDamage();
 
@@ -288,7 +335,7 @@ public:
 	void UpdateDamager(AutomaticDamager& _damager, float _dt);
 
 	void CreateDamageText(int _damage, DamageTextType _type);
-	void Hit();
+	void Hit(bool _silent);
 	void Damage(int _damage, DamageSource _source, Cave* _cave);
 	void DamageIdleCave(int _damage, DamageSource _source);
 
@@ -296,12 +343,17 @@ public:
 	void BlockRewardRogue(BlockData _data);
 	int GetRogueExp(int _exp);
 
+	FOnDamageCalc OnClickDamageCalc;
+	FOnCooldownCalc OnCooldownCalc;
+	FOnHit OnHit;
+
 	// Stored stats
 	SavedStats savedStats;
 	
 	void IncreaseBlocks();
 	void IncreaseWalk();
 
+	bool isResourceUnlocked[RESOURCE_COUNT];
 	BigNumber resources[RESOURCE_COUNT];
 };
 
