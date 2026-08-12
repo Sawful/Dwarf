@@ -57,7 +57,8 @@ TArray<ResourceData> CostLaser(unsigned int _level)
 	const float s1 = 0.45f;
 	const float s2 = 14;
 	TArray<ResourceData> cost;
-	cost.Add({ DIAMOND, MagicFunction(_level, baseValue, s1, s2) });
+	//cost.Add({ DIAMOND, MagicFunction(_level, baseValue, s1, s2) });
+	cost.Add({ MUDROCK, 1 });
 	return cost;
 }
 TArray<ResourceData> CostEarthquake(unsigned int _level)
@@ -66,7 +67,8 @@ TArray<ResourceData> CostEarthquake(unsigned int _level)
 	const float s1 = 0.45f;
 	const float s2 = 15;
 	TArray<ResourceData> cost;
-	cost.Add({ IRON, MagicFunction(_level, baseValue, s1, s2) });
+	//cost.Add({ IRON, MagicFunction(_level, baseValue, s1, s2) });
+	cost.Add({ MUDROCK, 1 });
 	return cost;
 }
 TArray<ResourceData> CostCrit(unsigned int _level)
@@ -243,9 +245,9 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 	EarthquakeTotem.source.TextType = AUTO;
 
 	Laser.Damage = 0;
-	Laser.Downtime = 5.0f;
-	Laser.Clock = EarthquakeTotem.Downtime;
-	Laser.damageType = AREA;
+	Laser.Downtime = 0.5f;
+	Laser.Clock = Laser.Downtime;
+	Laser.damageType = LINE;
 
 	Laser.Display = HUD->LaserDisplay;
 	Laser.Display->ProgressBar->SetCompletion((Laser.Downtime - Laser.Clock) / Laser.Downtime);
@@ -362,6 +364,8 @@ void ADwarfPlayerState::Tick(float _dt)
 		rogueData.clickTimer = rogueData.GetHitCooldown();
 		Damage(GetRogueClickDamage(), ClickSource, currentCave);
 	}
+
+	rogueData.OnTick.Broadcast(_dt);
 }
 
 void ADwarfPlayerState::StartGame()
@@ -582,11 +586,11 @@ void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 User
 	// Get time since last connection
 	unsigned long timeSince = difftime(time(nullptr), save->saveTime);
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, "Time since last connection: " + FString::FromInt(timeSince) + "s");
-	Tick(timeSince); // IS THIS EVEN ALLOWED??? TODO: see if this should be the way to catchup or not
-	/*TimeBoost = true;
-	TimeBoostLeft = 10.f;
-	TimeBoostFactor = 60.0f;
-	currentCave->dwarfPawn->TimeFactor = TimeBoostFactor;*/
+	//Tick(timeSince); // IS THIS EVEN ALLOWED??? TODO: see if this should be the way to catchup or not
+	TimeBoost = true;
+	TimeBoostFactor = fmin(timeSince, 1000.0f);
+	TimeBoostLeft = timeSince / TimeBoostFactor;
+	currentCave->dwarfPawn->TimeFactor = TimeBoostFactor;
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString(TEXT("Finished loading!")));
 }
@@ -700,6 +704,7 @@ void ADwarfPlayerState::Rebirth()
 	ResetDwarfStats();
 	currentCave->difficultyLevel = difficulty;
 	currentCave->ResetCave();
+	HUD->DistanceTraveledText->SetText(FText::FromString("Distance Traveled: " + FString::FromInt(currentCave->first->Data.index / 4) + "m"));
 	idlePawn->ResetDwarfPawn();
 	resourcesDirty = true;
 
@@ -1042,7 +1047,7 @@ void ADwarfPlayerState::AddItem(RogueItem* _item)
 	else
 	{
 		// New item: Bind and add widget
-		_item->Bind(&rogueData);
+		_item->Bind(&rogueData, currentCave);
 		_item->level = 1;
 
 		UUpgradeEntryWidget* widget = CreateWidget<UUpgradeEntryWidget, UWrapBox*>(RogueHUD->ItemBox, ItemBoxClass);
@@ -1380,6 +1385,26 @@ void ADwarfPlayerState::DamageColumn(int _damage, DamageSource _source, Cave* _c
 	_cave->DamageFirstColumn(_damage, _source);
 }
 
+void ADwarfPlayerState::DamageArea(int _damage, DamageSource _source, Cave* _cave)
+{
+	if (!_cave) return;
+	if (!_cave->first) return;
+
+	_damage *= _source.BlockDamageMultiplier[_cave->first->Data.type];
+
+	_cave->DamageArea(_damage, _source);
+}
+
+void ADwarfPlayerState::DamageRow(int _damage, DamageSource _source, Cave* _cave)
+{
+	if (!_cave) return;
+	if (!_cave->first) return;
+
+	_damage *= _source.BlockDamageMultiplier[_cave->first->Data.type];
+
+	_cave->DamageRow(_damage, _source);
+}
+
 void ADwarfPlayerState::DamageIdleCave(int _damage, DamageSource _source)
 {
 	BlockData currentBlockData = idleCave.first->Data;
@@ -1618,12 +1643,12 @@ void ADwarfPlayerState::UpdateDamager(AutomaticDamager& _damager, float _dt)
 			}
 			case AREA:
 			{
-				Damage(damage, _damager.source, &idleCave);
+				DamageArea(damage, _damager.source, &idleCave);
 				break;
 			}
 			case LINE:
 			{
-				Damage(damage, _damager.source, &idleCave);
+				DamageRow(damage, _damager.source, &idleCave);
 				break;
 			}
 			default:

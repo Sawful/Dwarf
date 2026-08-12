@@ -6,6 +6,10 @@
 #include "Engine/StaticMeshActor.h"
 #include "Components/TextRenderComponent.h"
 
+#define AREA_DEPTH 3
+#define ROW_DEPTH 5
+#define ROW_HEIGHT BLOCK_COUNT_Y - 1
+
 void Cave::GenerateStart()
 {
 	FActorSpawnParameters param;
@@ -54,6 +58,23 @@ void Cave::DestroyCave()
 
 void Cave::ResetCave()
 {
+	blocksGenerated = 0;
+	blocksBroken = 0;
+
+	weight[MUDROCK_BLOCK] = 1000;
+	weight[COAL_BLOCK] = 0;
+	weight[COPPER_BLOCK] = 0;
+	weight[TIN_BLOCK] = 0;
+	weight[IRON_BLOCK] = 0;
+	weight[SILVER_BLOCK] = 0;
+	weight[SULFUR_BLOCK] = 0;
+	weight[OBSIDIAN_BLOCK] = 0;
+	weight[PLATINUM_BLOCK] = 0;
+	weight[DIAMOND_BLOCK] = 0;
+	caveRank = 0;
+
+	distanceHealthMult = 1.0f;
+
 	DestroyCave();
 	GenerateStart();
 }
@@ -313,6 +334,67 @@ void Cave::DamageFirstColumn(int _damage, DamageSource _source)
 
 }
 
+void Cave::DamageArea(int _damage, DamageSource _source)
+{
+	TArray<ABlock*> tempBroken;
+
+	int column = first->pos[0];
+	ABlock* target = first;
+	for (int i = 0; i < BLOCK_COUNT_Y * AREA_DEPTH; i++)
+	{
+		// As soon as we change column
+		if (target->pos[0] >= column + AREA_DEPTH) break;
+
+		CreateDamageText(_damage, _source.TextType, target->GetActorLocation());
+		target->Data.health -= _damage;
+		if (target->Data.health <= 0)
+		{
+			tempBroken.Add(target);
+		}
+
+		target = target->next;
+	}
+
+	// Break blocks at the end to avoid messing with the links during the initial loop.
+	for (ABlock* block : tempBroken)
+	{
+		Break(block);
+	}
+}
+
+void Cave::DamageRow(int _damage, DamageSource _source)
+{
+	TArray<ABlock*> tempBroken;
+
+	int column = first->pos[0];
+	ABlock* target = first;
+	for (int i = 0; i < BLOCK_COUNT_Y * ROW_DEPTH; i++)
+	{
+		// As soon as we change column
+		if (target->pos[0] >= column + ROW_DEPTH) break;
+		if (target->pos[1] != ROW_HEIGHT)
+		{
+			target = target->next;
+			continue;
+		}
+
+		CreateDamageText(_damage, _source.TextType, target->GetActorLocation());
+		target->Data.health -= _damage;
+		if (target->Data.health <= 0)
+		{
+			Break(target);
+		}
+
+		break;
+	}
+
+	// Break blocks at the end to avoid messing with the links during the initial loop.
+	for (ABlock* block : tempBroken)
+	{
+		Break(block);
+	}
+}
+
 void Cave::GenerateTail()
 {
 	if (lastGridPos[1] >= BLOCK_COUNT_Y - 1)
@@ -455,14 +537,14 @@ Cave::Cave()
 	DiamondMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Diamond.Diamond"));
 	MagicMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Magic.Magic"));
 
-	weight[MUDROCK_BLOCK] = 1000;	//resourceActive[MUDROCK_BLOCK] = true;
-	weight[COAL_BLOCK] = 0;		//resourceActive[COAL_BLOCK] = false;
-	weight[COPPER_BLOCK] = 0;		//resourceActive[COPPER_BLOCK] = false;
-	weight[TIN_BLOCK] = 0;		//resourceActive[TIN_BLOCK] = false;
-	weight[IRON_BLOCK] = 0;		//resourceActive[IRON_BLOCK] = false;
-	weight[SILVER_BLOCK] = 0;		//resourceActive[SILVER_BLOCK] = false;
-	weight[SULFUR_BLOCK] = 0;		//resourceActive[SULFUR_BLOCK] = false;
-	weight[OBSIDIAN_BLOCK] = 0;	//resourceActive[OBSIDIAN_BLOCK] = false;
-	weight[PLATINUM_BLOCK] = 0;	//resourceActive[PLATINUM_BLOCK] = false;
-	weight[DIAMOND_BLOCK] = 0;		//resourceActive[DIAMOND_BLOCK] = false;
+	weight[MUDROCK_BLOCK] = 1000;	
+	weight[COAL_BLOCK] = 0;		
+	weight[COPPER_BLOCK] = 0;	
+	weight[TIN_BLOCK] = 0;		
+	weight[IRON_BLOCK] = 0;		
+	weight[SILVER_BLOCK] = 0;	
+	weight[SULFUR_BLOCK] = 0;	
+	weight[OBSIDIAN_BLOCK] = 0;	
+	weight[PLATINUM_BLOCK] = 0;	
+	weight[DIAMOND_BLOCK] = 0;	
 }

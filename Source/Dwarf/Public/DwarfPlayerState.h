@@ -58,6 +58,7 @@ struct SavedStats
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageCalc, int&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnExpCalc, int&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnCooldownCalc, float&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnTick, float);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHit, ADwarfPlayerState*);
 
 enum DamageType
@@ -108,6 +109,7 @@ struct RoguePlayerData
 	FOnDamageCalc OnDamageCalc;
 	FOnExpCalc OnExpCalc;
 	FOnCooldownCalc OnCooldownCalc;
+	FOnTick OnTick;
 	void LevelUpRogue();
 	float GetHitCooldown();
 };
@@ -193,8 +195,8 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	int itemsSelection[3];
 
 	bool TimeBoost = false;
-	float TimeBoostFactor = 5.0f;
-	float TimeBoostLeft = 10.0f;
+	float TimeBoostFactor;
+	float TimeBoostLeft;
 
 public:
 	void StartGame();
@@ -343,6 +345,8 @@ public:
 	void Hit(bool _silent);
 	void Damage(int _damage, DamageSource _source, Cave* _cave);
 	void DamageColumn(int _damage, DamageSource _source, Cave* _cave);
+	void DamageArea(int _damage, DamageSource _source, Cave* _cave);
+	void DamageRow(int _damage, DamageSource _source, Cave* _cave);
 	void DamageIdleCave(int _damage, DamageSource _source);
 
 	void BlockRewardIdle(BlockData _data);

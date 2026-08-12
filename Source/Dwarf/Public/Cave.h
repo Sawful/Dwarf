@@ -25,7 +25,6 @@ class DWARF_API Cave
 protected:
 	int lastGridPos[2];
 	int weight[BLOCK_COUNT];
-	//bool resourceActive[BLOCK_COUNT];
 	int caveRank = 0;
 	ABlock* last = nullptr;
 
@@ -88,6 +87,8 @@ public:
 	void CreateDamageText(int _damage, DamageTextType _type, FVector _position);
 	void DamageFirst(int _damage, DamageSource _source);
 	void DamageFirstColumn(int _damage, DamageSource _source);
+	void DamageArea(int _damage, DamageSource _source);
+	void DamageRow(int _damage, DamageSource _source);
 	virtual void GenerateTail();
 	void SetBlockDataByType(ABlock* _block, BlockType _type);
 	void CheckMoveFloor();
