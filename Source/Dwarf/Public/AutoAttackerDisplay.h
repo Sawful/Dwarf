@@ -28,7 +28,7 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	int level;
 	UPROPERTY(BlueprintReadWrite)
-	int damage;
+	FString DamageText;
 	UPROPERTY(BlueprintReadWrite)
 	float hitCooldown;
 };

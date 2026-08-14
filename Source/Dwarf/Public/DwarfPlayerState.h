@@ -26,12 +26,6 @@
 class USaveGame;
 class UUpgradeEntryData;
 
-TArray<ResourceData> CostStrongArms(unsigned int _level);
-TArray<ResourceData> CostDrill(unsigned int _level);
-TArray<ResourceData> CostBoom(unsigned int _level);
-TArray<ResourceData> CostLaser(unsigned int _level);
-TArray<ResourceData> CostEarthquake(unsigned int _level);
-
 DECLARE_DELEGATE_OneParam(FOnMilestoneTier, int);
 template <typename T>
 struct Milestone
@@ -55,8 +49,10 @@ struct SavedStats
 	Milestone<int> rebirthCount = 0;
 };
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageCalc, int&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnExpCalc, int&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageCalc, BigNumber&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPressureCalc, BigNumber&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPressureRegenCalc, BigNumber&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnExpCalc, BigNumber&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnCooldownCalc, float&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTick, float);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnHit, ADwarfPlayerState*);
@@ -70,8 +66,8 @@ enum DamageType
 };
 struct AutomaticDamager
 {
-	int Damage = 0;
-	float MilestoneDamageMult = 1;
+	BigNumber Damage = 0;
+	BigNumber MilestoneDamageMult = 1;
 	float Downtime = 2;
 	float Clock;
 	bool active = false;
@@ -81,7 +77,7 @@ struct AutomaticDamager
 	FOnDamageCalc OnDamageCalc;
 	FOnCooldownCalc OnCooldownCalc;
 	bool IsHitting();
-	float GetDPS() { return (float)Damage / Downtime; };
+	BigNumber GetDPS() { return Damage / (BigNumber)Downtime; };
 	void SetDamagerActive(bool _active);
 	void UpdateDisplayTooltip(int _level);
 };
@@ -90,8 +86,8 @@ struct AutomaticDamager
 struct RoguePlayerData
 {
 	int level = 1;
-	int experience = 0;
-	int experienceRequired = 8;
+	BigNumber experience = 0;
+	BigNumber experienceRequired = 8;
 	TArray<RogueItem*> items;
 	TArray<UUpgradeEntryWidget*> itemWidgets;
 
@@ -101,12 +97,14 @@ struct RoguePlayerData
 	float clickTimer = 1.0f;
 
 	DamageSource ClickSource;
-	int MinDamage = 10;
-	int MaxDamage = 15;
-	float MaxPressure = 100;
-	float Pressure = 100;
+	BigNumber MinDamage = 10;
+	BigNumber MaxDamage = 15;
+	BigNumber MaxPressure = 100;
+	BigNumber Pressure = 100;
 	float PressureResistance = 0; // 0 <=> full damage, 1 <=> invulnerable
 	FOnDamageCalc OnDamageCalc;
+	FOnPressureCalc OnPressureCalc;
+	FOnPressureRegenCalc OnPressureRegenCalc;
 	FOnExpCalc OnExpCalc;
 	FOnCooldownCalc OnCooldownCalc;
 	FOnTick OnTick;
@@ -125,22 +123,12 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	virtual void Tick(float DeltaTime) override;
 
 	void SetupResourceUpgrades();
-	void SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData>(* InFunc)(unsigned int));
 	void SetupMilestones();
 	void InitializeAutomaticDamagers();
 	void InitRelicsArray();
 	TArray<IdleRelic*> relics;
 
 	bool gameLoaded = false;
-
-	UTexture2D* StrongArmsIcon;
-	UTexture2D* PrecisionIcon;
-	UTexture2D* GoldLoverIcon;
-	UTexture2D* PlaceholderIcon;
-	UTexture2D* DrillIcon;
-	UTexture2D* TNTIcon;
-	UTexture2D* EarthquakeIcon;
-	UTexture2D* LaserIcon;
 
 	// Main camera (follows the dwarf)
 	UPROPERTY(EditAnywhere)
@@ -183,7 +171,7 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	URogueCardSelection* RelicSelection;
 	IdleRelic* relicCardSelection[3];
 
-	ResourceUpgrade resourceUpgrades[UPGRADE_COUNT];
+	ResourceUpgrade* resourceUpgrades[UPGRADE_COUNT];
 
 	TArray<IdleRelic*> obtainedRelics;
 
@@ -216,7 +204,6 @@ public:
 	bool CheckCost(const TArray<ResourceData>& _cost);
 	bool PayCost(const TArray<ResourceData>& _cost);
 	void BuyResourceUpgrade(UpgradeType _upgrade);
-	void ApplyResourceUpgrade(UpgradeType _upgrade, unsigned int _level);
 	FString CreateCostText(UpgradeType _upgrade, const TArray<ResourceData>& _cost);
 	void RebuildCostCache(UpgradeType _upgrade);
 	int GetMaxUpgradeMult(UpgradeType _upgrade);
@@ -253,6 +240,7 @@ public:
 	
 	UFUNCTION()
 	void StartRun();
+	void BuildItemPool();
 
 	UFUNCTION()
 	void RunRewards();
@@ -282,7 +270,7 @@ public:
 	void UpgradeEarthquake();
 
 	bool maxMultiplier = false;
-	int upgradeMultiplier[UPGRADE_COUNT];
+	//int upgradeMultiplier[UPGRADE_COUNT];
 	UFUNCTION()
 	void SetUpgradeMult1();
 	UFUNCTION()
@@ -316,42 +304,42 @@ public:
 	void IncreaseExp(int _value);
 	void LevelUp();
 	void LevelUpRogue();
-	void IncreaseRogueExp(int _value);
+	void IncreaseRogueExp(BigNumber _value);
 	int TalentPoints;
 
-	float GlobalYieldMultiplier = 1.0f;
-	float resourceYieldMultiplier[RESOURCE_COUNT];
-	float blockYieldMultiplier[BLOCK_COUNT];
+	BigNumber GlobalYieldMultiplier = 1.0f;
+	BigNumber resourceYieldMultiplier[RESOURCE_COUNT];
+	BigNumber blockYieldMultiplier[BLOCK_COUNT];
 
 	FString GetUpgradeDamageText(UpgradeType _upgrade);
 
 	DamageSource ClickSource;
-	int MinDamage = 1;
-	int MaxDamage = 1; // MaxDamage is MinDamage * DamageWindow
-	float CritMultiplier;
-	int CritChance;
-	float DamageWindow = 1.0f;
-	float ClickDamageMultiplier = 1.0f;
-	int GetClickDamage();
-	int GetRogueClickDamage();
+	BigNumber MinDamage = 1;
+	BigNumber MaxDamage = 1; // MaxDamage is MinDamage * DamageWindow
+	BigNumber CritMultiplier;
+	BigNumber CritChance;
+	BigNumber DamageWindow = 1.0f;
+	BigNumber ClickDamageMultiplier = 1.0f;
+	BigNumber GetClickDamage();
+	BigNumber GetRogueClickDamage();
 
 	AutomaticDamager Drill;
 	AutomaticDamager Boom;
 	AutomaticDamager Laser;
-	AutomaticDamager EarthquakeTotem;
+	AutomaticDamager Earthquake;
 
 	void UpdateDamager(AutomaticDamager& _damager, float _dt);
 
 	void Hit(bool _silent);
-	void Damage(int _damage, DamageSource _source, Cave* _cave);
-	void DamageColumn(int _damage, DamageSource _source, Cave* _cave);
-	void DamageArea(int _damage, DamageSource _source, Cave* _cave);
-	void DamageRow(int _damage, DamageSource _source, Cave* _cave);
-	void DamageIdleCave(int _damage, DamageSource _source);
+	void Damage(BigNumber _damage, DamageSource _source, Cave* _cave);
+	void DamageColumn(BigNumber _damage, DamageSource _source, Cave* _cave);
+	void DamageArea(BigNumber _damage, DamageSource _source, Cave* _cave);
+	void DamageRow(BigNumber _damage, DamageSource _source, Cave* _cave);
+	void DamageIdleCave(BigNumber _damage, DamageSource _source);
 
 	void BlockRewardIdle(BlockData _data);
 	void BlockRewardRogue(BlockData _data);
-	int GetRogueExp(int _exp);
+	BigNumber GetRogueExp(BigNumber _exp);
 
 	FOnDamageCalc OnClickDamageCalc;
 	FOnCooldownCalc OnCooldownCalc;

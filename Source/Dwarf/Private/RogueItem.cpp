@@ -3,9 +3,86 @@
 #include "IdleRelic.h"
 #include "Cave.h"
 
+void RegenRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
+{
+	handle = _player->OnPressureRegenCalc.AddRaw(this, &RegenRogueItem::PressureRegenCalc);
+}
+void RegenRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
+{
+	handle.Reset();
+}
+
+void RegenRogueItem::PressureRegenCalc(BigNumber& _pressure)
+{
+	_pressure *= multiplier;
+}
+
+BigNumber RegenRogueItem::GetMult(int _level)
+{
+	switch(_level)
+	{ 
+	case 1: return 2.0f;
+	case 2: return 3.0f;
+	case 3: return 4.0f;
+	case 4: return 5.5f;
+	case 5: return 7.0f;
+	case 6: return 8.5f;
+	case 7: return 10.0f;
+	}
+
+	return 1.0f;
+}
+
+void RegenRogueItem::OnLevelUp()
+{
+	multiplier = GetMult(level);
+}
+FString RegenRogueItem::GetDescriptionText(int _level)
+{
+	return "Increases the pressure you gain when breaking blocks by +" + (((BigNumber)1.0f / (GetMult(_level) - 1)) * 100.0f).ToStringTrunc() + "%.";
+}
+
+void ResistanceRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
+{
+	handle = _player->OnPressureCalc.AddRaw(this, &ResistanceRogueItem::PressureCalc);
+}
+void ResistanceRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
+{
+	handle.Reset();
+}
+
+void ResistanceRogueItem::PressureCalc(BigNumber& _pressure)
+{
+	_pressure *= multiplier;
+}
+
+float ResistanceRogueItem::GetMult(int _level)
+{
+	switch (_level)
+	{
+	case 1: return 0.9f;
+	case 2: return 0.8f;
+	case 3: return 0.7f;
+	case 4: return 0.55f;
+	case 5: return 0.4f;
+	case 6: return 0.25f;
+	case 7: return 0.1f;
+	}
+
+	return 1.0f;
+}
+void ResistanceRogueItem::OnLevelUp()
+{
+	multiplier = GetMult(level);
+}
+FString ResistanceRogueItem::GetDescriptionText(int _level)
+{
+	return "Increases your resistance to pressure by +" + FString::FromInt((1.0f / (GetMult(_level) - 1)) * 100) + "%.";
+}
+
+
 void DamageRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
 {
-	_player->items.Add(this);
 	handle = _player->OnDamageCalc.AddRaw(this, &DamageRogueItem::DamageCalc);
 }
 
@@ -27,14 +104,14 @@ int RogueItem::GetRelicWeight()
 	}
 }
 
-void DamageRogueItem::DamageCalc(int& _damage)
+void DamageRogueItem::DamageCalc(BigNumber& _damage)
 {
 	_damage *= powf(2, level);
 }
 
 FString DamageRogueItem::GetDescriptionText(int _level)
 {
-	return "The damage you deal is multiplied by x" + FString::FromInt(powf(2, _level)) + ".";
+	return "The damage your base hit deals is multiplied by x" + FString::FromInt(powf(2, _level)) + ".";
 }
 
 void MultihitRogueItem::CooldownCalc(float& _cd)
@@ -57,7 +134,7 @@ void MultihitRogueItem::CooldownCalc(float& _cd)
 
 void MultihitRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
 {
-	_player->items.Add(this);
+	 
 	handle = _player->OnCooldownCalc.AddRaw(this, &MultihitRogueItem::CooldownCalc);
 }
 
@@ -78,7 +155,7 @@ void CooldownRogueItem::CooldownCalc(float& _cd)
 
 void CooldownRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
 {
-	_player->items.Add(this);
+	 
 	handle = _player->OnCooldownCalc.AddRaw(this, &CooldownRogueItem::CooldownCalc);
 }
 
@@ -89,12 +166,11 @@ void CooldownRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
 
 FString CooldownRogueItem::GetDescriptionText(int _level)
 {
-	return "Increases your attack speed by " + FString::SanitizeFloat(1.0f/powf(0.90f, _level)) + ". \n\"We don't have all day!\"";
+	return "Increases your basic hit's attack speed by " + FString::SanitizeFloat(1.0f/powf(0.90f, _level)) + ". \n\"We don't have all day!\"";
 }
 
 void DrillRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
 {
-	_player->items.Add(this);
 	handle = _player->OnTick.AddRaw(this, &DrillRogueItem::OnTick);
 	cave = _cave;
 }
@@ -148,6 +224,7 @@ void DrillRogueItem::OnLevelUp()
 {
 	damage = GetDamage(level);
 	cooldown = GetCooldown(level);
+	clock = cooldown;
 }
 
 FString DrillRogueItem::GetDescriptionText(int _level)
@@ -157,7 +234,7 @@ FString DrillRogueItem::GetDescriptionText(int _level)
 
 void TNTRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
 {
-	_player->items.Add(this);
+	 
 	handle = _player->OnTick.AddRaw(this, &TNTRogueItem::OnTick);
 	cave = _cave;
 }
@@ -211,6 +288,7 @@ void TNTRogueItem::OnLevelUp()
 {
 	damage = GetDamage(level);
 	cooldown = GetCooldown(level);
+	clock = cooldown;
 }
 
 FString TNTRogueItem::GetDescriptionText(int _level)
@@ -220,7 +298,7 @@ FString TNTRogueItem::GetDescriptionText(int _level)
 
 void EarthquakeRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
 {
-	_player->items.Add(this);
+	 
 	handle = _player->OnTick.AddRaw(this, &EarthquakeRogueItem::OnTick);
 	cave = _cave;
 }
@@ -274,6 +352,7 @@ void EarthquakeRogueItem::OnLevelUp()
 {
 	damage = GetDamage(level);
 	cooldown = GetCooldown(level);
+	clock = cooldown;
 }
 
 FString EarthquakeRogueItem::GetDescriptionText(int _level)
@@ -283,7 +362,7 @@ FString EarthquakeRogueItem::GetDescriptionText(int _level)
 
 void LaserRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
 {
-	_player->items.Add(this);
+	 
 	handle = _player->OnTick.AddRaw(this, &LaserRogueItem::OnTick);
 	cave = _cave;
 }
@@ -337,9 +416,38 @@ void LaserRogueItem::OnLevelUp()
 {
 	damage = GetDamage(level);
 	cooldown = GetCooldown(level);
+	clock = cooldown;
 }
 
 FString LaserRogueItem::GetDescriptionText(int _level)
 {
 	return "Deals " + FString::FromInt(GetDamage(_level)) + " dmg every " + FString::SanitizeFloat(GetCooldown(_level)) + "s to the lowest row of blocks. \n\"Pierces through magic like butter!\"";
+}
+
+FSlateColor GetRarityColor(ItemRarity _rarity)
+{
+	switch(_rarity)
+	{
+		case COMMON:
+		{
+			return FSlateColor(FLinearColor(0.9, 0.9, 0.9, 1));
+		}
+		case UNCOMMON:
+		{
+			return FSlateColor(FLinearColor(0.2, 0.9, 0.2, 1));
+		}
+		case RARE:
+		{
+			return FSlateColor(FLinearColor(0.2, 0.2, 0.9, 1));
+		}
+		case EPIC:
+		{
+			return FSlateColor(FLinearColor(0.7, 0.2, 0.9, 1));
+		}
+		case LEGENDARY:
+		{
+			return FSlateColor(FLinearColor(0.9, 0.7, 0.2, 1));
+		}
+	}
+	return FSlateColor();
 }

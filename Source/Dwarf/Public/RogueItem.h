@@ -17,6 +17,8 @@ enum ItemRarity
 	LEGENDARY
 };
 
+FSlateColor GetRarityColor(ItemRarity _rarity);
+
 class RogueItem
 {
 public:
@@ -35,13 +37,13 @@ public:
 
 class DamageRogueItem : public RogueItem
 {
-	void DamageCalc(int& _damage);
+	void DamageCalc(BigNumber& _damage);
 	FDelegateHandle handle;
 public:
 	DamageRogueItem() { 
 		rarity = COMMON; 
 		name = "Sharpening stone"; 
-		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541")); 
+		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/StrongArms.StrongArms")); 
 	};
 	virtual void Bind(RoguePlayerData* _player, Cave* _cave);
 	virtual void UnBind(RoguePlayerData* _player, Cave* _cave);
@@ -53,13 +55,13 @@ class MultihitRogueItem : public RogueItem
 	void CooldownCalc(float& _cd);
 	FDelegateHandle handle;
 
-	bool reloading = true;
+	bool reloading = false;
 	int hitCounter;
 public:
 	MultihitRogueItem() { 
 		rarity = UNCOMMON; 
 		name = "Another pickaxe"; 
-		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));
+		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/pick_04.pick_04"));
 	};
 	virtual void Bind(RoguePlayerData* _player, Cave* _cave);
 	virtual void UnBind(RoguePlayerData* _player, Cave* _cave);
@@ -74,11 +76,49 @@ public:
 	CooldownRogueItem() { 
 		rarity = COMMON; 
 		name = "Desynchronized clock";
-		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));
+		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/ArrowUp.ArrowUp"));
 	};
 	virtual void Bind(RoguePlayerData* _player, Cave* _cave);
 	virtual void UnBind(RoguePlayerData* _player, Cave* _cave);
 	virtual FString GetDescriptionText(int _level);
+};
+
+class ResistanceRogueItem : public RogueItem
+{
+	void PressureCalc(BigNumber& _pressure);
+	float GetMult(int _level);
+	float multiplier;
+
+	FDelegateHandle handle;
+public:
+	ResistanceRogueItem() {
+		rarity = UNCOMMON; 
+		name = "Pressure Resistance";
+		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/BlueShield.BlueShield"));
+	};
+	virtual void Bind(RoguePlayerData* _player, Cave* _cave);
+	virtual void UnBind(RoguePlayerData* _player, Cave* _cave);
+	virtual FString GetDescriptionText(int _level);
+	virtual void OnLevelUp();
+};
+
+class RegenRogueItem : public RogueItem
+{
+	void PressureRegenCalc(BigNumber& _pressure);
+	BigNumber GetMult(int _level);
+	BigNumber multiplier;
+
+	FDelegateHandle handle;
+public:
+	RegenRogueItem() {
+		rarity = COMMON; 
+		name = "Pressure Regen";
+		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/DumbHeart.DumbHeart"));
+	};
+	virtual void Bind(RoguePlayerData* _player, Cave* _cave);
+	virtual void UnBind(RoguePlayerData* _player, Cave* _cave);
+	virtual FString GetDescriptionText(int _level);
+	virtual void OnLevelUp();
 };
 
 class DrillRogueItem : public RogueItem
@@ -87,10 +127,10 @@ class DrillRogueItem : public RogueItem
 	FDelegateHandle handle;
 
 	int damage;
-	float cooldown;
+	float cooldown = 2.0f;
+	float clock = 2.0f;
 	int GetDamage(int _level);
 	float GetCooldown(int _level);
-	float clock;
 	DamageSource source;
 
 	Cave* cave;
@@ -99,7 +139,7 @@ public:
 	DrillRogueItem() {
 		rarity = COMMON;
 		name = "Magic-Forged Drill";
-		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));
+		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Drill.Drill"));
 		source.TextType = AUTO;
 	};
 	virtual void Bind(RoguePlayerData* _player, Cave* _cave);
@@ -114,10 +154,10 @@ class TNTRogueItem : public RogueItem
 	FDelegateHandle handle;
 
 	int damage;
-	float cooldown;
+	float cooldown = 2.0f;
+	float clock = 2.0f;
 	int GetDamage(int _level);
 	float GetCooldown(int _level);
-	float clock;
 	DamageSource source;
 
 	Cave* cave;
@@ -126,7 +166,7 @@ public:
 	TNTRogueItem() {
 		rarity = UNCOMMON;
 		name = "Magic-Forged TNT";
-		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));
+		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/TNT.TNT"));
 		source.TextType = AUTO;
 	};
 	virtual void Bind(RoguePlayerData* _player, Cave* _cave);
@@ -141,10 +181,10 @@ class EarthquakeRogueItem : public RogueItem
 	FDelegateHandle handle;
 
 	int damage;
-	float cooldown;
+	float cooldown = 2.0f;
+	float clock = 2.0f;
 	int GetDamage(int _level);
 	float GetCooldown(int _level);
-	float clock;
 	DamageSource source;
 
 	Cave* cave;
@@ -153,7 +193,7 @@ public:
 	EarthquakeRogueItem() {
 		rarity = RARE; 
 		name = "Magic-Forged Totem"; 
-		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));
+		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Totem.Totem"));
 		source.TextType = AUTO;
 	};
 	virtual void Bind(RoguePlayerData* _player, Cave* _cave);
@@ -168,10 +208,10 @@ class LaserRogueItem : public RogueItem
 	FDelegateHandle handle;
 
 	int damage;
-	float cooldown;
+	float cooldown = 2.0f;
+	float clock = 2.0f;
 	int GetDamage(int _level);
 	float GetCooldown(int _level);
-	float clock;
 	DamageSource source;
 
 	Cave* cave;
@@ -180,7 +220,7 @@ public:
 	LaserRogueItem() {
 		rarity = EPIC;
 		name = "Magic-Forged Laser";
-		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));
+		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Laser.Laser"));
 		source.TextType = AUTO;
 	};
 	virtual void Bind(RoguePlayerData* _player, Cave* _cave);

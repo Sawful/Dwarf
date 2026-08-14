@@ -15,7 +15,7 @@ void Cave::GenerateStart()
 	FActorSpawnParameters param;
 	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	GEngine->AddOnScreenDebugMessage(0, 10, FColor::Emerald, FString::FromInt(IsValid(FloorClass)));
+	//GEngine->AddOnScreenDebugMessage(0, 10, FColor::Emerald, FString::FromInt(IsValid(FloorClass)));
 
 	repeatableFloors[0] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, FLOOR_LENGTH, 800), FRotator(), param);
 	repeatableFloors[1] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, 0, 800), FRotator(), param);
@@ -25,7 +25,7 @@ void Cave::GenerateStart()
 	diffBlockHealthMult = powf(blockHealthDiffScaling, difficultyLevel);
 	yieldMultiplier = powf(blockRewardsDiffScaling, difficultyLevel);
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Tried generating cave")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Tried generating cave")));
 	if (BP_BlockClass == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Could not create block class.")));
@@ -125,7 +125,7 @@ ABlock* Cave::GenerateBlock(FVector _pos)
 	return block;
 }
 
-void Cave::CreateDamageText(int _damage, DamageTextType _type, FVector _position)
+void Cave::CreateDamageText(BigNumber _damage, DamageTextType _type, FVector _position)
 {
 	if (!DamageTextClass) return;
 	if (!caveVisible) return;
@@ -135,10 +135,8 @@ void Cave::CreateDamageText(int _damage, DamageTextType _type, FVector _position
 	_position.Y += ((float)((rand() % 100) - 50));
 	_position.Z += ((float)((rand() % 100) - 50));
 
-	FRotator rotator;
-	rotator.Yaw = 180;
+	FRotator rotator = FRotator(0, 180, 0);
 	ATextRenderActor* damageText = dwarfPawn->GetWorld()->SpawnActor<ATextRenderActor>(DamageTextClass, _position, rotator, FActorSpawnParameters());
-	damageText->SetActorRotation(rotator);
 	UTextRenderComponent* textRender = damageText->GetTextRender();
 	switch (_type)
 	{
@@ -163,7 +161,7 @@ void Cave::CreateDamageText(int _damage, DamageTextType _type, FVector _position
 
 	}
 
-	textRender->SetText(FText::FromString(FString::FromInt(_damage)));
+	textRender->SetText(FText::FromString(_damage.ToStringTrunc()));
 }
 
 void Cave::BreakFirst()
@@ -235,6 +233,7 @@ bool Cave::CheckRank()
 		{
 			weight[COAL_BLOCK] = 200;
 			weight[COPPER_BLOCK] = 200;
+
 			caveRank++;
 			return true;
 		}
@@ -244,6 +243,7 @@ bool Cave::CheckRank()
 		if (blocksGenerated >= 25 * BLOCK_COUNT_Y)
 		{
 			weight[SULFUR_BLOCK] = 200;
+
 			caveRank++;
 			return true;
 		}
@@ -254,6 +254,7 @@ bool Cave::CheckRank()
 		{
 			weight[TIN_BLOCK] = 100;
 			weight[MUDROCK_BLOCK] = 750;
+
 			caveRank++;
 			return true;
 		}
@@ -264,6 +265,7 @@ bool Cave::CheckRank()
 		{
 			weight[IRON_BLOCK] = 50;
 			weight[MUDROCK_BLOCK] = 500;
+
 			caveRank++;
 			return true;
 		}
@@ -275,6 +277,7 @@ bool Cave::CheckRank()
 		{
 			weight[MUDROCK_BLOCK] = 400;
 			weight[SILVER_BLOCK] = 50;
+
 			caveRank++;
 			return true;
 		}
@@ -287,6 +290,36 @@ bool Cave::CheckRank()
 			weight[OBSIDIAN_BLOCK] = 20;
 			weight[PLATINUM_BLOCK] = 10;
 			weight[DIAMOND_BLOCK] = 5;
+
+			caveRank++;
+			return true;
+		}
+	}
+	case 6:
+	{
+		if (blocksGenerated >= 500 * BLOCK_COUNT_Y)
+		{
+			weight[MUDROCK_BLOCK] = 200;
+			weight[TIN_BLOCK] = 150;
+			weight[IRON_BLOCK] = 100;
+			weight[SILVER_BLOCK] = 100;
+
+			caveRank++;
+			return true;
+		}
+	}
+	case 7:
+	{
+		if (blocksGenerated >= 1000 * BLOCK_COUNT_Y)
+		{
+			weight[MUDROCK_BLOCK] = 150;
+			weight[COAL_BLOCK] = 150;
+			weight[COPPER_BLOCK] = 150;
+
+			weight[OBSIDIAN_BLOCK] = 50;
+			weight[PLATINUM_BLOCK] = 25;
+			weight[DIAMOND_BLOCK] = 10;
+
 			caveRank++;
 			return true;
 		}
@@ -295,17 +328,17 @@ bool Cave::CheckRank()
 	return false;
 }
 
-void Cave::DamageFirst(int _damage, DamageSource _source)
+void Cave::DamageFirst(BigNumber _damage, DamageSource _source)
 {
 	CreateDamageText(_damage, _source.TextType, first->GetActorLocation());
 	first->Data.health -= _damage;
-	if (first->Data.health <= 0)
+	if (first->Data.health <= (BigNumber)0)
 	{
 		Break(first);
 	}
 }
 
-void Cave::DamageFirstColumn(int _damage, DamageSource _source)
+void Cave::DamageFirstColumn(BigNumber _damage, DamageSource _source)
 {	
 	TArray<ABlock*> tempBroken;
 
@@ -318,7 +351,7 @@ void Cave::DamageFirstColumn(int _damage, DamageSource _source)
 
 		CreateDamageText(_damage, _source.TextType, target->GetActorLocation());
 		target->Data.health -= _damage;
-		if (target->Data.health <= 0)
+		if (target->Data.health <= (BigNumber)0)
 		{
 			tempBroken.Add(target);
 		}
@@ -334,7 +367,7 @@ void Cave::DamageFirstColumn(int _damage, DamageSource _source)
 
 }
 
-void Cave::DamageArea(int _damage, DamageSource _source)
+void Cave::DamageArea(BigNumber _damage, DamageSource _source)
 {
 	TArray<ABlock*> tempBroken;
 
@@ -347,7 +380,7 @@ void Cave::DamageArea(int _damage, DamageSource _source)
 
 		CreateDamageText(_damage, _source.TextType, target->GetActorLocation());
 		target->Data.health -= _damage;
-		if (target->Data.health <= 0)
+		if (target->Data.health <= (BigNumber)0)
 		{
 			tempBroken.Add(target);
 		}
@@ -362,7 +395,7 @@ void Cave::DamageArea(int _damage, DamageSource _source)
 	}
 }
 
-void Cave::DamageRow(int _damage, DamageSource _source)
+void Cave::DamageRow(BigNumber _damage, DamageSource _source)
 {
 	TArray<ABlock*> tempBroken;
 
@@ -380,7 +413,7 @@ void Cave::DamageRow(int _damage, DamageSource _source)
 
 		CreateDamageText(_damage, _source.TextType, target->GetActorLocation());
 		target->Data.health -= _damage;
-		if (target->Data.health <= 0)
+		if (target->Data.health <= (BigNumber)0)
 		{
 			Break(target);
 		}

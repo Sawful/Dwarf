@@ -7,15 +7,16 @@
 void RogueCave::BreakFirst()
 {
 	ABlock* broken = first;
+	first->DisconnectFromList();
 	first = first->next;
+
+	dwarfPawn->targetMetersWalked = first->pos[0] - 1;
 
 	blocksBroken += broken->Data.value;
 	BlockBreakDelegate.Execute(broken->Data);
 
 	broken->Destroy();
-	dwarfPawn->targetMetersWalked = first->pos[0] - 1;
 	GenerateTail();
-
 }
 
 ABlock* RogueCave::GenerateBlock(FVector _pos)
@@ -35,7 +36,7 @@ ABlock* RogueCave::GenerateBlock(FVector _pos)
 	diffBlockHealthMult = powf(1.02f, powf(blocksGenerated, 0.5f));
 
 	block->Data.health *= diffBlockHealthMult;
-	block->Data.health *= (block->Data.health + blocksGenerated) / block->Data.health;
+	block->Data.health *= (block->Data.health + (BigNumber)blocksGenerated) / block->Data.health;
 
 	cavePressure = 1.0f + blocksGenerated * 0.02f;
 	block->Data.pressureValue = cavePressure;
@@ -73,6 +74,7 @@ void RogueCave::GenerateTail()
 		block->SetActorScale3D(FVector(1, BLOCK_COUNT_Y, BLOCK_COUNT_Y));
 
 		last->next = block;
+		last->next->previous = last;
 		last = last->next;
 		last->pos[0] = lastGridPos[0];
 		last->pos[1] = lastGridPos[1];
@@ -110,6 +112,7 @@ void RogueCave::GenerateTail()
 		block->mesh->SetMaterial(0, MagicMat);
 
 		last->next = block;
+		last->next->previous = last;
 		last = last->next;
 		last->pos[0] = lastGridPos[0];
 		last->pos[1] = lastGridPos[1];
@@ -124,6 +127,7 @@ void RogueCave::GenerateTail()
 	}
 
 	last->next = GenerateBlock(FVector(0, (lastGridPos[0]) * BLOCK_SIZE, (BLOCK_COUNT_Y - 1 - lastGridPos[1]) * BLOCK_SIZE + BLOCK_OFFSET_Y));
+	last->next->previous = last;
 	last = last->next;
 	last->pos[0] = lastGridPos[0];
 	last->pos[1] = lastGridPos[1];

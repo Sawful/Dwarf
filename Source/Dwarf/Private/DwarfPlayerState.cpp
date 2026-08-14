@@ -8,86 +8,21 @@
 #include "Components/RichTextBlock.h"
 #include "Components/Image.h"
 #include "DwarfSaveGame.h"
+#include "MathTools.h"
 
 #define MAX_MULTIPLIER_VALUE 10000
 
-uint64 MagicFunction(const unsigned int _level, const uint64 _baseValue, const float _s1, const float _s2)
+
+FString DescriptionCrit(unsigned int _level)
 {
-	return uint64(_baseValue * powf((_level + _s2) / _s2, _s2 * _s1));
+	"Gives you 10% chance to deal 5x damage on click.";
+	return FString();
 }
 
-float MagicFunctionf(const unsigned int _level, const float _baseValue, const float _s1, const float _s2)
+FString DescriptionYield(unsigned int _level)
 {
-	return _baseValue * powf((_level + _s2) / _s2, _s2 * _s1);
-}
-
-TArray<ResourceData> CostStrongArms(unsigned int _level)
-{
-	const uint64 baseValueMudrock = 2;
-	const float s1 = 0.4f;
-	const float s2 = 20;
-	TArray<ResourceData> cost;
-	cost.Add({ MUDROCK, MagicFunction(_level, baseValueMudrock, s1, s2) });
-	return cost;
-}
-
-TArray<ResourceData> CostDrill(unsigned int _level)
-{
-	const uint64 baseValue = 3;
-	const float s1 = 0.4f;
-	const float s2 = 15;
-	TArray<ResourceData> cost;
-	cost.Add({ COAL, MagicFunction(_level, baseValue, s1, s2) });
-	cost.Add({ COPPER, MagicFunction(_level, baseValue, s1, s2) });
-	return cost;
-}
-
-TArray<ResourceData> CostBoom(unsigned int _level)
-{
-	const uint64 baseValue = 25;
-	const float s1 = 0.45f;
-	const float s2 = 14;
-	TArray<ResourceData> cost;
-	cost.Add({ SULFUR, MagicFunction(_level, baseValue, s1, s2) });
-	return cost;
-}
-TArray<ResourceData> CostLaser(unsigned int _level)
-{
-	const uint64 baseValue = 5;
-	const float s1 = 0.45f;
-	const float s2 = 14;
-	TArray<ResourceData> cost;
-	//cost.Add({ DIAMOND, MagicFunction(_level, baseValue, s1, s2) });
-	cost.Add({ MUDROCK, 1 });
-	return cost;
-}
-TArray<ResourceData> CostEarthquake(unsigned int _level)
-{
-	const uint64 baseValue = 15;
-	const float s1 = 0.45f;
-	const float s2 = 15;
-	TArray<ResourceData> cost;
-	//cost.Add({ IRON, MagicFunction(_level, baseValue, s1, s2) });
-	cost.Add({ MUDROCK, 1 });
-	return cost;
-}
-TArray<ResourceData> CostCrit(unsigned int _level)
-{
-	const uint64 baseValue = 20;
-	const float s1 = 0.40f;
-	const float s2 = 15;
-	TArray<ResourceData> cost;
-	cost.Add({ TIN, MagicFunction(_level, baseValue, s1, s2) });
-	return cost;
-}
-TArray<ResourceData> CostYield(unsigned int _level)
-{
-	const uint64 baseValue = 10;
-	const float s1 = 0.40f;
-	const float s2 = 10;
-	TArray<ResourceData> cost;
-	cost.Add({ SILVER, MagicFunction(_level, baseValue, s1, s2) });
-	return cost;
+	"Increases your global yield by 10%";
+	return FString();
 }
 
 ADwarfPlayerState::ADwarfPlayerState()
@@ -102,89 +37,45 @@ ADwarfPlayerState::ADwarfPlayerState()
 	{
 		blockYieldMultiplier[i] = 1.0f;
 	}
-	for (int i = 0; i < UPGRADE_COUNT; i++)
-	{
-		upgradeMultiplier[i] = 1;
-	}
-
-	StrongArmsIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/StrongArms.StrongArms"));
-	//PrecisionIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
-	//GoldLoverIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
-	//PlaceholderIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
-	//DrillIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
-	//TNTIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
-	//EarthquakeIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
-	//LaserIcon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
-
 }
 
 void ADwarfPlayerState::SetupResourceUpgrades()
 {
-	resourceUpgrades[0].upgradeFunctionName = "StrongArms";
-	resourceUpgrades[0].displayName = "Strong Arms";
-	resourceUpgrades[0].description = "Increases click damage by 2.";
-	resourceUpgrades[0].widget = HUD->ClickUpgradeBox;
-	resourceUpgrades[0].widget->Icon->SetBrushFromTexture(StrongArmsIcon);
-	SetupResourceUpgradeDelegate(resourceUpgrades[0], &CostStrongArms);
+	resourceUpgrades[0] = new StrongArmsUpgrade();
+	resourceUpgrades[1] = new DrillUpgrade();
+	resourceUpgrades[2] = new BoomUpgrade();
+	resourceUpgrades[3] = new EarthquakeUpgrade();
+	resourceUpgrades[4] = new LaserUpgrade();
+	resourceUpgrades[5] = new CritUpgrade();
+	resourceUpgrades[6] = new YieldUpgrade();
+	resourceUpgrades[7] = new PlaceholderUpgrade();
 
-	resourceUpgrades[1].upgradeFunctionName = "Drill";
-	resourceUpgrades[1].displayName = "Drill";
-	resourceUpgrades[1].description = "An automatic drill that will hit for you.";
-	resourceUpgrades[1].widget = HUD->DrillUpgradeBox;
-	SetupResourceUpgradeDelegate(resourceUpgrades[1], &CostDrill);
+	for (int i = 0; i < UPGRADE_COUNT; i++)
+	{
+		resourceUpgrades[i]->player = this;
+	}
 
-	resourceUpgrades[2].upgradeFunctionName = "Boom";
-	resourceUpgrades[2].displayName = "TNT";
-	resourceUpgrades[2].description = "A slow automatic hit that deals heavy damage to the first column of blocks.";
-	resourceUpgrades[2].widget = HUD->BoomUpgradeBox;
-	SetupResourceUpgradeDelegate(resourceUpgrades[2], &CostBoom);
+	resourceUpgrades[0]->SetWidget(HUD->ClickUpgradeBox);
+	resourceUpgrades[1]->SetWidget(HUD->DrillUpgradeBox);
+	resourceUpgrades[2]->SetWidget(HUD->BoomUpgradeBox);
+	resourceUpgrades[3]->SetWidget(HUD->EarthquakeUpgradeBox);
+	resourceUpgrades[4]->SetWidget(HUD->LaserUpgradeBox);
+	resourceUpgrades[5]->SetWidget(HUD->CritUpgradeBox);
+	resourceUpgrades[6]->SetWidget(HUD->YieldUpgradeBox);
+	resourceUpgrades[7]->SetWidget(HUD->PlaceholderUpgradeBox);
 
-	resourceUpgrades[3].upgradeFunctionName = "Earthquake";
-	resourceUpgrades[3].displayName = "Earthquake Totem";
-	resourceUpgrades[3].description = "Shakes up the ground in front of you to clear any rubble standing in your way.";
-	resourceUpgrades[3].widget = HUD->EarthquakeUpgradeBox;
-	SetupResourceUpgradeDelegate(resourceUpgrades[3], &CostEarthquake);
-
-	resourceUpgrades[4].upgradeFunctionName = "Laser";
-	resourceUpgrades[4].displayName = "Mining Laser";
-	resourceUpgrades[4].description = "Constantly piercing through in front of it.";
-	resourceUpgrades[4].widget = HUD->LaserUpgradeBox;
-	SetupResourceUpgradeDelegate(resourceUpgrades[4], &CostLaser);
-
-	resourceUpgrades[5].upgradeFunctionName = "Crit";
-	resourceUpgrades[5].displayName = "Precision";
-	resourceUpgrades[5].description = "Gives you 10% chance to deal 5x damage on click.";
-	resourceUpgrades[5].widget = HUD->CritUpgradeBox;
-	SetupResourceUpgradeDelegate(resourceUpgrades[5], &CostCrit);
-
-	resourceUpgrades[6].upgradeFunctionName = "Yield";
-	resourceUpgrades[6].displayName = "Gold Lover";
-	resourceUpgrades[6].description = "Increases your global yield by 10%"; 
-	resourceUpgrades[6].widget = HUD->YieldUpgradeBox;
-	SetupResourceUpgradeDelegate(resourceUpgrades[6], &CostYield);
 	// Setup Upgrade delegates and buttons
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
 		FScriptDelegate delegate;
 		FName delegateName;
-		delegateName = FName(resourceUpgrades[i].upgradeFunctionName);
+		delegateName = FName(resourceUpgrades[i]->upgradeFunctionName);
 		FWideString prefix = "Upgrade";
 		delegateName.AppendString(prefix);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, prefix);
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, prefix);
 		delegate.BindUFunction(this, FName(prefix));
-		resourceUpgrades[i].widget->Button->OnClicked.Add(delegate);
-		resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
-		resourceUpgrades[i].UpdateTooltipText();
+		resourceUpgrades[i]->widget->Button->OnClicked.Add(delegate);
 	}
-}
-
-void ADwarfPlayerState::SetupResourceUpgradeDelegate(ResourceUpgrade& upgrade, TArray<ResourceData> (*InFunc)(unsigned int))
-{
-	FOnGetCost del;
-	FString costDelName = "Cost";
-	costDelName += upgrade.upgradeFunctionName;
-	del.BindStatic(InFunc);
-	upgrade.costDelegate = del;
 }
 
 void ADwarfPlayerState::SetupMilestones()
@@ -208,7 +99,7 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 	Drill.Display->ProgressBar->SetCompletion((Drill.Downtime - Drill.Clock) / Drill.Downtime);
 	Drill.Display->Name = "Drill";
 	Drill.Display->Description = "Hits the next block for you.";
-	Drill.Display->damage = Drill.Damage;
+	Drill.Display->DamageText = Drill.Damage.ToStringTrunc();
 	Drill.Display->hitCooldown = Drill.Downtime;
 
 	Drill.SetDamagerActive(false);
@@ -223,26 +114,26 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 	Boom.Display->ProgressBar->SetCompletion((Boom.Downtime - Boom.Clock) / Boom.Downtime);
 	Boom.Display->Name = "TNT";
 	Boom.Display->Description = "It's explosion heavily damages the nearest column of blocks.";
-	Boom.Display->damage = Boom.Damage;
+	Boom.Display->DamageText = Boom.Damage.ToStringTrunc();
 	Boom.Display->hitCooldown = Boom.Downtime;
 
 	Boom.SetDamagerActive(false);
 	Boom.source.TextType = AUTO;
 
-	EarthquakeTotem.Damage = 0;
-	EarthquakeTotem.Downtime = 5.0f;
-	EarthquakeTotem.Clock = EarthquakeTotem.Downtime;
-	EarthquakeTotem.damageType = AREA;
+	Earthquake.Damage = 0;
+	Earthquake.Downtime = 5.0f;
+	Earthquake.Clock = Earthquake.Downtime;
+	Earthquake.damageType = AREA;
 
-	EarthquakeTotem.Display = HUD->EarthquakeDisplay;
-	EarthquakeTotem.Display->ProgressBar->SetCompletion((EarthquakeTotem.Downtime - EarthquakeTotem.Clock) / EarthquakeTotem.Downtime);
-	EarthquakeTotem.Display->Name = "Earthquake Totem";
-	EarthquakeTotem.Display->Description = "Shakes up the ground in front of you to clear any rubble standing in your way.";
-	EarthquakeTotem.Display->damage = EarthquakeTotem.Damage;
-	EarthquakeTotem.Display->hitCooldown = EarthquakeTotem.Downtime;
+	Earthquake.Display = HUD->EarthquakeDisplay;
+	Earthquake.Display->ProgressBar->SetCompletion((Earthquake.Downtime - Earthquake.Clock) / Earthquake.Downtime);
+	Earthquake.Display->Name = "Earthquake Totem";
+	Earthquake.Display->Description = "Shakes up the ground in front of you to clear any rubble standing in your way.";
+	Earthquake.Display->DamageText = Earthquake.Damage.ToStringTrunc();
+	Earthquake.Display->hitCooldown = Earthquake.Downtime;
 
-	EarthquakeTotem.SetDamagerActive(false);
-	EarthquakeTotem.source.TextType = AUTO;
+	Earthquake.SetDamagerActive(false);
+	Earthquake.source.TextType = AUTO;
 
 	Laser.Damage = 0;
 	Laser.Downtime = 0.5f;
@@ -253,7 +144,7 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 	Laser.Display->ProgressBar->SetCompletion((Laser.Downtime - Laser.Clock) / Laser.Downtime);
 	Laser.Display->Name = "Mining Laser";
 	Laser.Display->Description = "Constantly piercing through in front of it.";
-	Laser.Display->damage = Laser.Damage;
+	Laser.Display->DamageText = Laser.Damage.ToStringTrunc();
 	Laser.Display->hitCooldown = Laser.Downtime;
 
 	Laser.SetDamagerActive(false);
@@ -263,6 +154,12 @@ void ADwarfPlayerState::InitializeAutomaticDamagers()
 void ADwarfPlayerState::InitRelicsArray()
 {
 	relics.Add(new DamageIdleRelic());
+	relics.Add(new MultihitIdleRelic());
+
+	// Autodamager upgrades
+	relics.Add(new MultihitIdleRelic());
+	relics.Add(new MultihitIdleRelic());
+	relics.Add(new MultihitIdleRelic());
 	relics.Add(new MultihitIdleRelic());
 }
 
@@ -305,18 +202,18 @@ void ADwarfPlayerState::Tick(float _dt)
 		{
 			if (resourcesDirty)
 			{
-				upgradeMultiplier[i] = GetMaxUpgradeMult((UpgradeType)i);
+				resourceUpgrades[i]->SetBuyMultiplier(GetMaxUpgradeMult((UpgradeType)i));
 			}
 
-			resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
+			resourceUpgrades[i]->GetCostAndCache();
 		}
 	}
 
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
 		bool upgradeAvailable = true;
-		FString costString = "Cost (x" + FString::FromInt(upgradeMultiplier[i]) + "): \n";
-		for (auto resource : resourceUpgrades[i].costCached)
+		FString costString = "Cost (x" + FString::FromInt(resourceUpgrades[i]->buyMultiplier) + "): \n";
+		for (auto resource : resourceUpgrades[i]->costCached)
 		{
 			bool resourceAvailable = true;
 
@@ -325,36 +222,39 @@ void ADwarfPlayerState::Tick(float _dt)
 			{
 				resourceAvailable = false;
 				upgradeAvailable = false;
-				costString += "<UnavailableEmphasis>: " + resource.Amount.ToString() + "</>\n";
+				costString += "<UnavailableEmphasis>: " + resource.Amount.ToStringTrunc() + "</>\n";
 			}
 			else
 			{
-				costString += ": " + resource.Amount.ToString() + "\n";
+				costString += ": " + resource.Amount.ToStringTrunc() + "\n";
 			}
 		}
 
 		FLinearColor availabilityTint = upgradeAvailable ? FLinearColor(1, 1, 1, 1) : FLinearColor(0.1, 0.1, 0.1, 1);
-		resourceUpgrades[i].widget->SetColorAndOpacity(availabilityTint);
-		resourceUpgrades[i].widget->costText = costString;
+		resourceUpgrades[i]->widget->SetColorAndOpacity(availabilityTint);
+		resourceUpgrades[i]->widget->costText = costString;
 	}
 
 	// Idle auto damagers
 	UpdateDamager(Drill, _dt);
 	UpdateDamager(Boom, _dt);
-	UpdateDamager(EarthquakeTotem, _dt);
+	UpdateDamager(Earthquake, _dt);
 	UpdateDamager(Laser, _dt);
 
 	if (inRun == false) return;
 	if (rogueData.timePaused) return;
 	// Take pressure damage
-	rogueData.Pressure -= currentCave->first->Data.pressureValue * _dt * (1.0f - rogueData.PressureResistance);
+
+	BigNumber PressureDamage = currentCave->first->Data.pressureValue * _dt * (1.0f - rogueData.PressureResistance);
+	rogueData.OnPressureCalc.Broadcast(PressureDamage);
+	rogueData.Pressure -= PressureDamage;
 	if (rogueData.Pressure <= 0) // Lose
 	{
 		RunRewards();
 		return;
 	}
 
-	RogueHUD->PressureBar->SetPercent(rogueData.Pressure / rogueData.MaxPressure);
+	RogueHUD->PressureBar->SetPercent((float)(rogueData.Pressure / rogueData.MaxPressure));
 
 	// Run auto damagers
 	rogueData.clickTimer -= _dt;
@@ -510,7 +410,7 @@ void ADwarfPlayerState::OnSaveFinished(const FString& _name, const int32 _userIn
 {
 	if (_success)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString(TEXT("Finished saving!")));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString(TEXT("Finished saving!")));
 	}
 	else
 	{
@@ -521,30 +421,33 @@ void ADwarfPlayerState::OnSaveFinished(const FString& _name, const int32 _userIn
 
 void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData)
 {
-	gameLoaded = true;
 	UDwarfSaveGame* save = Cast<UDwarfSaveGame>(LoadedGameData);
 	if (save == nullptr)
 	{
 		// Default first time init
 		ResetDwarfStats();
 		SetupResourceUpgrades();
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString(TEXT("First time launching the game.")));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, FString(TEXT("First time launching the game.")));
 		return;
 	}
+
+	SetupResourceUpgrades();
 
 	// Upgrades
 	for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT; upgrade = (UpgradeType)(1 + upgrade))
 	{
-		resourceUpgrades[upgrade].upgradeLevel = save->upgradeLevels[upgrade];			// Get level
-		for (unsigned int i = 1; i <= resourceUpgrades[upgrade].upgradeLevel; i++)		// Re-apply upgrade
+		for (unsigned int i = 1; i <= save->upgradeLevels[upgrade]; i++)		// Re-apply upgrade
 		{
-			ApplyResourceUpgrade(upgrade, i);
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::FromInt(i));
+			resourceUpgrades[upgrade]->upgradeLevel++;
+			resourceUpgrades[upgrade]->ApplyUpgrade();
+			//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::FromInt(i));
 		}
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(resourceUpgrades[upgrade].upgradeLevel));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, FString::FromInt(resourceUpgrades[upgrade]->upgradeLevel));
+
+		resourceUpgrades[upgrade]->GetCostAndCache();
+		resourceUpgrades[upgrade]->UpdateTooltipText();
 	}
 
-	SetupResourceUpgrades();
 
 	// Resources
 	memcpy(resources, save->resources, sizeof(int) * RESOURCE_COUNT);
@@ -574,7 +477,7 @@ void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 User
 		if (count == 0) continue;
 		
 		AddRelic(relics[i], count);
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, "Relic count: " + FString::FromInt(count));
+		//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, "Relic count: " + FString::FromInt(count));
 	}
 
 	idleCave.blocksGenerated = save->blockBroken;
@@ -585,14 +488,15 @@ void ADwarfPlayerState::OnLoadFinished(const FString& SlotName, const int32 User
 
 	// Get time since last connection
 	unsigned long timeSince = difftime(time(nullptr), save->saveTime);
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, "Time since last connection: " + FString::FromInt(timeSince) + "s");
+	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::White, "Time since last connection: " + FString::FromInt(timeSince) + "s");
 	//Tick(timeSince); // IS THIS EVEN ALLOWED??? TODO: see if this should be the way to catchup or not
 	TimeBoost = true;
 	TimeBoostFactor = fmin(timeSince, 1000.0f);
 	TimeBoostLeft = timeSince / TimeBoostFactor;
 	currentCave->dwarfPawn->TimeFactor = TimeBoostFactor;
 
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString(TEXT("Finished loading!")));
+	gameLoaded = true;
+	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, FString(TEXT("Finished loading!")));
 }
 
 void ADwarfPlayerState::ResetDwarfStats()
@@ -614,7 +518,7 @@ void ADwarfPlayerState::ResetDwarfStats()
 
 void ADwarfPlayerState::SaveCurrentStateAsync()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString(TEXT("Saving...")));
+	//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, FString(TEXT("Saving...")));
 
 	FAsyncSaveGameToSlotDelegate SavedDelegate;
 	SavedDelegate.BindUObject(this, &ADwarfPlayerState::OnSaveFinished);
@@ -624,7 +528,7 @@ void ADwarfPlayerState::SaveCurrentStateAsync()
 	// Upgrades
 	for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT; upgrade = (UpgradeType)(upgrade + 1))
 	{
-		save->upgradeLevels[upgrade] = resourceUpgrades[upgrade].upgradeLevel;	// Set level
+		save->upgradeLevels[upgrade] = resourceUpgrades[upgrade]->upgradeLevel;	// Set level
 	}
 	memcpy(save->resources, resources, sizeof(int) * RESOURCE_COUNT);
 	memcpy(save->isResourceUnlocked, isResourceUnlocked, sizeof(bool) * RESOURCE_COUNT);
@@ -660,7 +564,7 @@ void ADwarfPlayerState::SaveCurrentState()
 	// Upgrades
 	for (UpgradeType upgrade = (UpgradeType)0; upgrade < UPGRADE_COUNT; upgrade = (UpgradeType)(upgrade + 1))
 	{
-		save->upgradeLevels[upgrade] = resourceUpgrades[upgrade].upgradeLevel;	// Set level
+		save->upgradeLevels[upgrade] = resourceUpgrades[upgrade]->upgradeLevel;	// Set level
 	}
 	memcpy(save->resources, resources, sizeof(int) * RESOURCE_COUNT);
 	memcpy(save->isResourceUnlocked, isResourceUnlocked, sizeof(bool) * RESOURCE_COUNT);
@@ -690,9 +594,9 @@ void ADwarfPlayerState::Rebirth()
 {
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
-		resourceUpgrades[i].upgradeLevel = 0;
-		resourceUpgrades[i].UpdateTooltipText();
-		resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
+		resourceUpgrades[i]->upgradeLevel = 0;
+		resourceUpgrades[i]->UpdateTooltipText();
+		resourceUpgrades[i]->GetCostAndCache();
 	}
 	for (int i = 0; i < RESOURCE_COUNT; i++)
 	{
@@ -737,162 +641,24 @@ bool ADwarfPlayerState::PayCost(const TArray<ResourceData>& _cost)
 
 void ADwarfPlayerState::BuyResourceUpgrade(UpgradeType _upgrade)
 {
-	TArray<ResourceData> cost = resourceUpgrades[_upgrade].GetCostAndCache(upgradeMultiplier[_upgrade]);
+	TArray<ResourceData> cost = resourceUpgrades[_upgrade]->GetCostAndCache();
 	if (PayCost(cost) == false)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Not enough resources"); 
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Not enough resources"); 
 		return;
 	}
 
 	// Give upgrade reward based on type
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::FromInt(upgradeMultiplier[_upgrade]));
-	for (int i = 0; i < upgradeMultiplier[_upgrade]; i++)
-	{
-		resourceUpgrades[_upgrade].upgradeLevel++;
-		ApplyResourceUpgrade(_upgrade, resourceUpgrades[_upgrade].upgradeLevel);
-	}
+	resourceUpgrades[_upgrade]->LevelUpgrade();
 	
-	resourceUpgrades[_upgrade].UpdateTooltipText();
-	resourceUpgrades[_upgrade].GetCostAndCache(upgradeMultiplier[_upgrade]);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Bought upgrade " + FString::FromInt(_upgrade));
-}
-
-void ADwarfPlayerState::ApplyResourceUpgrade(UpgradeType _upgrade, unsigned int _level)
-{
-	switch (_upgrade)
-	{
-	case STRONG_ARMS:
-	{
-		MinDamage = MagicFunction(_level-1, 2, 0.4, 5);
-		break;
-	}
-	case PRECISION:
-	{
-		CritMultiplier = MagicFunctionf(_level - 1, 2, 0.2, 10);
-		switch (_level)
-		{
-		case 1:
-			CritChance = 5;
-			break;
-		}
-		
-		break;
-	}
-	case GOLD_LOVER:
-	{
-		GlobalYieldMultiplier = 1 + MagicFunctionf(_level-1, 0.1f, 0.4f, 5);
-		break;
-	}
-	case DRILL:
-	{
-		Drill.Damage = MagicFunction(_level-1, 10, 0.2, 10);
-		Drill.Damage *= Drill.MilestoneDamageMult;
-		switch (_level)
-		{
-		case 1:
-			Drill.SetDamagerActive(true);
-			break;
-		case 10:
-			Drill.MilestoneDamageMult *= 2;
-			Drill.Downtime *= 0.8;
-			break;
-		case 25:
-			Drill.MilestoneDamageMult *= 3;
-			Drill.Downtime *= 0.8;
-			break;
-		case 50:
-			Drill.MilestoneDamageMult *= 5;
-			Drill.Downtime *= 0.8;
-			break;
-		}
-
-		Drill.UpdateDisplayTooltip(_level);
-		break;
-	}
-	case BOOM:
-	{
-		Boom.Damage = MagicFunction(_level-1, 50, 0.25, 10);
-		Boom.Damage *= Boom.MilestoneDamageMult;
-		switch (_level)
-		{
-		case 1:
-			Boom.SetDamagerActive(true);
-			break;
-		case 10:
-			Boom.MilestoneDamageMult *= 2;
-			Boom.Downtime *= 0.8;
-			break;
-		case 25:
-			Boom.MilestoneDamageMult *= 3;
-			Boom.Downtime *= 0.8;
-			break;
-		case 50:
-			Boom.MilestoneDamageMult *= 5;
-			Boom.Downtime *= 0.8;
-			break;
-		}
-
-		Boom.UpdateDisplayTooltip(_level);
-		break;
-	}
-	case EARTHQUAKE:
-	{
-		EarthquakeTotem.Damage = MagicFunction(_level-1, 10, 0.3, 10);
-		EarthquakeTotem.Damage *= EarthquakeTotem.MilestoneDamageMult;
-		switch (_level)
-		{
-		case 1:
-			EarthquakeTotem.SetDamagerActive(true);
-			break;
-		case 10:
-			EarthquakeTotem.MilestoneDamageMult *= 2;
-			EarthquakeTotem.Downtime *= 0.8;
-			break;
-		case 25:
-			EarthquakeTotem.MilestoneDamageMult *= 3;
-			EarthquakeTotem.Downtime *= 0.8;
-			break;
-		case 50:
-			EarthquakeTotem.MilestoneDamageMult *= 5;
-			EarthquakeTotem.Downtime *= 0.8;
-			break;
-		}
-
-		EarthquakeTotem.UpdateDisplayTooltip(_level);
-		break;
-	}
-	case LASER:
-	{
-		Laser.Damage = MagicFunction(_level-1, 5, 0.4, 10);
-		Laser.Damage *= Laser.MilestoneDamageMult;
-		switch (_level)
-		{
-		case 1:
-			Laser.SetDamagerActive(true);
-			break;
-		case 10:
-			Laser.MilestoneDamageMult *= 2;
-			Laser.Downtime *= 0.8;
-			break;
-		case 25:
-			Laser.MilestoneDamageMult *= 3;
-			Laser.Downtime *= 0.8;
-			break;
-		case 50:
-			Laser.MilestoneDamageMult *= 5;
-			Laser.Downtime *= 0.8;
-			break;
-		}
-
-		Laser.UpdateDisplayTooltip(_level);
-		break;
-	}
-	}
+	resourceUpgrades[_upgrade]->UpdateTooltipText();
+	resourceUpgrades[_upgrade]->GetCostAndCache();
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Bought upgrade " + FString::FromInt(_upgrade));
 }
 
 FString ADwarfPlayerState::CreateCostText(UpgradeType _upgrade, const TArray<ResourceData>& _cost)
 {
-	FString string = "Cost (x" + FString::FromInt(upgradeMultiplier[_upgrade]) + "): \n";
+	FString string = "Cost (x" + FString::FromInt(resourceUpgrades[_upgrade]->buyMultiplier) + "): \n";
 	for (auto resource : _cost)
 	{
 		bool resourceAvailable = true;
@@ -904,7 +670,7 @@ FString ADwarfPlayerState::CreateCostText(UpgradeType _upgrade, const TArray<Res
 			string += "<UnavailableEmphasis>";
 		}
 		string += ": ";
-		string += resource.Amount.ToString();
+		string += resource.Amount.ToStringTrunc();
 		if (resourceAvailable == false) string += "</>";
 		string += "\n";
 
@@ -916,13 +682,13 @@ FString ADwarfPlayerState::CreateCostText(UpgradeType _upgrade, const TArray<Res
 int ADwarfPlayerState::GetMaxUpgradeMult(UpgradeType _upgrade)
 {
 	TArray<ResourceData> cost;
-	cost = resourceUpgrades[_upgrade].costDelegate.Execute(resourceUpgrades[_upgrade].upgradeLevel);
+	cost = resourceUpgrades[_upgrade]->GetCost(resourceUpgrades[_upgrade]->upgradeLevel);
 	int maxMult = 1;
 
 	int typeCount = cost.Num();
 	for (int i = 1; i < MAX_MULTIPLIER_VALUE; i++)
 	{
-		TArray<ResourceData> currentCost = resourceUpgrades[_upgrade].costDelegate.Execute(resourceUpgrades[_upgrade].upgradeLevel + i);
+		TArray<ResourceData> currentCost = resourceUpgrades[_upgrade]->GetCost(resourceUpgrades[_upgrade]->upgradeLevel + i);
 		for (int j = 0; j < typeCount; j++)
 		{
 			cost[j].Amount += currentCost[j].Amount;
@@ -942,16 +708,14 @@ void ADwarfPlayerState::CardSelectLeft()
 	CardSelection->SetVisibility(ESlateVisibility::Hidden);
 	rogueData.timePaused = false;
 	AddItemFromPool(itemsSelection[0]);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Left selected")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Left selected")));
 }
-
 void ADwarfPlayerState::CardSelectMiddle()
 {
 	CardSelection->SetVisibility(ESlateVisibility::Hidden);
 	rogueData.timePaused = false;
 	AddItemFromPool(itemsSelection[1]);
 }
-
 void ADwarfPlayerState::CardSelectRight()
 {
 	CardSelection->SetVisibility(ESlateVisibility::Hidden);
@@ -964,25 +728,23 @@ void ADwarfPlayerState::RelicCardSelectLeft()
 	RelicSelection->SetVisibility(ESlateVisibility::Hidden);
 	rogueData.timePaused = false;
 	AddRelic(relicCardSelection[0]);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Left selected")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Left selected")));
 	EndRun();
 }
-
 void ADwarfPlayerState::RelicCardSelectMiddle()
 {
 	RelicSelection->SetVisibility(ESlateVisibility::Hidden);
 	rogueData.timePaused = false;
 	AddRelic(relicCardSelection[1]);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Middle selected")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Middle selected")));
 	EndRun();
 }
-
 void ADwarfPlayerState::RelicCardSelectRight()
 {
 	RelicSelection->SetVisibility(ESlateVisibility::Hidden);
 	rogueData.timePaused = false;
 	AddRelic(relicCardSelection[2]);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Right selected")));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Right selected")));
 	EndRun();
 }
 
@@ -994,7 +756,7 @@ void ADwarfPlayerState::AddRelic(IdleRelic* _relic)
 		_relic->IncreaseCount(1);
 
 		obtainedRelics.Add(_relic);
-		_relic->Bind(this);
+		_relic->Bind(this, &idleCave);
 		// Add to box
 		UUpgradeEntryWidget* widget = CreateWidget<UUpgradeEntryWidget, UWrapBox*>(HUD->RelicBox, ItemBoxClass);
 		widget->level = _relic->rank;
@@ -1019,7 +781,7 @@ void ADwarfPlayerState::AddRelic(IdleRelic* _relic, int _count)
 	_relic->IncreaseCount(_count);
 
 	obtainedRelics.Add(_relic);
-	_relic->Bind(this);
+	_relic->Bind(this, &idleCave);
 	// Add to box
 	UUpgradeEntryWidget* widget = CreateWidget<UUpgradeEntryWidget, UWrapBox*>(HUD->RelicBox, ItemBoxClass);
 	widget->level = 1;
@@ -1036,7 +798,8 @@ void ADwarfPlayerState::AddItem(RogueItem* _item)
 	int itemIndex = rogueData.items.Find(_item);
 	if (itemIndex != INDEX_NONE)
 	{ 
-		rogueData.items[itemIndex]->level++;
+		_item->level++;
+		_item->OnLevelUp();
 
 		UUpgradeEntryWidget* widget = rogueData.itemWidgets[itemIndex];
 		widget->level++;
@@ -1049,6 +812,7 @@ void ADwarfPlayerState::AddItem(RogueItem* _item)
 		// New item: Bind and add widget
 		_item->Bind(&rogueData, currentCave);
 		_item->level = 1;
+		_item->OnLevelUp();
 
 		UUpgradeEntryWidget* widget = CreateWidget<UUpgradeEntryWidget, UWrapBox*>(RogueHUD->ItemBox, ItemBoxClass);
 		widget->level = 1;
@@ -1058,6 +822,7 @@ void ADwarfPlayerState::AddItem(RogueItem* _item)
 		widget->descriptionText = _item->GetDescriptionText(_item->level);
 		RogueHUD->ItemBox->AddChild(widget);
 
+		rogueData.items.Add(_item);
 		rogueData.itemWidgets.Add(widget);
 	}
 }
@@ -1075,10 +840,22 @@ void ADwarfPlayerState::UpgradeStrongArms()
 {
 	BuyResourceUpgrade(STRONG_ARMS);
 }
+void ADwarfPlayerState::UpgradeCrit()
+{
+	BuyResourceUpgrade(PRECISION);
+}
+void ADwarfPlayerState::UpgradeYield()
+{
+	BuyResourceUpgrade(GOLD_LOVER);
+}
 
 void ADwarfPlayerState::UpgradeDrill()
 {
 	BuyResourceUpgrade(DRILL);
+}
+void ADwarfPlayerState::UpgradeBoom()
+{
+	BuyResourceUpgrade(BOOM);
 }
 void ADwarfPlayerState::UpgradeEarthquake()
 {
@@ -1089,28 +866,12 @@ void ADwarfPlayerState::UpgradeLaser()
 	BuyResourceUpgrade(LASER);
 }
 
-void ADwarfPlayerState::UpgradeCrit()
-{
-	BuyResourceUpgrade(PRECISION);
-}
-
-void ADwarfPlayerState::UpgradeYield()
-{
-	BuyResourceUpgrade(GOLD_LOVER);
-}
-
-void ADwarfPlayerState::UpgradeBoom()
-{
-	BuyResourceUpgrade(BOOM);
-}
-
 void ADwarfPlayerState::SetUpgradeMult1()
 {
 	maxMultiplier = false;
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
-		upgradeMultiplier[i] = 1;
-		resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
+		resourceUpgrades[i]->SetBuyMultiplier(1);
 	}
 	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
 	FSlateColor Highlight = FSlateColor(FLinearColor(1, 1, 0, 1));
@@ -1121,14 +882,12 @@ void ADwarfPlayerState::SetUpgradeMult1()
 	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Default);
 	Cast<UTextBlock>(HUD->ButtonMultMax->GetChildAt(0))->SetColorAndOpacity(Default);
 }
-
 void ADwarfPlayerState::SetUpgradeMult5()
 {
 	maxMultiplier = false;
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
-		upgradeMultiplier[i] = 5;
-		resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
+		resourceUpgrades[i]->SetBuyMultiplier(5);
 	}
 	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
 	FSlateColor Highlight = FSlateColor(FLinearColor(1, 1, 0, 1));
@@ -1139,14 +898,12 @@ void ADwarfPlayerState::SetUpgradeMult5()
 	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Default);
 	Cast<UTextBlock>(HUD->ButtonMultMax->GetChildAt(0))->SetColorAndOpacity(Default);
 }
-
 void ADwarfPlayerState::SetUpgradeMult10()
 {
 	maxMultiplier = false;
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
-		upgradeMultiplier[i] = 10;
-		resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
+		resourceUpgrades[i]->SetBuyMultiplier(10);
 	}
 
 	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
@@ -1158,14 +915,12 @@ void ADwarfPlayerState::SetUpgradeMult10()
 	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Default);
 	Cast<UTextBlock>(HUD->ButtonMultMax->GetChildAt(0))->SetColorAndOpacity(Default);
 }
-
 void ADwarfPlayerState::SetUpgradeMult25()
 {
 	maxMultiplier = false;
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
-		upgradeMultiplier[i] = 25;
-		resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
+		resourceUpgrades[i]->SetBuyMultiplier(25);
 	}
 	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
 	FSlateColor Highlight = FSlateColor(FLinearColor(1, 1, 0, 1));
@@ -1176,14 +931,12 @@ void ADwarfPlayerState::SetUpgradeMult25()
 	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Default);
 	Cast<UTextBlock>(HUD->ButtonMultMax->GetChildAt(0))->SetColorAndOpacity(Default);
 }
-
 void ADwarfPlayerState::SetUpgradeMult100()
 {
 	maxMultiplier = false;
 	for (int i = 0; i < UPGRADE_COUNT; i++)
 	{
-		upgradeMultiplier[i] = 100;
-		resourceUpgrades[i].GetCostAndCache(upgradeMultiplier[i]);
+		resourceUpgrades[i]->SetBuyMultiplier(100);
 	}
 	FSlateColor Default = FSlateColor(FLinearColor(1, 1, 1, 1));
 	FSlateColor Highlight = FSlateColor(FLinearColor(1, 1, 0, 1));
@@ -1194,7 +947,6 @@ void ADwarfPlayerState::SetUpgradeMult100()
 	Cast<UTextBlock>(HUD->ButtonMult100->GetChildAt(0))->SetColorAndOpacity(Highlight);
 	Cast<UTextBlock>(HUD->ButtonMultMax->GetChildAt(0))->SetColorAndOpacity(Default);
 }
-
 void ADwarfPlayerState::SetUpgradeMultMax()
 {
 	maxMultiplier = true;
@@ -1259,9 +1011,9 @@ void ADwarfPlayerState::IncreaseExp(int _value)
 
 void ADwarfPlayerState::LevelUp()
 {
-	Level++;
+	Level += 1;
 	// Do stuff per level (ex: Give tech point, check for level milestone, etc.)
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, "Level up");
+	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Yellow, "Level up");
 	TalentPoints++;
 	// Show the tech point
 	HUD->TechPointIndicator->SetVisibility(ESlateVisibility::Visible);
@@ -1300,7 +1052,7 @@ void ADwarfPlayerState::LevelUpRogue()
 	CardSelection->SetVisibility(ESlateVisibility::Visible);
 }
 
-void ADwarfPlayerState::IncreaseRogueExp(int _value)
+void ADwarfPlayerState::IncreaseRogueExp(BigNumber _value)
 {
 	rogueData.experience += _value;
 
@@ -1308,30 +1060,30 @@ void ADwarfPlayerState::IncreaseRogueExp(int _value)
 	{
 		LevelUpRogue();
 	}
-	RogueHUD->LevelProgress->SetCompletion((float)rogueData.experience / (float)rogueData.experienceRequired);
+	RogueHUD->LevelProgress->SetCompletion((double)(rogueData.experience / rogueData.experienceRequired));
 }
 
 FString ADwarfPlayerState::GetUpgradeDamageText(UpgradeType _upgrade)
 {
 	switch (_upgrade)
 	{
-	case STRONG_ARMS: return FString::FromInt(MinDamage) + "-" + FString::FromInt(MaxDamage);
-	case DRILL: return FString::SanitizeFloat(Drill.GetDPS()) + "/s";
-	case BOOM: return FString::SanitizeFloat(Boom.GetDPS()) + "/s";
+	case STRONG_ARMS: return MinDamage.ToStringTrunc() + "-" + MaxDamage.ToStringTrunc();
+	case DRILL: return Drill.GetDPS().ToStringTrunc() + "/s";
+	case BOOM: return Boom.GetDPS().ToStringTrunc() + "/s";
 	default: return "Unknown Upgrade type";
 	}
 }
 
-int ADwarfPlayerState::GetClickDamage()
+BigNumber ADwarfPlayerState::GetClickDamage()
 {
-	int finalMinDamage = MinDamage * ClickDamageMultiplier;
+	BigNumber finalMinDamage = MinDamage * ClickDamageMultiplier;
 	MaxDamage = finalMinDamage * DamageWindow;
-	int DamageDelta = MaxDamage - finalMinDamage;
-	int DamageBonus = rand() % (DamageDelta + 1);
-	int finalDamage = finalMinDamage + DamageBonus;
+	BigNumber DamageDelta = MaxDamage - finalMinDamage;
+	BigNumber DamageBonus = rand() % ((int)DamageDelta + 1);
+	BigNumber finalDamage = finalMinDamage + DamageBonus;
 
-	int critChanceTemp = CritChance; // Allows for "overcrit"
-	while (rand() % 100 < critChanceTemp)
+	BigNumber critChanceTemp = CritChance; // Allows for "overcrit"
+	while (critChanceTemp > rand() % 100)
 	{
 		finalDamage *= CritMultiplier;
 		critChanceTemp -= 100;
@@ -1340,13 +1092,13 @@ int ADwarfPlayerState::GetClickDamage()
 	return finalDamage;
 }
 
-int ADwarfPlayerState::GetRogueClickDamage()
+BigNumber ADwarfPlayerState::GetRogueClickDamage()
 {
-	int DamageDelta = rogueData.MaxDamage - rogueData.MinDamage;
-	int DamageBonus = rand() % (DamageDelta + 1);
+	BigNumber DamageDelta = rogueData.MaxDamage - rogueData.MinDamage;
+	BigNumber DamageBonus = rand() % ((int)DamageDelta + 1);
 
 	// Damage Items //
-	int damage = rogueData.MinDamage + DamageBonus;
+	BigNumber damage = rogueData.MinDamage + DamageBonus;
 	rogueData.OnDamageCalc.Broadcast(damage);
 
 	return damage;
@@ -1360,12 +1112,12 @@ void ADwarfPlayerState::Hit(bool _silent = false)
 
 	currentCave->dwarfPawn->HitAnimation();
 
-	int damage = GetClickDamage();
+	BigNumber damage = GetClickDamage();
 	OnClickDamageCalc.Broadcast(damage);
 	Damage(damage,  ClickSource, currentCave);
 }
 
-void ADwarfPlayerState::Damage(int _damage, DamageSource _source, Cave* _cave)
+void ADwarfPlayerState::Damage(BigNumber _damage, DamageSource _source, Cave* _cave)
 {
 	if (!_cave) return;
 	if (!_cave->first) return;
@@ -1375,7 +1127,7 @@ void ADwarfPlayerState::Damage(int _damage, DamageSource _source, Cave* _cave)
 	_cave->DamageFirst(_damage, _source);
 }
 
-void ADwarfPlayerState::DamageColumn(int _damage, DamageSource _source, Cave* _cave)
+void ADwarfPlayerState::DamageColumn(BigNumber _damage, DamageSource _source, Cave* _cave)
 {
 	if (!_cave) return;
 	if (!_cave->first) return;
@@ -1385,7 +1137,7 @@ void ADwarfPlayerState::DamageColumn(int _damage, DamageSource _source, Cave* _c
 	_cave->DamageFirstColumn(_damage, _source);
 }
 
-void ADwarfPlayerState::DamageArea(int _damage, DamageSource _source, Cave* _cave)
+void ADwarfPlayerState::DamageArea(BigNumber _damage, DamageSource _source, Cave* _cave)
 {
 	if (!_cave) return;
 	if (!_cave->first) return;
@@ -1395,7 +1147,7 @@ void ADwarfPlayerState::DamageArea(int _damage, DamageSource _source, Cave* _cav
 	_cave->DamageArea(_damage, _source);
 }
 
-void ADwarfPlayerState::DamageRow(int _damage, DamageSource _source, Cave* _cave)
+void ADwarfPlayerState::DamageRow(BigNumber _damage, DamageSource _source, Cave* _cave)
 {
 	if (!_cave) return;
 	if (!_cave->first) return;
@@ -1405,7 +1157,7 @@ void ADwarfPlayerState::DamageRow(int _damage, DamageSource _source, Cave* _cave
 	_cave->DamageRow(_damage, _source);
 }
 
-void ADwarfPlayerState::DamageIdleCave(int _damage, DamageSource _source)
+void ADwarfPlayerState::DamageIdleCave(BigNumber _damage, DamageSource _source)
 {
 	BlockData currentBlockData = idleCave.first->Data;
 	_damage *= _source.BlockDamageMultiplier[currentBlockData.type];
@@ -1432,14 +1184,16 @@ void ADwarfPlayerState::BlockRewardIdle(BlockData _data)
 void ADwarfPlayerState::BlockRewardRogue(BlockData _data)
 {
 	IncreaseRogueExp(GetRogueExp(_data.expValue));
-	rogueData.Pressure += _data.pressureRegen;
-	rogueData.Pressure = fmin(rogueData.Pressure, rogueData.MaxPressure);
-	RogueHUD->PressureBar->SetPercent(rogueData.Pressure / rogueData.MaxPressure);
+	BigNumber Regen = _data.pressureRegen;
+	rogueData.OnPressureRegenCalc.Broadcast(Regen);
+	rogueData.Pressure += Regen;
+	if (rogueData.Pressure > rogueData.MaxPressure) rogueData.Pressure = rogueData.MaxPressure;
+	RogueHUD->PressureBar->SetPercent((float)(rogueData.Pressure / rogueData.MaxPressure));
 }
 
-int ADwarfPlayerState::GetRogueExp(int _exp)
+BigNumber ADwarfPlayerState::GetRogueExp(BigNumber _exp)
 {
-	int expValue = _exp;
+	BigNumber expValue = _exp;
 	// Call delegate
 	rogueData.OnExpCalc.Broadcast(expValue);
 	return expValue;
@@ -1478,13 +1232,7 @@ void ADwarfPlayerState::StartRun()
 	rogueData = RoguePlayerData();
 
 	// Build the item pool
-	unlockedItemPool.Add(new DamageRogueItem());
-	unlockedItemPool[0]->associatedRelic = relics[0];
-	unlockedItemPool.Add(new CooldownRogueItem());
-	unlockedItemPool[1]->associatedRelic = nullptr;
-	unlockedItemPool.Add(new MultihitRogueItem());
-	unlockedItemPool[2]->associatedRelic = relics[1];
-	currentItemPool = unlockedItemPool;
+	BuildItemPool();
 
 	// Hide idle cave
 	idleCave.SetCaveVisible(false);
@@ -1511,6 +1259,31 @@ void ADwarfPlayerState::StartRun()
 	RogueHUD->LevelProgress->SetCompletion((float)rogueData.experience / (float)rogueData.experienceRequired);
 
 	FocusRogue();
+}
+
+void ADwarfPlayerState::BuildItemPool()
+{
+	unlockedItemPool.Empty();
+	unlockedItemPool.Add(new DamageRogueItem());
+	unlockedItemPool[0]->associatedRelic = relics[0];
+	unlockedItemPool.Add(new MultihitRogueItem());
+	unlockedItemPool[1]->associatedRelic = relics[1];
+	unlockedItemPool.Add(new CooldownRogueItem());
+	unlockedItemPool[2]->associatedRelic = nullptr;
+	unlockedItemPool.Add(new DrillRogueItem());
+	unlockedItemPool[3]->associatedRelic = relics[2];
+	unlockedItemPool.Add(new TNTRogueItem());
+	unlockedItemPool[4]->associatedRelic = relics[3];
+	unlockedItemPool.Add(new EarthquakeRogueItem());
+	unlockedItemPool[5]->associatedRelic = relics[4];
+	unlockedItemPool.Add(new LaserRogueItem());
+	unlockedItemPool[6]->associatedRelic = relics[5];
+	unlockedItemPool.Add(new ResistanceRogueItem());
+	unlockedItemPool[7]->associatedRelic = nullptr;
+	unlockedItemPool.Add(new RegenRogueItem());
+	unlockedItemPool[8]->associatedRelic = nullptr;
+
+	currentItemPool = unlockedItemPool;
 }
 
 void ADwarfPlayerState::RunRewards()
@@ -1627,7 +1400,7 @@ void ADwarfPlayerState::UpdateDamager(AutomaticDamager& _damager, float _dt)
 		_damager.Display->ProgressBar->SetCompletion((_damager.Downtime - _damager.Clock) / _damager.Downtime);
 		while (_damager.IsHitting())
 		{
-			int damage = _damager.Damage;
+			BigNumber damage = _damager.Damage;
 			_damager.OnDamageCalc.Broadcast(damage);
 			switch (_damager.damageType)
 			{
@@ -1691,7 +1464,7 @@ void AutomaticDamager::SetDamagerActive(bool _active)
 
 void AutomaticDamager::UpdateDisplayTooltip(int _level)
 {
-	Display->damage = Damage;
+	Display->DamageText = Damage.ToStringTrunc();
 	Display->hitCooldown = Downtime;
 	Display->level = _level;
 }

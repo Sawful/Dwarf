@@ -5,7 +5,8 @@
 
 void UItemCard::SetItemInfo(RogueItem* _item)
 {
-	Name->SetText(FText::FromString(_item->name));
+	Name->SetText(FText::FromString(_item->name + " (Lvl: " + FString::FromInt(_item->level) + ")"));
+	Name->SetColorAndOpacity(GetRarityColor(_item->rarity));
 	Description->SetText(FText::FromString(_item->GetDescriptionText(_item->level + 1)));
 	ItemIcon->SetBrushFromTexture(_item->icon);
 }

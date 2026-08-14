@@ -19,6 +19,7 @@ BigNumber BigNumber::operator+(BigNumber _other)
 		result.exponent = exponent;
 	}
 
+	if (result.mantissa == 0) return result;
 	while (abs(result.mantissa) >= 10)
 	{
 		result.mantissa /= 10;
@@ -51,6 +52,7 @@ BigNumber BigNumber::operator-(BigNumber _right)
 		result.exponent = exponent;
 	}
 
+	if (result.mantissa == 0) return result;
 	while (abs(result.mantissa) >= 10)
 	{
 		result.mantissa /= 10;
@@ -70,6 +72,7 @@ BigNumber BigNumber::operator*(BigNumber _other)
 	result.mantissa = mantissa * _other.mantissa;
 	result.exponent = exponent + _other.exponent;
 
+	if (result.mantissa == 0) return result;
 	while (abs(result.mantissa) >= 10)
 	{
 		result.mantissa /= 10;
@@ -89,6 +92,7 @@ BigNumber BigNumber::operator/(BigNumber _right)
 	result.mantissa = mantissa / _right.mantissa;
 	result.exponent = exponent - _right.exponent;
 
+	if (result.mantissa == 0) return result;
 	while (abs(result.mantissa) >= 10)
 	{
 		result.mantissa /= 10;
@@ -120,6 +124,7 @@ BigNumber& BigNumber::operator+=(BigNumber _other)
 		exponent = exponent;
 	}
 
+	if (mantissa == 0) return *this;
 	while (abs(mantissa) >= 10)
 	{
 		mantissa /= 10;
@@ -151,6 +156,7 @@ BigNumber& BigNumber::operator-=(BigNumber _right)
 		exponent = exponent;
 	}
 
+	if (mantissa == 0) return *this;
 	while (abs(mantissa) >= 10)
 	{
 		mantissa /= 10;
@@ -169,6 +175,7 @@ BigNumber& BigNumber::operator*=(BigNumber _other)
 	mantissa = mantissa * _other.mantissa;
 	exponent = exponent + _other.exponent;
 
+	if (mantissa == 0) return *this;
 	while (abs(mantissa) >= 10)
 	{
 		mantissa /= 10;
@@ -187,6 +194,7 @@ BigNumber& BigNumber::operator/=(BigNumber _right)
 	mantissa = mantissa / _right.mantissa;
 	exponent = exponent - _right.exponent;
 
+	if (mantissa == 0) return *this;
 	while (abs(mantissa) >= 10)
 	{
 		mantissa /= 10;
@@ -202,6 +210,16 @@ BigNumber& BigNumber::operator/=(BigNumber _right)
 
 bool BigNumber::operator<(BigNumber _right)
 {
+	if (mantissa < 0)
+	{
+		if (_right.mantissa >= 0) return true;
+
+		// Both are negative
+		if (exponent > _right.exponent) return true;
+		if (exponent < _right.exponent) return false;
+		return mantissa < _right.mantissa;
+	}
+
 	if (exponent < _right.exponent) return true;
 	if (exponent > _right.exponent) return false;
 	return mantissa < _right.mantissa;
@@ -209,6 +227,16 @@ bool BigNumber::operator<(BigNumber _right)
 
 bool BigNumber::operator>(BigNumber _right)
 {
+	if (mantissa < 0)
+	{
+		if (_right.mantissa >= 0) return false;
+
+		// Both are negative
+		if (exponent < _right.exponent) return true;
+		if (exponent > _right.exponent) return false;
+		return mantissa > _right.mantissa;
+	}
+
 	if (exponent > _right.exponent) return true;
 	if (exponent < _right.exponent) return false;
 	return mantissa > _right.mantissa;
@@ -216,6 +244,16 @@ bool BigNumber::operator>(BigNumber _right)
 
 bool BigNumber::operator<=(BigNumber _right)
 {
+	if (mantissa < 0)
+	{
+		if (_right.mantissa >= 0) return true;
+
+		// Both are negative
+		if (exponent > _right.exponent) return true;
+		if (exponent < _right.exponent) return false;
+		return mantissa <= _right.mantissa;
+	}
+
 	if (exponent < _right.exponent) return true;
 	if (exponent > _right.exponent) return false;
 	return mantissa <= _right.mantissa;
@@ -223,6 +261,16 @@ bool BigNumber::operator<=(BigNumber _right)
 
 bool BigNumber::operator>=(BigNumber _right)
 {
+	if (mantissa < 0)
+	{
+		if (_right.mantissa >= 0) return false;
+
+		// Both are negative
+		if (exponent < _right.exponent) return true;
+		if (exponent > _right.exponent) return false;
+		return mantissa >= _right.mantissa;
+	}
+
 	if (exponent > _right.exponent) return true;
 	if (exponent < _right.exponent) return false;
 	return mantissa >= _right.mantissa;
@@ -230,7 +278,7 @@ bool BigNumber::operator>=(BigNumber _right)
 
 bool BigNumber::operator==(BigNumber _right)
 {
-	return false;
+	return mantissa == _right.mantissa && exponent == _right.exponent;
 }
 
 BigNumber::BigNumber()
@@ -256,7 +304,7 @@ BigNumber::BigNumber(float _value)
 	while (abs(_value) < 1)
 	{
 		_value *= 10;
-		exponent++;
+		exponent--;
 	}
 	mantissa = _value;
 }
@@ -278,7 +326,7 @@ BigNumber::BigNumber(double _value)
 	while (abs(_value) < 1)
 	{
 		_value *= 10;
-		exponent++;
+		exponent--;
 	}
 	mantissa = _value;
 }
@@ -325,6 +373,12 @@ BigNumber::~BigNumber()
 
 
 FString BigNumber::ToString()
+{
+	if (exponent >= 10 || exponent <= -8) return FString::Printf(TEXT("%.4f"), mantissa) + "E" + FString::Printf(TEXT("%+d"), exponent);
+	return FString::Printf(TEXT("%.2f"), mantissa * powf(10, exponent));
+}
+
+FString BigNumber::ToStringTrunc()
 {
 	if (exponent >= 10 || exponent <= -8) return FString::Printf(TEXT("%.4f"), mantissa) + "E" + FString::Printf(TEXT("%+d"), exponent);
 	return FString::Printf(TEXT("%lld"), int64(mantissa * powf(10, exponent)));

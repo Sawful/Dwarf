@@ -23,7 +23,7 @@ void UResourceEntryWidget::OnDataChanged()
 {
 	Show(true);
 	UpdateText();
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Emerald, "WIDGET SHOWN");
+	//GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Emerald, "WIDGET SHOWN");
 }
 
 void UResourceEntryWidget::Show(bool _show)
@@ -41,5 +41,5 @@ void UResourceEntryWidget::Show(bool _show)
 void UResourceEntryWidget::UpdateText()
 {
 	if (CurrentData == nullptr) return;
-	ResourceText->SetText(FText::FromString(CurrentData->ResourceIcon + ": " + CurrentData->Amount.ToString()));
+	ResourceText->SetText(FText::FromString(CurrentData->ResourceIcon + ": " + CurrentData->Amount.ToStringTrunc()));
 }

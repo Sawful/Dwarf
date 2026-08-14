@@ -84,11 +84,11 @@ public:
 	void SetCaveVisible(bool _visible);
 	virtual ABlock* GenerateBlock(FVector _pos);
 	void GenerateStart();
-	void CreateDamageText(int _damage, DamageTextType _type, FVector _position);
-	void DamageFirst(int _damage, DamageSource _source);
-	void DamageFirstColumn(int _damage, DamageSource _source);
-	void DamageArea(int _damage, DamageSource _source);
-	void DamageRow(int _damage, DamageSource _source);
+	void CreateDamageText(BigNumber _damage, DamageTextType _type, FVector _position);
+	void DamageFirst(BigNumber _damage, DamageSource _source);
+	void DamageFirstColumn(BigNumber _damage, DamageSource _source);
+	void DamageArea(BigNumber _damage, DamageSource _source);
+	void DamageRow(BigNumber _damage, DamageSource _source);
 	virtual void GenerateTail();
 	void SetBlockDataByType(ABlock* _block, BlockType _type);
 	void CheckMoveFloor();

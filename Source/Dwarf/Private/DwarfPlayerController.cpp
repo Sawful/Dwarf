@@ -16,16 +16,16 @@ void ADwarfPlayerController::BeginPlay()
 	
 
 	SetShowMouseCursor(true);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("Controller Begin"));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("Controller Begin"));
 }
 
 void ADwarfPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(IsValid(PState)));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(IsValid(GState)));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(IsValid(DwarfPawn)));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(IsValid(PState)));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(IsValid(GState)));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(IsValid(DwarfPawn)));
 
 	InputComponent->BindAction("LClick", IE_Pressed, this, &ADwarfPlayerController::Hit);
 	InputComponent->BindAction("RClick", IE_Pressed, this, &ADwarfPlayerController::_AutoclickOn);
@@ -34,17 +34,17 @@ void ADwarfPlayerController::SetupInputComponent()
 
 void ADwarfPlayerController::TryStartGame()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Try start game");
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Try start game");
 	DwarfPawn = GetPawn<ADwarfPawn>();
 	if (!DwarfPawn)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Pawn");
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Pawn");
 		return;
 	}
 	PState = (ADwarfPlayerState*)PlayerState;
 	if (!PState) 
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "PState");
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "PState");
 		return;
 	}
 	PState->idlePawn = DwarfPawn;
@@ -52,7 +52,7 @@ void ADwarfPlayerController::TryStartGame()
 	GState = (ADwarfGameState*)GetWorld()->GetGameState();
 	if (!GState) 
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "GState");
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "GState");
 		return;
 	}
 	validStart = true;

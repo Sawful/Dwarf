@@ -6,13 +6,13 @@
 void UResourceEntryData::SetAmount(BigNumber _NewAmount)
 {
     Amount = _NewAmount;
-    AmountString = Amount.ToString();
+    AmountString = Amount.ToStringTrunc();
     OnResourceChanged.Broadcast();
 }
 
 void UResourceEntryData::AddAmount(BigNumber _Add)
 {
     Amount += _Add;
-    AmountString = Amount.ToString();
+    AmountString = Amount.ToStringTrunc();
     OnResourceChanged.Broadcast();
 }

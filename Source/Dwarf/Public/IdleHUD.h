@@ -62,6 +62,8 @@ public:
 	UUpgradeEntryWidget* CritUpgradeBox;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UUpgradeEntryWidget* YieldUpgradeBox;
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UUpgradeEntryWidget* PlaceholderUpgradeBox;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* CharacterMenuButton;
