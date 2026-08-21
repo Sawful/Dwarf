@@ -1,0 +1,1461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FGenericCrashContext>
+<RuntimeProperties>
+<CrashVersion>3</CrashVersion>
+<ExecutionGuid>8499C06745D46939BE7134BB5AA00097</ExecutionGuid>
+<CrashGUID>UECC-Windows-8C10E98049A62AFE9E2111A9D7CA9313_0000</CrashGUID>
+<IsEnsure>false</IsEnsure>
+<IsStall>false</IsStall>
+<IsAssert>true</IsAssert>
+<CrashType>Assert</CrashType>
+<ErrorMessage>Fatal error: [File:D:\build\++UE5\Sync\Engine\Source\Runtime\CoreUObject\Private\Serialization\AsyncLoading2.cpp] [Line: 2591] 
+ObjectSerializationError: /Game/Blueprints/WBP_DwarfUserWidget (0x4716847DA02DD5E9) /Game/Blueprints/WBP_DwarfUserWidget (0x4716847DA02DD5E9) - WBP_DwarfUserWidget_C /Game/Blueprints/WBP_DwarfUserWidget.Default__WBP_DwarfUserWidget_C: Bad export index 16908287/108.
+
+
+</ErrorMessage>
+<CrashReporterMessage></CrashReporterMessage>
+<CrashReporterMessage>Attended</CrashReporterMessage>
+<ProcessId>26884</ProcessId>
+<SecondsSinceStart>0</SecondsSinceStart>
+<IsInternalBuild>false</IsInternalBuild>
+<IsPerforceBuild>false</IsPerforceBuild>
+<IsWithDebugInfo>false</IsWithDebugInfo>
+<IsSourceDistribution>false</IsSourceDistribution>
+<GameName>UE-Dwarf</GameName>
+<ExecutableName>Dwarf</ExecutableName>
+<BuildConfiguration>Development</BuildConfiguration>
+<GameSessionID></GameSessionID>
+<PlatformName>Windows</PlatformName>
+<PlatformFullName>Windows</PlatformFullName>
+<PlatformNameIni>Windows</PlatformNameIni>
+<EngineMode>Game</EngineMode>
+<EngineModeEx>Unset</EngineModeEx>
+<DeploymentName></DeploymentName>
+<EngineVersion>5.7.4-51494982+++UE5+Release-5.7</EngineVersion>
+<EngineCompatibleVersion>5.7.4-51494982+++UE5+Release-5.7</EngineCompatibleVersion>
+<CommandLine> Dwarf</CommandLine>
+<LanguageLCID>9</LanguageLCID>
+<AppDefaultLocale>en-GB</AppDefaultLocale>
+<BuildVersion>++UE5+Release-5.7-CL-51494982</BuildVersion>
+<Symbols>**UE5*Release-5.7-CL-51494982-Win64-Development</Symbols>
+<IsUERelease>false</IsUERelease>
+<IsRequestingExit>false</IsRequestingExit>
+<UserName></UserName>
+<BaseDir>C:/Users/colyn/Documents/Unreal Projects/Dwarf/Windows/Dwarf/Binaries/Win64/</BaseDir>
+<RootDir>C:/Users/colyn/Documents/Unreal Projects/Dwarf/Windows/</RootDir>
+<MachineId>F142EBB14B9D0A30049AA4893D30E6B9</MachineId>
+<LoginId>f142ebb14b9d0a30049aa4893d30e6b9</LoginId>
+<EpicAccountId>7ffd340551d849219d355ed76becab35</EpicAccountId>
+<SourceContext></SourceContext>
+<UserDescription></UserDescription>
+<UserActivityHint></UserActivityHint>
+<CrashDumpMode>0</CrashDumpMode>
+<GameStateName></GameStateName>
+<Misc.NumberOfCores>24</Misc.NumberOfCores>
+<Misc.NumberOfCoresIncludingHyperthreads>24</Misc.NumberOfCoresIncludingHyperthreads>
+<Misc.Is64bitOperatingSystem>1</Misc.Is64bitOperatingSystem>
+<Misc.CPUVendor>GenuineIntel</Misc.CPUVendor>
+<Misc.CPUBrand>Intel(R) Core(TM) Ultra 9 275HX</Misc.CPUBrand>
+<Misc.CPUModelID>27746</Misc.CPUModelID>
+<Misc.CPUMicrocodeRevision>289</Misc.CPUMicrocodeRevision>
+<Misc.PrimaryGPUBrand>Intel(R) Graphics</Misc.PrimaryGPUBrand>
+<Misc.OSVersionMajor>Windows 11 (25H2) [10.0.26200.9168]</Misc.OSVersionMajor>
+<Misc.OSVersionMinor></Misc.OSVersionMinor>
+<Misc.AnticheatProvider></Misc.AnticheatProvider>
+<MemoryStats.TotalPhysical>33690267648</MemoryStats.TotalPhysical>
+<MemoryStats.TotalVirtual>65902522368</MemoryStats.TotalVirtual>
+<MemoryStats.PageSize>4096</MemoryStats.PageSize>
+<MemoryStats.TotalPhysicalGB>32</MemoryStats.TotalPhysicalGB>
+<MemoryStats.AvailablePhysical>7931518976</MemoryStats.AvailablePhysical>
+<MemoryStats.AvailableVirtual>32338800640</MemoryStats.AvailableVirtual>
+<MemoryStats.UsedPhysical>1883602944</MemoryStats.UsedPhysical>
+<MemoryStats.PeakUsedPhysical>1883602944</MemoryStats.PeakUsedPhysical>
+<MemoryStats.UsedVirtual>2133426176</MemoryStats.UsedVirtual>
+<MemoryStats.PeakUsedVirtual>2133426176</MemoryStats.PeakUsedVirtual>
+<MemoryStats.bIsOOM>0</MemoryStats.bIsOOM>
+<MemoryStats.OOMAllocationSize>0</MemoryStats.OOMAllocationSize>
+<MemoryStats.OOMAllocationAlignment>0</MemoryStats.OOMAllocationAlignment>
+<NumMinidumpFramesToIgnore>4</NumMinidumpFramesToIgnore>
+<CallStack></CallStack>
+<PCallStack>
+
+Dwarf     0x00007ff65c920000 + 221a8d1         
+Dwarf     0x00007ff65c920000 + 21febf5         
+Dwarf     0x00007ff65c920000 + 75b964f         
+Dwarf     0x00007ff65c920000 + 220f672         
+Dwarf     0x00007ff65c920000 + 221305f         
+Dwarf     0x00007ff65c920000 + 2214259         
+Dwarf     0x00007ff65c920000 + 22155ca         
+Dwarf     0x00007ff65c920000 + 222f8e5         
+Dwarf     0x00007ff65c920000 + 1a2dba8         
+Dwarf     0x00007ff65c920000 + 1a26acf         
+KERNEL32  0x00007ff928150000 + 2ccb7           
+</PCallStack>
+<PCallStackHash>D950F444AF5D3BC74921A194C3F124A203CAFD55</PCallStackHash>
+<Threads><Thread><CallStack>ntdll       0x00007ff9299e0000 + 163fd4          
+ntdll       0x00007ff9299e0000 + 30543           
+KERNELBASE  0x00007ff9270b0000 + de348           
+Dwarf       0x00007ff65c920000 + 1725d56         
+Dwarf       0x00007ff65c920000 + 139f0cc         
+Dwarf       0x00007ff65c920000 + 13a36ec         
+Dwarf       0x00007ff65c920000 + 2217fe6         
+Dwarf       0x00007ff65c920000 + 1e21649         
+Dwarf       0x00007ff65c920000 + 1e2130c         
+Dwarf       0x00007ff65c920000 + 2160de4         
+Dwarf       0x00007ff65c920000 + 216054d         
+Dwarf       0x00007ff65c920000 + 2160827         
+Dwarf       0x00007ff65c920000 + 216e8d9         
+Dwarf       0x00007ff65c920000 + 2179979         
+Dwarf       0x00007ff65c920000 + 21790d9         
+Dwarf       0x00007ff65c920000 + 2178d4b         
+Dwarf       0x00007ff65c920000 + 7ad5ad5         
+Dwarf       0x00007ff65c920000 + 8914845         
+Dwarf       0x00007ff65c920000 + 8a6623d         
+Dwarf       0x00007ff65c920000 + 8a27326         
+Dwarf       0x00007ff65c920000 + 7b085c5         
+Dwarf       0x00007ff65c920000 + 7b0805b         
+Dwarf       0x00007ff65c920000 + 8c94104         
+Dwarf       0x00007ff65c920000 + 8ca3a0a         
+Dwarf       0x00007ff65c920000 + 8ca3bba         
+Dwarf       0x00007ff65c920000 + 8ca67ca         
+Dwarf       0x00007ff65c920000 + 8cb25e4         
+Dwarf       0x00007ff65c920000 + cebeeda         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>2580</ThreadID>
+<ThreadName>GameThread</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>30228</ThreadID>
+<ThreadName>BackgroundThreadPool #0</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>7904</ThreadID>
+<ThreadName>BackgroundThreadPool #1</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>21824</ThreadID>
+<ThreadName>Foreground Worker #0</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>8556</ThreadID>
+<ThreadName>Foreground Worker #1</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>10952</ThreadID>
+<ThreadName>Background Worker #0</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 137e090         
+Dwarf       0x00007ff65c920000 + 139b317         
+Dwarf       0x00007ff65c920000 + 136ca33         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>15556</ThreadID>
+<ThreadName>Foreground Worker (Standby #0)</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>8928</ThreadID>
+<ThreadName>Background Worker #1</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160a04          
+ntdll       0x00007ff9299e0000 + cfa44           
+KERNELBASE  0x00007ff9270b0000 + 428d1           
+Dwarf       0x00007ff65c920000 + 15f7d25         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>3552</ThreadID>
+<ThreadName>FHeartBeatThread</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160a04          
+ntdll       0x00007ff9299e0000 + cfa44           
+KERNELBASE  0x00007ff9270b0000 + 428d1           
+Dwarf       0x00007ff65c920000 + 17de512         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>9364</ThreadID>
+<ThreadName>FAsyncWriter_Dwarf</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 6af2981         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>10996</ThreadID>
+<ThreadName>FMediaTicker</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160ed4          
+KERNELBASE  0x00007ff9270b0000 + 229f3           
+Dwarf       0x00007ff65c920000 + cb4f8b4         
+Dwarf       0x00007ff65c920000 + cb4d31d         
+Dwarf       0x00007ff65c920000 + 30677e8         
+Dwarf       0x00007ff65c920000 + 30704ad         
+Dwarf       0x00007ff65c920000 + 306f22c         
+Dwarf       0x00007ff65c920000 + 306faa9         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>29996</ThreadID>
+<ThreadName>HttpManagerThread</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + b83dfe6         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>25152</ThreadID>
+<ThreadName>OnlineAsyncTaskThreadNull DefaultInstance(1)</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 163fd4          
+ntdll       0x00007ff9299e0000 + 30543           
+KERNELBASE  0x00007ff9270b0000 + de348           
+Dwarf       0x00007ff65c920000 + 1725c49         
+Dwarf       0x00007ff65c920000 + 13a3186         
+Dwarf       0x00007ff65c920000 + 17e5734         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>10276</ThreadID>
+<ThreadName>OutputDeviceRedirector</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>29116</ThreadID>
+<ThreadName>IOThreadPool #0</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>26844</ThreadID>
+<ThreadName>IOThreadPool #1</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>28800</ThreadID>
+<ThreadName>IOThreadPool #2</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31224</ThreadID>
+<ThreadName>IOThreadPool #3</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 298c991         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31532</ThreadID>
+<ThreadName>IoService</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 16e2af1         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31764</ThreadID>
+<ThreadName>IoDispatcher</ThreadName>
+</Thread>
+<Thread><CallStack>win32u    0x00007ff926d20000 + 1344            
+USER32    0x00007ff9297d0000 + 3a802           
+Dwarf     0x00007ff65c920000 + 22b9fa9         
+Dwarf     0x00007ff65c920000 + 1a2dba8         
+Dwarf     0x00007ff65c920000 + 1a26acf         
+KERNEL32  0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>29024</ThreadID>
+<ThreadName>WindowsRawInputThread</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 5980a85         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31792</ThreadID>
+<ThreadName>RHIInterruptThread</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 5980a85         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>15596</ThreadID>
+<ThreadName>RHISubmissionThread</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 13949ab         
+Dwarf       0x00007ff65c920000 + 13950ae         
+Dwarf       0x00007ff65c920000 + 5d29a9c         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>26652</ThreadID>
+<ThreadName>RHIThread</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 13949ab         
+Dwarf       0x00007ff65c920000 + 13950ae         
+Dwarf       0x00007ff65c920000 + 5d294f8         
+Dwarf       0x00007ff65c920000 + 5d29ba9         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32048</ThreadID>
+<ThreadName>RenderThread 0</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160a04          
+ntdll       0x00007ff9299e0000 + cfa44           
+KERNELBASE  0x00007ff9270b0000 + 428d1           
+Dwarf       0x00007ff65c920000 + 19afef5         
+Dwarf       0x00007ff65c920000 + 5d29cd7         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31120</ThreadID>
+<ThreadName>RTHeartBeat 0</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32264</ThreadID>
+<ThreadName>Background Worker #2</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32312</ThreadID>
+<ThreadName>Background Worker #3</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32736</ThreadID>
+<ThreadName>Background Worker #4</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>23500</ThreadID>
+<ThreadName>Background Worker #5</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32068</ThreadID>
+<ThreadName>Background Worker #6</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32384</ThreadID>
+<ThreadName>Background Worker #7</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>30284</ThreadID>
+<ThreadName>Background Worker #8</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>27480</ThreadID>
+<ThreadName>Background Worker #9</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>13456</ThreadID>
+<ThreadName>Background Worker #10</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>24388</ThreadID>
+<ThreadName>Background Worker #11</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>15204</ThreadID>
+<ThreadName>Background Worker #13</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32624</ThreadID>
+<ThreadName>Background Worker #12</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>27960</ThreadID>
+<ThreadName>Background Worker #14</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31784</ThreadID>
+<ThreadName>Background Worker #16</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>7360</ThreadID>
+<ThreadName>Background Worker #15</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31800</ThreadID>
+<ThreadName>Background Worker #17</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>23468</ThreadID>
+<ThreadName>Background Worker #19</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>2536</ThreadID>
+<ThreadName>Background Worker #20</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1376e1a         
+Dwarf       0x00007ff65c920000 + 13a47c0         
+Dwarf       0x00007ff65c920000 + 136ca3a         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>30372</ThreadID>
+<ThreadName>Background Worker #18</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 1378cda         
+Dwarf       0x00007ff65c920000 + 139b187         
+Dwarf       0x00007ff65c920000 + 136ca33         
+Dwarf       0x00007ff65c920000 + 15f7dc4         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>33116</ThreadID>
+<ThreadName>Background Worker (Standby #0)</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>27368</ThreadID>
+<ThreadName>PSOPrecompilePool #0</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>33184</ThreadID>
+<ThreadName>PSOPrecompilePool #1</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>33128</ThreadID>
+<ThreadName>PSOPrecompilePool #2</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>9956</ThreadID>
+<ThreadName>PSOPrecompilePool #3</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>33192</ThreadID>
+<ThreadName>PSOPrecompilePool #4</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>33640</ThreadID>
+<ThreadName>PSOPrecompilePool #5</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>33716</ThreadID>
+<ThreadName>PSOPrecompilePool #6</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>26388</ThreadID>
+<ThreadName>PSOPrecompilePool #7</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>10480</ThreadID>
+<ThreadName>PSOPrecompilePool #8</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>26060</ThreadID>
+<ThreadName>PSOPrecompilePool #9</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32104</ThreadID>
+<ThreadName>PSOPrecompilePool #10</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32644</ThreadID>
+<ThreadName>PSOPrecompilePool #11</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>4128</ThreadID>
+<ThreadName>PSOPrecompilePool #12</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>8524</ThreadID>
+<ThreadName>PSOPrecompilePool #13</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32148</ThreadID>
+<ThreadName>PSOPrecompilePool #14</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31760</ThreadID>
+<ThreadName>PSOPrecompilePool #15</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31940</ThreadID>
+<ThreadName>PSOPrecompilePool #16</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32640</ThreadID>
+<ThreadName>PSOPrecompilePool #17</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 2c413d1         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>27188</ThreadID>
+<ThreadName>FMessageBus.DefaultBus.Router</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll         0x00007ff9299e0000 + 160404          
+KERNELBASE    0x00007ff9270b0000 + 1c11f           
+Dwarf         0x00007ff65c920000 + 19aa3cd         
+Dwarf         0x00007ff65c920000 + cf1b52e         
+VCRUNTIME140  0x00007ff905630000 + 1a9c0           
+ntdll         0x00007ff9299e0000 + 164abf          
+ntdll         0x00007ff9299e0000 + 45e97           
+ntdll         0x00007ff9299e0000 + 8d011           
+KERNELBASE    0x00007ff9270b0000 + c187a           
+Dwarf         0x00007ff65c920000 + 19adb0e         
+Dwarf         0x00007ff65c920000 + 17d2672         
+Dwarf         0x00007ff65c920000 + 169d3f6         
+Dwarf         0x00007ff65c920000 + 221a8d1         
+Dwarf         0x00007ff65c920000 + 21febf5         
+Dwarf         0x00007ff65c920000 + 75b964f         
+Dwarf         0x00007ff65c920000 + 220f672         
+Dwarf         0x00007ff65c920000 + 221305f         
+Dwarf         0x00007ff65c920000 + 2214259         
+Dwarf         0x00007ff65c920000 + 22155ca         
+Dwarf         0x00007ff65c920000 + 222f8e5         
+Dwarf         0x00007ff65c920000 + 1a2dba8         
+Dwarf         0x00007ff65c920000 + 1a26acf         
+KERNEL32      0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>true</IsCrashed>
+<Registers></Registers>
+<ThreadID>14424</ThreadID>
+<ThreadName>FAsyncLoadingThread</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>24968</ThreadID>
+<ThreadName>UnknownThreadPool #0</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>27348</ThreadID>
+<ThreadName>UnknownThreadPool #1</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>22264</ThreadID>
+<ThreadName>UnknownThreadPool #2</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>8140</ThreadID>
+<ThreadName>UnknownThreadPool #3</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32652</ThreadID>
+<ThreadName>UnknownThreadPool #4</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>30868</ThreadID>
+<ThreadName>UnknownThreadPool #5</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>25884</ThreadID>
+<ThreadName>UnknownThreadPool #6</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>10112</ThreadID>
+<ThreadName>UnknownThreadPool #7</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>8344</ThreadID>
+<ThreadName>UnknownThreadPool #8</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31108</ThreadID>
+<ThreadName>UnknownThreadPool #9</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>29356</ThreadID>
+<ThreadName>UnknownThreadPool #10</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>7608</ThreadID>
+<ThreadName>UnknownThreadPool #11</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>21816</ThreadID>
+<ThreadName>UnknownThreadPool #12</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32804</ThreadID>
+<ThreadName>UnknownThreadPool #13</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32484</ThreadID>
+<ThreadName>UnknownThreadPool #14</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32488</ThreadID>
+<ThreadName>UnknownThreadPool #15</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>31040</ThreadID>
+<ThreadName>UnknownThreadPool #16</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32480</ThreadID>
+<ThreadName>UnknownThreadPool #17</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>27168</ThreadID>
+<ThreadName>UnknownThreadPool #18</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>5852</ThreadID>
+<ThreadName>UnknownThreadPool #19</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>32000</ThreadID>
+<ThreadName>UnknownThreadPool #20</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>20072</ThreadID>
+<ThreadName>UnknownThreadPool #21</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>5600</ThreadID>
+<ThreadName>UnknownThreadPool #22</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 15f7a06         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>1480</ThreadID>
+<ThreadName>UnknownThreadPool #23</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160a04          
+ntdll       0x00007ff9299e0000 + cfa44           
+KERNELBASE  0x00007ff9270b0000 + 428d1           
+Dwarf       0x00007ff65c920000 + 19afef5         
+Dwarf       0x00007ff65c920000 + 8a73b75         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>16136</ThreadID>
+<ThreadName>ScreenSaverInhibitor</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 4436b9b         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>17908</ThreadID>
+<ThreadName>AudioMixerNullCallbackThread</ThreadName>
+</Thread>
+<Thread><CallStack>ntdll       0x00007ff9299e0000 + 160404          
+KERNELBASE  0x00007ff9270b0000 + 1c11f           
+Dwarf       0x00007ff65c920000 + 19b26f0         
+Dwarf       0x00007ff65c920000 + 4436faf         
+Dwarf       0x00007ff65c920000 + 4436e79         
+Dwarf       0x00007ff65c920000 + 1a2dba8         
+Dwarf       0x00007ff65c920000 + 1a26acf         
+KERNEL32    0x00007ff928150000 + 2ccb7           
+</CallStack>
+<IsCrashed>false</IsCrashed>
+<Registers></Registers>
+<ThreadID>3032</ThreadID>
+<ThreadName>AudioMixerRenderThread(1)</ThreadName>
+</Thread>
+</Threads>
+</RuntimeProperties>
+<PlatformProperties>
+<PlatformIsRunningWindows>1</PlatformIsRunningWindows>
+<PlatformIsRunningWine>false</PlatformIsRunningWine>
+<PlatformSupportsWindows11>true</PlatformSupportsWindows11>
+<IsRunningOnBattery>true</IsRunningOnBattery>
+<IsUsingBatterySaver>false</IsUsingBatterySaver>
+<PlatformCallbackResult>0</PlatformCallbackResult>
+<CrashTrigger>0</CrashTrigger>
+</PlatformProperties>
+<EngineData>
+<MatchingDPStatus>WindowsNo errors</MatchingDPStatus>
+<RHI.IntegratedGPU>false</RHI.IntegratedGPU>
+<RHI.DriverDenylisted>false</RHI.DriverDenylisted>
+<RHI.D3DDebug>false</RHI.D3DDebug>
+<RHI.DRED>false</RHI.DRED>
+<RHI.DREDMarkersOnly>false</RHI.DREDMarkersOnly>
+<RHI.DREDContext>false</RHI.DREDContext>
+<RHI.Aftermath>true</RHI.Aftermath>
+<RHI.RHIName>D3D12</RHI.RHIName>
+<RHI.AdapterName>NVIDIA GeForce RTX 5070 Ti Laptop GPU</RHI.AdapterName>
+<RHI.UserDriverVersion>596.13</RHI.UserDriverVersion>
+<RHI.InternalDriverVersion>32.0.15.9613</RHI.InternalDriverVersion>
+<RHI.DriverDate>4-8-2026</RHI.DriverDate>
+<RHI.FeatureLevel>SM6</RHI.FeatureLevel>
+<RHI.GPUVendor>NVIDIA</RHI.GPUVendor>
+<RHI.DeviceId>2F58</RHI.DeviceId>
+<DeviceProfile.Name>Windows</DeviceProfile.Name>
+</EngineData>
+<GameData>
+</GameData>
+</FGenericCrashContext>

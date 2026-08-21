@@ -15,6 +15,10 @@ enum RelicTag
 {
 	DAMAGE,
 	MULTIHIT,
+	DRILL,
+	TNT,
+	EARTHQUAKE,
+	LASER,
 
 	RELIC_COUNT
 };
@@ -38,6 +42,7 @@ public:
 	int countRequired;
 	ItemRarity rarity;
 	FString name;
+	UPROPERTY()
 	UTexture2D* icon;
 	RelicTag tag;
 	UUpgradeEntryWidget* widget = nullptr;
@@ -50,7 +55,7 @@ class DamageIdleRelic : public IdleRelic
 	float multiplier;
 	int GetMult(int _level);
 public:
-	DamageIdleRelic() { rarity = COMMON; name = "Sharpening stone"; tag = DAMAGE; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/StrongArms.StrongArms")); };
+	DamageIdleRelic() { rarity = COMMON; name = "Sharpening stone"; tag = RelicTag::DAMAGE; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/StrongArms.StrongArms")); };
 	virtual void Bind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void UnBind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void RankUp();
@@ -65,7 +70,7 @@ class MultihitIdleRelic : public IdleRelic
 	bool reloading = true;
 	int hitCounter;
 public:
-	MultihitIdleRelic() { rarity = UNCOMMON; name = "Rusty pickaxe"; tag = MULTIHIT; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/pick_04.pick_04")); };
+	MultihitIdleRelic() { rarity = UNCOMMON; name = "Rusty pickaxe"; tag = RelicTag::MULTIHIT; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/pick_04.pick_04")); };
 	virtual void Bind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void UnBind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual FString GetDescriptionText(int _level);
@@ -80,9 +85,9 @@ class DrillIdleRelic : public IdleRelic
 	float damageMultiplier;
 	float cooldownMultiplier;
 	int GetDamageMult(int _level);
-	int GetCooldownMult(int _level);
+	float GetCooldownMult(int _level);
 public:
-	DrillIdleRelic() { rarity = COMMON; name = "Drill Essence"; tag = DAMAGE; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Drill.Drill")); };
+	DrillIdleRelic() { rarity = COMMON; name = "Drill Essence"; tag = RelicTag::DRILL; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Drill.Drill")); };
 	virtual void Bind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void UnBind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void RankUp();
@@ -98,9 +103,9 @@ class BoomIdleRelic : public IdleRelic
 	float damageMultiplier;
 	float cooldownMultiplier;
 	int GetDamageMult(int _level);
-	int GetCooldownMult(int _level);
+	float GetCooldownMult(int _level);
 public:
-	BoomIdleRelic() { rarity = UNCOMMON; name = "Ethereal Gunpowder"; tag = DAMAGE; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/TNT.TNT")); };
+	BoomIdleRelic() { rarity = UNCOMMON; name = "Ethereal Gunpowder"; tag = RelicTag::TNT; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/TNT.TNT")); };
 	virtual void Bind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void UnBind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void RankUp();
@@ -116,9 +121,9 @@ class EarthquakeIdleRelic : public IdleRelic
 	float damageMultiplier;
 	float cooldownMultiplier;
 	int GetDamageMult(int _level);
-	int GetCooldownMult(int _level);
+	float GetCooldownMult(int _level);
 public:
-	EarthquakeIdleRelic() { rarity = RARE; name = "Dwarven Charm"; tag = DAMAGE; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Totem.Totem")); };
+	EarthquakeIdleRelic() { rarity = RARE; name = "Dwarven Charm"; tag = RelicTag::EARTHQUAKE; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Totem.Totem")); };
 	virtual void Bind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void UnBind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void RankUp();
@@ -134,9 +139,9 @@ class LaserIdleRelic : public IdleRelic
 	float damageMultiplier;
 	float cooldownMultiplier;
 	int GetDamageMult(int _level);
-	int GetCooldownMult(int _level);
+	float GetCooldownMult(int _level);
 public:
-	LaserIdleRelic() { rarity = EPIC; name = "Amplifying Lens"; tag = DAMAGE; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Laser.Laser")); };
+	LaserIdleRelic() { rarity = EPIC; name = "Amplifying Lens"; tag = RelicTag::LASER; icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Laser.Laser")); };
 	virtual void Bind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void UnBind(ADwarfPlayerState* _player, Cave* _cave);
 	virtual void RankUp();

@@ -179,31 +179,6 @@ void Cave::BreakFirst()
 	GenerateTail();
 }
 
-void Cave::Break(int _index)
-{
-	if (_index == 0)
-	{
-		BreakFirst();
-		return;
-	}
-
-	ABlock* previous = first;
-	for (int i = 0; i < _index - 1; i++)
-	{
-		previous = previous->next;
-	}
-
-	ABlock* broken = previous->next;
-	broken->DisconnectFromList();
-
-	blocksBroken += broken->Data.value;
-
-	BlockBreakDelegate.Execute(broken->Data);
-	broken->Destroy();
-
-	GenerateTail();
-}
-
 void Cave::Break(ABlock* _broken)
 {
 	if (_broken == first)

@@ -1,23 +1,22 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "ResourceData.h"
 #include "UpgradeEntryWidget.h"
+//#include "UpgradeType.h"
 
 class ADwarfPlayerState;
 
-enum UpgradeType
+enum UpgradeType : int
 {
-	STRONG_ARMS = 0,	// Click damage
-	DRILL,				// Auto dmg
-	BOOM,				// Auto dmg column
-	EARTHQUAKE,			// Auto dmg area
-	LASER,				// Auto dmg row
-	PRECISION,			// Click crit chance
-	GOLD_LOVER,			// Global Yield
-	PIERCE,
+	UPG_STRONG_ARMS = 0,	// Click damage
+	UPG_DRILL,				// Auto dmg
+	UPG_BOOM,				// Auto dmg column
+	UPG_EARTHQUAKE,			// Auto dmg area
+	UPG_LASER,				// Auto dmg row
+	UPG_PRECISION,			// Click crit chance
+	UPG_GOLD_LOVER,			// Global Yield
+	UPG_PIERCE,
 
 	UPGRADE_COUNT
 };
@@ -42,6 +41,7 @@ struct ResourceUpgrade
 	TArray<ResourceData> costCached;
 
 	// Texture/Image
+	UPROPERTY()
 	UTexture2D* icon;
 
 	int buyMultiplier = 1;
@@ -73,7 +73,7 @@ struct StrongArmsUpgrade: public ResourceUpgrade
 	virtual TArray<ResourceData> GetCost(int _level);
 	virtual FString GetDescription();
 	virtual void ApplyUpgrade();
-	BigNumber GetDamage(int _level);
+	BigNumber GetBaseDamage(int _level);
 
 };
 
@@ -88,9 +88,8 @@ struct DrillUpgrade: public ResourceUpgrade
 	virtual TArray<ResourceData> GetCost(int _level);
 	virtual FString GetDescription();
 	virtual void ApplyUpgrade();
-	BigNumber GetDamage(int _level);
+	BigNumber GetBaseDamage(int _level);
 	float GetCooldown(int _level);
-
 };
 struct BoomUpgrade: public ResourceUpgrade
 {
@@ -103,7 +102,7 @@ struct BoomUpgrade: public ResourceUpgrade
 	virtual TArray<ResourceData> GetCost(int _level);
 	virtual FString GetDescription();
 	virtual void ApplyUpgrade();
-	BigNumber GetDamage(int _level);
+	BigNumber GetBaseDamage(int _level);
 	float GetCooldown(int _level);
 
 };
@@ -118,7 +117,7 @@ struct EarthquakeUpgrade: public ResourceUpgrade
 	virtual TArray<ResourceData> GetCost(int _level);
 	virtual FString GetDescription();
 	virtual void ApplyUpgrade();
-	BigNumber GetDamage(int _level);
+	BigNumber GetBaseDamage(int _level);
 	float GetCooldown(int _level);
 
 };
@@ -133,7 +132,7 @@ struct LaserUpgrade: public ResourceUpgrade
 	virtual TArray<ResourceData> GetCost(int _level);
 	virtual FString GetDescription();
 	virtual void ApplyUpgrade();
-	BigNumber GetDamage(int _level);
+	BigNumber GetBaseDamage(int _level);
 	float GetCooldown(int _level);
 
 };

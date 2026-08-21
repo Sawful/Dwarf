@@ -26,6 +26,6 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* Description;
 
-	void SetItemInfo(RogueItem* _item);
+	void SetItemInfo(URogueItem* _item);
 	void SetRelicInfo(IdleRelic* _item);
 };

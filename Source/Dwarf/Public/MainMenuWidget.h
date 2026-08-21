@@ -17,5 +17,9 @@ public:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* RunButton;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UButton* QuitButton;
+
 	virtual void NativeConstruct() override;
 };

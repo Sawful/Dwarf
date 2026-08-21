@@ -145,7 +145,7 @@ int DrillIdleRelic::GetDamageMult(int _level)
 	return 1;
 }
 
-int DrillIdleRelic::GetCooldownMult(int _level)
+float DrillIdleRelic::GetCooldownMult(int _level)
 {
 	switch (_level)
 	{
@@ -167,7 +167,7 @@ void DrillIdleRelic::RankUp()
 
 FString DrillIdleRelic::GetDescriptionText(int _level)
 {
-	return "Increases your Drill's damage by +" + FString::FromInt(GetDamageMult(_level) * 100) + "% and it's attack speed by +" + FString::FromInt((1.0f / GetCooldownMult(_level))*100) + "%.";
+	return "Increases your Drill's damage by +" + FString::FromInt((GetDamageMult(_level)-1) * 100) + "% and it's attack speed by +" + FString::FromInt((1.0f / GetCooldownMult(_level) - 1) * 100) + "%.";
 }
 
 ////////////
@@ -205,7 +205,7 @@ int BoomIdleRelic::GetDamageMult(int _level)
 	return 1;
 }
 
-int BoomIdleRelic::GetCooldownMult(int _level)
+float BoomIdleRelic::GetCooldownMult(int _level)
 {
 	switch (_level)
 	{
@@ -227,7 +227,7 @@ void BoomIdleRelic::RankUp()
 
 FString BoomIdleRelic::GetDescriptionText(int _level)
 {
-	return "Increases your TNT's damage by +" + FString::FromInt(GetDamageMult(_level) * 100) + "% and it's attack speed by +" + FString::FromInt((1.0f / GetCooldownMult(_level)) * 100) + "%.";
+	return "Increases your TNT's damage by +" + FString::FromInt((GetDamageMult(_level)-1) * 100) + "% and it's attack speed by +" + FString::FromInt((1.0f / GetCooldownMult(_level) - 1) * 100) + "%.";
 }
 
 //////////////////
@@ -265,7 +265,7 @@ int EarthquakeIdleRelic::GetDamageMult(int _level)
 	return 1;
 }
 
-int EarthquakeIdleRelic::GetCooldownMult(int _level)
+float EarthquakeIdleRelic::GetCooldownMult(int _level)
 {
 	switch (_level)
 	{
@@ -287,7 +287,7 @@ void EarthquakeIdleRelic::RankUp()
 
 FString EarthquakeIdleRelic::GetDescriptionText(int _level)
 {
-	return "Increases your Earthquake Totem's damage by +" + FString::FromInt(GetDamageMult(_level) * 100) + "% and it's attack speed by +" + FString::FromInt((1.0f / GetCooldownMult(_level)) * 100) + "%.";
+	return "Increases your Earthquake Totem's damage by +" + FString::FromInt((GetDamageMult(_level) - 1) * 100) + "% and it's attack speed by +" + FString::FromInt((1.0f / GetCooldownMult(_level) - 1) * 100) + "%.";
 }
 
 /////////////
@@ -325,7 +325,7 @@ int LaserIdleRelic::GetDamageMult(int _level)
 	return 1;
 }
 
-int LaserIdleRelic::GetCooldownMult(int _level)
+float LaserIdleRelic::GetCooldownMult(int _level)
 {
 	switch (_level)
 	{
@@ -347,5 +347,5 @@ void LaserIdleRelic::RankUp()
 
 FString LaserIdleRelic::GetDescriptionText(int _level)
 {
-	return "Increases your Mining Laser's damage by +" + FString::FromInt(GetDamageMult(_level) * 100) + "% and it's attack speed by +" + FString::FromInt((1.0f / GetCooldownMult(_level)) * 100) + "%.";
+	return "Increases your Mining Laser's damage by +" + FString::FromInt((GetDamageMult(_level) - 1) * 100) + "% and it's attack speed by +" + FString::FromInt((1.0f / GetCooldownMult(_level) - 1) * 100.0f) + "%.";
 }

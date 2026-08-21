@@ -38,6 +38,11 @@ void ResourceUpgrade::SetBuyMultiplier(int _mult)
 void ResourceUpgrade::SetWidget(UUpgradeEntryWidget* _widget)
 {
 	widget = _widget;
+	if (!IsValid(icon))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Icon invalid");
+		return;
+	}
 	widget->Icon->SetBrushFromTexture(icon);
 }
 
@@ -66,15 +71,15 @@ TArray<ResourceData> StrongArmsUpgrade::GetCost(int _level)
 
 FString StrongArmsUpgrade::GetDescription()
 {
-	return "Your clicks deal " + GetDamage(upgradeLevel).ToStringTrunc() + "->" + GetDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + " damage.";
+	return "Your clicks deal " + GetBaseDamage(upgradeLevel).ToStringTrunc() + "->" + GetBaseDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + " damage.";
 }
 
 void StrongArmsUpgrade::ApplyUpgrade()
 {
-	player->MinDamage = GetDamage(upgradeLevel);
+	player->MinDamage = GetBaseDamage(upgradeLevel);
 }
 
-BigNumber StrongArmsUpgrade::GetDamage(int _level)
+BigNumber StrongArmsUpgrade::GetBaseDamage(int _level)
 {
 	if (_level <= 0) return 0;
 	return MagicFunction(_level - 1, 2, 0.4, 5);
@@ -97,13 +102,12 @@ TArray<ResourceData> DrillUpgrade::GetCost(int _level)
 
 FString DrillUpgrade::GetDescription()
 {
-	return "An automatic drill that will hit for " + GetDamage(upgradeLevel).ToStringTrunc() + "->" + GetDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + " for you.";
+	return "An automatic drill that will hit for " + GetBaseDamage(upgradeLevel).ToStringTrunc() + "->" + GetBaseDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + " for you.";
 }
 
 void DrillUpgrade::ApplyUpgrade()
 {
 	AutomaticDamager* drill = &player->Drill;
-	drill->Damage = GetDamage(upgradeLevel);
 	switch (upgradeLevel)
 	{
 	case 1:
@@ -135,10 +139,11 @@ void DrillUpgrade::ApplyUpgrade()
 		break;
 	}
 
+	drill->Damage = GetBaseDamage(upgradeLevel);
 	drill->UpdateDisplayTooltip(upgradeLevel);
 }
 
-BigNumber DrillUpgrade::GetDamage(int _level)
+BigNumber DrillUpgrade::GetBaseDamage(int _level)
 {
 	if (_level <= 0) return 0;
 	return MagicFunction(_level - 1, 10, 0.2, 10) * player->Drill.MilestoneDamageMult;
@@ -160,13 +165,13 @@ TArray<ResourceData> BoomUpgrade::GetCost(int _level)
 
 FString BoomUpgrade::GetDescription()
 {
-	return "A slow automatic hit that deals heavy damage (" + GetDamage(upgradeLevel).ToStringTrunc() + "->" + GetDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + ") to the first column of blocks.";
+	return "A slow automatic hit that deals heavy damage (" + GetBaseDamage(upgradeLevel).ToStringTrunc() + "->" + GetBaseDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + ") to the first column of blocks.";
 }
 
 void BoomUpgrade::ApplyUpgrade()
 {
 	AutomaticDamager& Boom = player->Boom;
-	Boom.Damage = GetDamage(upgradeLevel);
+	Boom.Damage = GetBaseDamage(upgradeLevel);
 		
 	switch (upgradeLevel)
 	{
@@ -202,7 +207,7 @@ void BoomUpgrade::ApplyUpgrade()
 	Boom.UpdateDisplayTooltip(upgradeLevel);
 }
 
-BigNumber BoomUpgrade::GetDamage(int _level)
+BigNumber BoomUpgrade::GetBaseDamage(int _level)
 {
 	if (_level <= 0) return 0;
 	return MagicFunction(_level - 1, 50, 0.25, 10) * player->Boom.MilestoneDamageMult;
@@ -224,13 +229,13 @@ TArray<ResourceData> EarthquakeUpgrade::GetCost(int _level)
 
 FString EarthquakeUpgrade::GetDescription()
 {
-	return "Shakes up the ground in front of you for " + GetDamage(upgradeLevel).ToStringTrunc() + "->" + GetDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + " to clear any rubble standing in your way.";
+	return "Shakes up the ground in front of you for " + GetBaseDamage(upgradeLevel).ToStringTrunc() + "->" + GetBaseDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + " to clear any rubble standing in your way.";
 }
 
 void EarthquakeUpgrade::ApplyUpgrade()
 {
 	AutomaticDamager& EarthquakeTotem = player->Earthquake;
-	EarthquakeTotem.Damage = GetDamage(upgradeLevel);
+	EarthquakeTotem.Damage = GetBaseDamage(upgradeLevel);
 	switch (upgradeLevel)
 	{
 	case 1:
@@ -265,7 +270,7 @@ void EarthquakeUpgrade::ApplyUpgrade()
 	EarthquakeTotem.UpdateDisplayTooltip(upgradeLevel);
 }
 
-BigNumber EarthquakeUpgrade::GetDamage(int _level)
+BigNumber EarthquakeUpgrade::GetBaseDamage(int _level)
 {
 	if (_level <= 0) return 0;
 	return MagicFunction(_level - 1, 10, 0.3, 10) * player->Earthquake.MilestoneDamageMult;
@@ -286,13 +291,13 @@ TArray<ResourceData> LaserUpgrade::GetCost(int _level)
 
 FString LaserUpgrade::GetDescription()
 {
-	return "Constantly piercing through in front of it for " + GetDamage(upgradeLevel).ToStringTrunc() + "->" + GetDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + ".";
+	return "Constantly piercing through in front of it for " + GetBaseDamage(upgradeLevel).ToStringTrunc() + "->" + GetBaseDamage(upgradeLevel + buyMultiplier).ToStringTrunc() + ".";
 }
 
 void LaserUpgrade::ApplyUpgrade()
 {
 	AutomaticDamager& Laser = player->Laser;
-	Laser.Damage = GetDamage(upgradeLevel);
+	Laser.Damage = GetBaseDamage(upgradeLevel);
 	switch (upgradeLevel)
 	{
 	case 1:
@@ -327,7 +332,7 @@ void LaserUpgrade::ApplyUpgrade()
 	Laser.UpdateDisplayTooltip(upgradeLevel);
 }
 
-BigNumber LaserUpgrade::GetDamage(int _level)
+BigNumber LaserUpgrade::GetBaseDamage(int _level)
 {
 	if (_level <= 0) return 0;
 	return MagicFunction(_level - 1, 5, 0.4, 10) * player->Laser.MilestoneDamageMult;

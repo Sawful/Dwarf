@@ -41,6 +41,8 @@ ABlock* RogueCave::GenerateBlock(FVector _pos)
 	cavePressure = 1.0f + blocksGenerated * 0.02f;
 	block->Data.pressureValue = cavePressure;
 	block->Data.pressureRegen = cavePressure;
+
+	block->Data.index = blocksGenerated;
 	blocksGenerated++;
 
 	return block;

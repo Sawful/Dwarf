@@ -12,7 +12,7 @@ class DWARF_API UDwarfSaveGame : public USaveGame
 	GENERATED_BODY()
 public:
 	UPROPERTY()
-	unsigned int upgradeLevels[UPGRADE_COUNT];
+	unsigned int upgradeLevels[UpgradeType::UPGRADE_COUNT];
 
 	UPROPERTY()
 	int resources[RESOURCE_COUNT];

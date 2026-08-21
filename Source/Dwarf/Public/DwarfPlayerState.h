@@ -21,25 +21,11 @@
 #include "Cave.h"
 #include "DamageSource.h"
 #include "DwarfPawn.h"
+#include "Milestone.h"
 #include "DwarfPlayerState.generated.h"
 
 class USaveGame;
 class UUpgradeEntryData;
-
-DECLARE_DELEGATE_OneParam(FOnMilestoneTier, int);
-template <typename T>
-struct Milestone
-{
-	T value; // Tracked value
-	int currentTier = 0;
-	int maximumTier;
-	TArray<T> tiers;
-	FOnMilestoneTier tierUpDelegate;
-
-	Milestone(T _value) : value(_value) {};
-
-	void CheckTier();
-};
 
 struct SavedStats
 {
@@ -76,6 +62,10 @@ struct AutomaticDamager
 	UAutoAttackerDisplay* Display;
 	FOnDamageCalc OnDamageCalc;
 	FOnCooldownCalc OnCooldownCalc;
+
+	BigNumber GetDamage();
+	float GetCooldown();
+
 	bool IsHitting();
 	BigNumber GetDPS() { return Damage / (BigNumber)Downtime; };
 	void SetDamagerActive(bool _active);
@@ -88,7 +78,7 @@ struct RoguePlayerData
 	int level = 1;
 	BigNumber experience = 0;
 	BigNumber experienceRequired = 8;
-	TArray<RogueItem*> items;
+	TArray<URogueItem*> items;
 	TArray<UUpgradeEntryWidget*> itemWidgets;
 
 	bool timePaused = false;
@@ -157,29 +147,37 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUpgradeEntryWidget> ItemBoxClass;
 
-	UMainMenuWidget* MainMenu; 
+	UPROPERTY()
+	UMainMenuWidget* MainMenu;
+	UPROPERTY()
 	UIdleHUD* HUD;
+	UPROPERTY()
 	UCharacterMenuWidget* CharacterMenu;
+	UPROPERTY()
 	URogueHUD* RogueHUD;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<URogueCardSelection> CardSelectionClass;
+	UPROPERTY()
 	URogueCardSelection* CardSelection;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<URogueCardSelection> RelicSelectionClass;
+
+	UPROPERTY()
 	URogueCardSelection* RelicSelection;
 	IdleRelic* relicCardSelection[3];
 
-	ResourceUpgrade* resourceUpgrades[UPGRADE_COUNT];
+	ResourceUpgrade* resourceUpgrades[UpgradeType::UPGRADE_COUNT];
 
 	TArray<IdleRelic*> obtainedRelics;
 
 	// ROGUE //
 	bool inRun = false;
 	RoguePlayerData rogueData;
-	TArray<RogueItem*> unlockedItemPool;
-	TArray<RogueItem*> currentItemPool;
+	UPROPERTY()
+	TArray<URogueItem*> unlockedItemPool;
+	TArray<URogueItem*> currentItemPool;
 	int itemsSelection[3];
 
 	bool TimeBoost = false;
@@ -203,7 +201,9 @@ public:
 
 	bool CheckCost(const TArray<ResourceData>& _cost);
 	bool PayCost(const TArray<ResourceData>& _cost);
+
 	void BuyResourceUpgrade(UpgradeType _upgrade);
+
 	FString CreateCostText(UpgradeType _upgrade, const TArray<ResourceData>& _cost);
 	void RebuildCostCache(UpgradeType _upgrade);
 	int GetMaxUpgradeMult(UpgradeType _upgrade);
@@ -215,7 +215,7 @@ public:
 	UFUNCTION()
 	void CardSelectRight();
 
-	void AddItem(RogueItem* _item);
+	void AddItem(URogueItem* _item);
 	void AddItemFromPool(unsigned int _index);
 
 	UFUNCTION()
@@ -237,6 +237,8 @@ public:
 
 	UFUNCTION()
 	void FocusMenu();
+	UFUNCTION()
+	void QuitGame();
 	
 	UFUNCTION()
 	void StartRun();
@@ -270,7 +272,7 @@ public:
 	void UpgradeEarthquake();
 
 	bool maxMultiplier = false;
-	//int upgradeMultiplier[UPGRADE_COUNT];
+
 	UFUNCTION()
 	void SetUpgradeMult1();
 	UFUNCTION()
@@ -298,8 +300,8 @@ public:
 	void ChangeDifficulty(float _value);
 
 	// Dwarf Stats
-	int Level;
-	int Experience;
+	int Level = 0;
+	int Experience = 0;
 	int RequiredExperience;
 	void IncreaseExp(int _value);
 	void LevelUp();
@@ -354,14 +356,3 @@ public:
 	bool isResourceUnlocked[RESOURCE_COUNT];
 	BigNumber resources[RESOURCE_COUNT];
 };
-
-template<typename T>
-inline void Milestone<T>::CheckTier()
-{
-	while (currentTier < maximumTier && value > tiers[currentTier])
-	{
-		// Call milestone function
-		tierUpDelegate.Execute(currentTier);
-		currentTier++;
-	}
-}

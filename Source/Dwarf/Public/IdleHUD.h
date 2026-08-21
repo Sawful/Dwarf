@@ -8,6 +8,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/WrapBox.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 
 #include "ResourceEntryWidget.h"
 #include "ResourceEntryData.h"
@@ -19,6 +20,7 @@
 
 #include "IdleHUD.generated.h"
 
+class IdleRelic;
 
 UCLASS()
 class DWARF_API UIdleHUD : public UUserWidget
@@ -27,6 +29,8 @@ class DWARF_API UIdleHUD : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
+
+	TSubclassOf<UUpgradeEntryWidget> ItemBoxClass;
 
 	void SetResource(int _type, BigNumber _value);
 	void AddResource(int _type, BigNumber _value);
@@ -97,6 +101,9 @@ public:
 	UButton* ButtonMultMax;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* DistanceTraveledText;
+
+	void SetDistanceText(int _distance) { DistanceTraveledText->SetText(FText::FromString("Distance Traveled: " + FString::FromInt(_distance) + "m")); }
+	UUpgradeEntryWidget* AddRelicWidget(IdleRelic* _relic);
 
 protected:
 

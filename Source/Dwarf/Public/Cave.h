@@ -28,9 +28,7 @@ protected:
 	int caveRank = 0;
 	ABlock* last = nullptr;
 
-	ABlock* GetBlock(int _index);
 	virtual void BreakFirst();
-	virtual void Break(int _index);
 	virtual void Break(ABlock* _broken);
 	//virtual void Break(int _x, int _y);
 

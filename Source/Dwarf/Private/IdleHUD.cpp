@@ -1,4 +1,6 @@
 #include "IdleHUD.h"
+#include "Components/RichTextBlock.h"
+#include "IdleRelic.h"
 
 void UIdleHUD::NativeConstruct()
 {
@@ -28,6 +30,27 @@ void UIdleHUD::UpdateResources(BigNumber(&_resources)[RESOURCE_COUNT])
 		if (_resources[i] == 0) continue;
 		ResourceItems[i]->SetAmount(_resources[i]);
 	}
+}
+
+UUpgradeEntryWidget* UIdleHUD::AddRelicWidget(IdleRelic* _relic)
+{
+	// Add to box
+	UUpgradeEntryWidget* widget = CreateWidget<UUpgradeEntryWidget, UWrapBox*>(RelicBox, ItemBoxClass);
+	widget->level = _relic->rank;
+	widget->name = _relic->name;
+
+	if (!IsValid(_relic->icon))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Icon invalid");
+	}
+
+	widget->Icon->SetBrushFromTexture(_relic->icon);
+	widget->SetPadding(16);
+	widget->LevelText->SetText(FText::FromString(FString::FromInt(widget->level)));
+	widget->descriptionText = _relic->GetDescriptionText(_relic->rank);
+	RelicBox->AddChild(widget);
+
+	return widget;
 }
 
 void UIdleHUD::SetResource(int _type, BigNumber _value)
