@@ -1,14 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Block.h"
 
-// Sets default values
 ABlock::ABlock()
 {
 }
 
-// Called when the game starts or when spawned
 void ABlock::BeginPlay()
 {
 	Super::BeginPlay();
@@ -18,6 +13,11 @@ void ABlock::DisconnectFromList()
 {
 	if (next) { next->previous = previous; }
 	if (previous) { previous->next = next; }
+}
+
+void ABlock::UpdateBreakFactor()
+{
+	mat->SetScalarParameterValue("BrokenFactor", 1.0f - (float)(Data.health / Data.maxHealth));
 }
 
 FString GetResourceName(ResourceType _type)

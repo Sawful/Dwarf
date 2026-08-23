@@ -1,12 +1,12 @@
 #include "DamageRogueItem.h"
 #include "DwarfPlayerState.h"
 
-void UDamageRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
+void UDamageRogueItem::Bind(URoguePlayerData* _player, Cave* _cave)
 {
 	handle = _player->OnDamageCalc.AddUObject(this, &UDamageRogueItem::DamageCalc);
 }
 
-void UDamageRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
+void UDamageRogueItem::UnBind(URoguePlayerData* _player, Cave* _cave)
 {
 	_player->OnDamageCalc.Remove(handle);
 }

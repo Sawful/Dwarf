@@ -7,7 +7,8 @@
 
 class ADwarfPlayerState;
 
-enum UpgradeType : int
+UENUM(BlueprintType)
+enum UpgradeType : uint8
 {
 	UPG_STRONG_ARMS = 0,	// Click damage
 	UPG_DRILL,				// Auto dmg
@@ -29,10 +30,7 @@ struct ResourceUpgrade
 	ADwarfPlayerState* player;
 
 	UPROPERTY()
-	FString upgradeFunctionName;
-
-	UPROPERTY()
-	FString displayName;
+	FString name;
 
 	UPROPERTY()
 	unsigned int upgradeLevel = 0;
@@ -65,8 +63,7 @@ struct ResourceUpgrade
 struct StrongArmsUpgrade: public ResourceUpgrade
 {
 	StrongArmsUpgrade() {
-		displayName = "Strong Arms";
-		upgradeFunctionName = "StrongArms";
+		name = "Strong Arms";
 		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/StrongArms.StrongArms"));
 	}
 
@@ -80,8 +77,7 @@ struct StrongArmsUpgrade: public ResourceUpgrade
 struct DrillUpgrade: public ResourceUpgrade
 {
 	DrillUpgrade() {
-		displayName = "Drill";
-		upgradeFunctionName = "Drill";
+		name = "Drill";
 		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Drill.Drill"));
 	}
 
@@ -94,8 +90,7 @@ struct DrillUpgrade: public ResourceUpgrade
 struct BoomUpgrade: public ResourceUpgrade
 {
 	BoomUpgrade() {
-		displayName = "TNT";
-		upgradeFunctionName = "Boom";
+		name = "TNT";
 		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/TNT.TNT"));
 	}
 
@@ -109,8 +104,7 @@ struct BoomUpgrade: public ResourceUpgrade
 struct EarthquakeUpgrade: public ResourceUpgrade
 {
 	EarthquakeUpgrade() {
-		displayName = "Earthquake Totem";
-		upgradeFunctionName = "Earthquake";
+		name = "Earthquake Totem";
 		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Totem.Totem"));
 	}
 
@@ -124,8 +118,7 @@ struct EarthquakeUpgrade: public ResourceUpgrade
 struct LaserUpgrade: public ResourceUpgrade
 {
 	LaserUpgrade() {
-		displayName = "Mining Laser";
-		upgradeFunctionName = "Laser";
+		name = "Mining Laser";
 		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Laser.Laser"));
 	}
 
@@ -139,8 +132,7 @@ struct LaserUpgrade: public ResourceUpgrade
 struct CritUpgrade: public ResourceUpgrade
 {
 	CritUpgrade() {
-		displayName = "Precision";
-		upgradeFunctionName = "Crit";
+		name = "Precision";
 		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Crit.Crit"));
 	}
 
@@ -153,8 +145,7 @@ struct CritUpgrade: public ResourceUpgrade
 struct YieldUpgrade: public ResourceUpgrade
 {
 	YieldUpgrade() {
-		displayName = "Gold Lover";
-		upgradeFunctionName = "Yield";
+		name = "Gold Lover";
 		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Texture/UI/Upgrades/Coin.Coin"));
 	}
 
@@ -167,8 +158,7 @@ struct YieldUpgrade: public ResourceUpgrade
 struct PlaceholderUpgrade: public ResourceUpgrade
 {
 	PlaceholderUpgrade() {
-		displayName = "Placeholder";
-		upgradeFunctionName = "Placeholder";
+		name = "Placeholder";
 		icon = LoadObject<UTexture2D>(nullptr, TEXT("/Game/Character/1454055200561172541.1454055200561172541"));
 	}
 

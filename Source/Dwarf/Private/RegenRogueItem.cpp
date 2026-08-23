@@ -1,11 +1,11 @@
 #include "RegenRogueItem.h"
 #include "DwarfPlayerState.h"
 
-void URegenRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
+void URegenRogueItem::Bind(URoguePlayerData* _player, Cave* _cave)
 {
 	handle = _player->OnPressureRegenCalc.AddUObject(this, &URegenRogueItem::PressureRegenCalc);
 }
-void URegenRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
+void URegenRogueItem::UnBind(URoguePlayerData* _player, Cave* _cave)
 {
 	handle.Reset();
 }

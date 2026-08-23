@@ -116,7 +116,8 @@ ABlock* Cave::GenerateBlock(FVector _pos)
 
 	SetBlockDataByType(block, PickRandomType());
 
-	block->Data.health *= diffBlockHealthMult * distanceHealthMult;
+	block->Data.maxHealth *= diffBlockHealthMult * distanceHealthMult;
+	block->Data.health = block->Data.maxHealth;
 
 	block->Data.index = blocksGenerated;
 	blocksGenerated++;
@@ -307,6 +308,7 @@ void Cave::DamageFirst(BigNumber _damage, DamageSource _source)
 {
 	CreateDamageText(_damage, _source.TextType, first->GetActorLocation());
 	first->Data.health -= _damage;
+	first->UpdateBreakFactor();
 	if (first->Data.health <= (BigNumber)0)
 	{
 		Break(first);
@@ -326,6 +328,7 @@ void Cave::DamageFirstColumn(BigNumber _damage, DamageSource _source)
 
 		CreateDamageText(_damage, _source.TextType, target->GetActorLocation());
 		target->Data.health -= _damage;
+		target->UpdateBreakFactor();
 		if (target->Data.health <= (BigNumber)0)
 		{
 			tempBroken.Add(target);
@@ -355,6 +358,7 @@ void Cave::DamageArea(BigNumber _damage, DamageSource _source)
 
 		CreateDamageText(_damage, _source.TextType, target->GetActorLocation());
 		target->Data.health -= _damage;
+		target->UpdateBreakFactor();
 		if (target->Data.health <= (BigNumber)0)
 		{
 			tempBroken.Add(target);
@@ -388,6 +392,7 @@ void Cave::DamageRow(BigNumber _damage, DamageSource _source)
 
 		CreateDamageText(_damage, _source.TextType, target->GetActorLocation());
 		target->Data.health -= _damage;
+		target->UpdateBreakFactor();
 		if (target->Data.health <= (BigNumber)0)
 		{
 			Break(target);
@@ -436,56 +441,57 @@ void Cave::SetBlockDataByType(ABlock* _block, BlockType _type)
 	switch (_type)
 	{
 	case MUDROCK_BLOCK:
-		_block->Data.health = 5;
+		_block->Data.maxHealth = 3;
 		_block->Data.yield.Push({ MUDROCK, uint64(1)});
-		_block->mesh->SetMaterial(0, MudrockMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, MudrockMat);
 		break;
 	case COAL_BLOCK:
-		_block->Data.health = 10;
+		_block->Data.maxHealth = 10;
 		_block->Data.yield.Push({ COAL, uint64(1) });
-		_block->mesh->SetMaterial(0, CoalMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, CoalMat);
 		break;
 	case COPPER_BLOCK:
-		_block->Data.health = 35;
+		_block->Data.maxHealth = 35;
 		_block->Data.yield.Push({ COPPER, uint64(1) });
-		_block->mesh->SetMaterial(0, CopperMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, CopperMat);
 		break;
 	case TIN_BLOCK:
-		_block->Data.health = 35;
+		_block->Data.maxHealth = 35;
 		_block->Data.yield.Push({ TIN, uint64(1) });
-		_block->mesh->SetMaterial(0, TinMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, TinMat);
 		break;
 	case IRON_BLOCK:
 		_block->Data.health = 75;
 		_block->Data.yield.Push({ IRON, uint64(1) });
-		_block->mesh->SetMaterial(0, IronMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, IronMat);
 		break;
 	case SULFUR_BLOCK:
-		_block->Data.health = 20;
+		_block->Data.maxHealth = 20;
 		_block->Data.yield.Push({ SULFUR, uint64(1) });
-		_block->mesh->SetMaterial(0, SulfurMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, SulfurMat);
 		break;
 	case SILVER_BLOCK:
-		_block->Data.health = 100;
+		_block->Data.maxHealth = 100;
 		_block->Data.yield.Push({ SILVER, uint64(1) });
-		_block->mesh->SetMaterial(0, SilverMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, SilverMat);
 		break;
 	case OBSIDIAN_BLOCK:
-		_block->Data.health = 50;
+		_block->Data.maxHealth = 50;
 		_block->Data.yield.Push({ OBSIDIAN, uint64(1) });
-		_block->mesh->SetMaterial(0, ObsidianMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, ObsidianMat);
 		break;
 	case PLATINUM_BLOCK:
-		_block->Data.health = 250;
+		_block->Data.maxHealth = 250;
 		_block->Data.yield.Push({ PLATINUM, uint64(1) });
-		_block->mesh->SetMaterial(0, PlatinumMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, PlatinumMat);
 		break;
 	case DIAMOND_BLOCK:
-		_block->Data.health = 1000;
+		_block->Data.maxHealth = 1000;
 		_block->Data.yield.Push({ DIAMOND, uint64(1) });
-		_block->mesh->SetMaterial(0, DiamondMat);
+		_block->mat = _block->mesh->CreateDynamicMaterialInstance(0, DiamondMat);
 		break;
 	}
+	_block->Data.health = _block->Data.maxHealth;
 }
 
 void Cave::CheckMoveFloor()
@@ -505,7 +511,6 @@ BlockType Cave::PickRandomType()
 	int sum = 0;
 	for (int i = 0; i < BLOCK_COUNT; i++)
 	{
-		//if (resourceActive[i] == false) continue;
 		sum += weight[i];
 	}
 	int select = rand() % sum;
@@ -513,7 +518,6 @@ BlockType Cave::PickRandomType()
 	sum = 0;
 	for (int i = 0; i < BLOCK_COUNT; i++)
 	{
-		//if (resourceActive[i] == false) continue;
 		sum += weight[i];
 		if (select < sum)
 		{

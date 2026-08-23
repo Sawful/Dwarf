@@ -24,6 +24,7 @@ enum BlockType {
 
 struct BlockData
 {
+	BigNumber maxHealth = 50;
 	BigNumber health = 50;
 	BigNumber expValue = 1;
 	BigNumber pressureValue = 0;
@@ -49,8 +50,10 @@ protected:
 
 public:	
 	void DisconnectFromList();
+	void UpdateBreakFactor();
 
 	UStaticMeshComponent* mesh;
+	UMaterialInstanceDynamic* mat;
 	BlockData Data;
 	ABlock* previous = nullptr;
 	ABlock* next = nullptr;

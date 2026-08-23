@@ -2,14 +2,14 @@
 #include "DwarfPlayerState.h"
 #include "Cave.h"
 
-void UEarthquakeRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
+void UEarthquakeRogueItem::Bind(URoguePlayerData* _player, Cave* _cave)
 {
 	 
 	handle = _player->OnTick.AddUObject(this, &UEarthquakeRogueItem::OnTick);
 	cave = _cave;
 }
 
-void UEarthquakeRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
+void UEarthquakeRogueItem::UnBind(URoguePlayerData* _player, Cave* _cave)
 {
 	_player->OnTick.Remove(handle);
 }

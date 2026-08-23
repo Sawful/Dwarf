@@ -2,13 +2,13 @@
 #include "DwarfPlayerState.h"
 #include "Cave.h"
 
-void UDrillRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
+void UDrillRogueItem::Bind(URoguePlayerData* _player, Cave* _cave)
 {
 	handle = _player->OnTick.AddUObject(this, &UDrillRogueItem::OnTick);
 	cave = _cave;
 }
 
-void UDrillRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
+void UDrillRogueItem::UnBind(URoguePlayerData* _player, Cave* _cave)
 {
 	_player->OnTick.Remove(handle);
 }

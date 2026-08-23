@@ -17,6 +17,9 @@ class DWARF_API UItemCard : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	URoguePlayerData* rogueData;
+
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UButton* SelectButton;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))

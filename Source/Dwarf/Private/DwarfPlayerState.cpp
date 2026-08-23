@@ -65,18 +65,6 @@ void ADwarfPlayerState::SetupResourceUpgrades()
 	resourceUpgrades[5]->SetWidget(HUD->CritUpgradeBox);
 	resourceUpgrades[6]->SetWidget(HUD->YieldUpgradeBox);
 	resourceUpgrades[7]->SetWidget(HUD->PlaceholderUpgradeBox);
-
-	// Setup Upgrade delegates and buttons
-	for (int i = 0; i < UpgradeType::UPGRADE_COUNT; i++)
-	{
-		FScriptDelegate delegate;
-		FName delegateName;
-		delegateName = FName(resourceUpgrades[i]->upgradeFunctionName);
-		FWideString prefix = "Upgrade";
-		delegateName.AppendString(prefix);
-		delegate.BindUFunction(this, FName(prefix));
-		resourceUpgrades[i]->widget->Button->OnClicked.Add(delegate);
-	}
 }
 
 void ADwarfPlayerState::SetupMilestones()
@@ -248,30 +236,8 @@ void ADwarfPlayerState::Tick(float _dt)
 	UpdateDamager(Laser, _dt);
 
 	if (inRun == false) return;
-	if (rogueData.timePaused) return;
 
-	// Take pressure damage
-	BigNumber PressureDamage = currentCave->first->Data.pressureValue * _dt * (1.0f - rogueData.PressureResistance);
-	rogueData.OnPressureCalc.Broadcast(PressureDamage);
-	rogueData.Pressure -= PressureDamage;
-	if (rogueData.Pressure <= 0) // Lose
-	{
-		RunRewards();
-		return;
-	}
-
-	RogueHUD->SetPressure(rogueData.Pressure, rogueData.MaxPressure);
-
-	// Run auto damagers
-	rogueData.clickTimer -= _dt;
-	if (rogueData.clickTimer <= 0)
-	{
-		currentCave->dwarfPawn->HitAnimation();
-		rogueData.clickTimer = rogueData.GetHitCooldown();
-		Damage(GetRogueClickDamage(), ClickSource, currentCave);
-	}
-
-	rogueData.OnTick.Broadcast(_dt);
+	rogueData->Update(_dt);
 }
 
 void ADwarfPlayerState::StartGame()
@@ -319,31 +285,28 @@ void ADwarfPlayerState::StartGame()
 		return;
 	}
 
-	if (CardSelectionClass)
+	// TODO: move this
+	if (RogueHUD->CardSelectionClass)
 	{
-		CardSelection = CreateWidget<URogueCardSelection>(GetPlayerController(), CardSelectionClass);
+		RogueHUD->CardSelection = CreateWidget<URogueCardSelection>(GetPlayerController(), RogueHUD->CardSelectionClass);
 
-		CardSelection->CardLeft->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::CardSelectLeft);
-		CardSelection->CardMiddle->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::CardSelectMiddle);
-		CardSelection->CardRight->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::CardSelectRight);
-
-		CardSelection->SetVisibility(ESlateVisibility::Hidden);
-		CardSelection->AddToViewport();
+		RogueHUD->CardSelection->SetVisibility(ESlateVisibility::Hidden);
+		RogueHUD->CardSelection->AddToViewport();
 	}
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("!!! Could not create CardSelection")));
 	}
-	if (RelicSelectionClass)
+	if (RogueHUD->RelicSelectionClass)
 	{
-		RelicSelection = CreateWidget<URogueCardSelection>(GetPlayerController(), RelicSelectionClass);
+		RogueHUD->RelicSelection = CreateWidget<URogueCardSelection>(GetPlayerController(), RogueHUD->RelicSelectionClass);
 
-		RelicSelection->CardLeft->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::RelicCardSelectLeft);
-		RelicSelection->CardMiddle->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::RelicCardSelectMiddle);
-		RelicSelection->CardRight->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::RelicCardSelectRight);
+		RogueHUD->RelicSelection->CardLeft->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::RelicCardSelectLeft);
+		RogueHUD->RelicSelection->CardMiddle->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::RelicCardSelectMiddle);
+		RogueHUD->RelicSelection->CardRight->SelectButton->OnClicked.AddDynamic(this, &ADwarfPlayerState::RelicCardSelectRight);
 
-		RelicSelection->SetVisibility(ESlateVisibility::Hidden);
-		RelicSelection->AddToViewport();
+		RogueHUD->RelicSelection->SetVisibility(ESlateVisibility::Hidden);
+		RogueHUD->RelicSelection->AddToViewport();
 	}
 	else
 	{
@@ -725,45 +688,26 @@ int ADwarfPlayerState::GetMaxUpgradeMult(UpgradeType _upgrade)
 	return maxMult;
 }
 
-void ADwarfPlayerState::CardSelectLeft()
-{
-	CardSelection->SetVisibility(ESlateVisibility::Hidden);
-	rogueData.timePaused = false;
-	AddItemFromPool(itemsSelection[0]);
-}
-void ADwarfPlayerState::CardSelectMiddle()
-{
-	CardSelection->SetVisibility(ESlateVisibility::Hidden);
-	rogueData.timePaused = false;
-	AddItemFromPool(itemsSelection[1]);
-}
-void ADwarfPlayerState::CardSelectRight()
-{
-	CardSelection->SetVisibility(ESlateVisibility::Hidden);
-	rogueData.timePaused = false;
-	AddItemFromPool(itemsSelection[2]);
-}
-
 void ADwarfPlayerState::RelicCardSelectLeft()
 {
-	RelicSelection->SetVisibility(ESlateVisibility::Hidden);
-	rogueData.timePaused = false;
+	RogueHUD->RelicSelection->SetVisibility(ESlateVisibility::Hidden);
+	rogueData->Resume();
 	AddRelic(relicCardSelection[0]);
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Left selected")));
 	EndRun();
 }
 void ADwarfPlayerState::RelicCardSelectMiddle()
 {
-	RelicSelection->SetVisibility(ESlateVisibility::Hidden);
-	rogueData.timePaused = false;
+	RogueHUD->RelicSelection->SetVisibility(ESlateVisibility::Hidden);
+	rogueData->Resume();
 	AddRelic(relicCardSelection[1]);
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Middle selected")));
 	EndRun();
 }
 void ADwarfPlayerState::RelicCardSelectRight()
 {
-	RelicSelection->SetVisibility(ESlateVisibility::Hidden);
-	rogueData.timePaused = false;
+	RogueHUD->RelicSelection->SetVisibility(ESlateVisibility::Hidden);
+	rogueData->Resume();
 	AddRelic(relicCardSelection[2]);
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(TEXT("Right selected")));
 	EndRun();
@@ -821,71 +765,6 @@ void ADwarfPlayerState::AddRelic(IdleRelic* _relic, int _count)
 	Boom.UpdateDisplayTooltip(resourceUpgrades[UpgradeType::UPG_BOOM]->upgradeLevel);
 	Earthquake.UpdateDisplayTooltip(resourceUpgrades[UpgradeType::UPG_EARTHQUAKE]->upgradeLevel);
 	Laser.UpdateDisplayTooltip(resourceUpgrades[UpgradeType::UPG_LASER]->upgradeLevel);
-}
-
-void ADwarfPlayerState::AddItem(URogueItem* _item)
-{
-	// Check if Item already exists
-	int itemIndex = rogueData.items.Find(_item);
-	if (itemIndex != INDEX_NONE)
-	{ 
-		_item->level++;
-		_item->OnLevelUp();
-
-		UUpgradeEntryWidget* widget = rogueData.itemWidgets[itemIndex];
-		widget->level++;
-		widget->LevelText->SetText(FText::FromString(FString::FromInt(widget->level)));
-		widget->descriptionText = _item->GetDescriptionText(_item->level);
-	}
-
-	else
-	{
-		// New item: Bind and add widget
-		_item->Bind(&rogueData, currentCave);
-		_item->level = 1;
-		_item->OnLevelUp();
-		rogueData.items.Add(_item);
-		rogueData.itemWidgets.Add(RogueHUD->AddItemWidget(_item));
-	}
-}
-
-void ADwarfPlayerState::AddItemFromPool(unsigned int _index)
-{
-	AddItem(currentItemPool[_index]);
-	if (currentItemPool[_index]->level >= MAX_ITEM_LEVEL)
-	{
-		currentItemPool.RemoveAt(_index);
-	}
-}
-
-void ADwarfPlayerState::UpgradeStrongArms()
-{
-	BuyResourceUpgrade(UpgradeType::UPG_STRONG_ARMS);
-}
-void ADwarfPlayerState::UpgradeCrit()
-{
-	BuyResourceUpgrade(UpgradeType::UPG_PRECISION);
-}
-void ADwarfPlayerState::UpgradeYield()
-{
-	BuyResourceUpgrade(UpgradeType::UPG_GOLD_LOVER);
-}
-
-void ADwarfPlayerState::UpgradeDrill()
-{
-	BuyResourceUpgrade(UpgradeType::UPG_DRILL);
-}
-void ADwarfPlayerState::UpgradeBoom()
-{
-	BuyResourceUpgrade(UpgradeType::UPG_BOOM);
-}
-void ADwarfPlayerState::UpgradeEarthquake()
-{
-	BuyResourceUpgrade(UpgradeType::UPG_EARTHQUAKE);
-}
-void ADwarfPlayerState::UpgradeLaser()
-{
-	BuyResourceUpgrade(UpgradeType::UPG_LASER);
 }
 
 void ADwarfPlayerState::SetUpgradeMult1()
@@ -1044,45 +923,6 @@ void ADwarfPlayerState::LevelUp()
 	RequiredExperience = (Level + 1) * (Level + 1);
 }
 
-void ADwarfPlayerState::LevelUpRogue()
-{
-	rogueData.LevelUpRogue();
-	TArray<int> tempPool;
-	for (int i = 0; i < currentItemPool.Num(); i++) tempPool.Add(i);
-
-	if (currentItemPool.Num() < 3) return; // TODO: Flat stat increase
-
-	// Item TODO: Create actual item random (with at least 1 level up, rarity weight, and max level restriction)
-	int randIndex = rand() % tempPool.Num();
-	itemsSelection[0] = tempPool[randIndex];
-	tempPool.RemoveAt(randIndex);
-	CardSelection->CardLeft->SetItemInfo(currentItemPool[itemsSelection[0]]);
-
-	randIndex = rand() % tempPool.Num();
-	itemsSelection[1] = tempPool[randIndex];
-	tempPool.RemoveAt(randIndex);
-	CardSelection->CardMiddle->SetItemInfo(currentItemPool[itemsSelection[1]]);
-
-	randIndex = rand() % tempPool.Num();
-	itemsSelection[2] = tempPool[randIndex];
-	tempPool.RemoveAt(randIndex);
-	CardSelection->CardRight->SetItemInfo(currentItemPool[itemsSelection[2]]);
-
-	rogueData.timePaused = true;
-	CardSelection->SetVisibility(ESlateVisibility::Visible);
-}
-
-void ADwarfPlayerState::IncreaseRogueExp(BigNumber _value)
-{
-	rogueData.experience += _value;
-
-	while (rogueData.experience >= rogueData.experienceRequired)
-	{
-		LevelUpRogue();
-	}
-	RogueHUD->SetLevel(rogueData.level, (float)rogueData.experience / (float)rogueData.experienceRequired);
-}
-
 FString ADwarfPlayerState::GetUpgradeDamageText(UpgradeType _upgrade)
 {
 	switch (_upgrade)
@@ -1110,18 +950,6 @@ BigNumber ADwarfPlayerState::GetClickDamage()
 	}
 
 	return finalDamage;
-}
-
-BigNumber ADwarfPlayerState::GetRogueClickDamage()
-{
-	BigNumber DamageDelta = rogueData.MaxDamage - rogueData.MinDamage;
-	BigNumber DamageBonus = rand() % ((int)DamageDelta + 1);
-
-	// Damage Items //
-	BigNumber damage = rogueData.MinDamage + DamageBonus;
-	rogueData.OnDamageCalc.Broadcast(damage);
-
-	return damage;
 }
 
 void ADwarfPlayerState::Hit(bool _silent = false)
@@ -1201,26 +1029,6 @@ void ADwarfPlayerState::BlockRewardIdle(BlockData _data)
 	HUD->SetDistanceText(currentCave->first->Data.index / 4);
 }
 
-void ADwarfPlayerState::BlockRewardRogue(BlockData _data)
-{
-	IncreaseRogueExp(GetRogueExp(_data.expValue));
-	BigNumber Regen = _data.pressureRegen;
-	rogueData.OnPressureRegenCalc.Broadcast(Regen);
-	rogueData.Pressure += Regen;
-	if (rogueData.Pressure > rogueData.MaxPressure) rogueData.Pressure = rogueData.MaxPressure;
-
-	RogueHUD->SetPressure(rogueData.Pressure, rogueData.MaxPressure);
-	RogueHUD->SetDistanceText(currentCave->first->Data.index / 4);
-}
-
-BigNumber ADwarfPlayerState::GetRogueExp(BigNumber _exp)
-{
-	BigNumber expValue = _exp;
-	// Call delegate
-	rogueData.OnExpCalc.Broadcast(expValue);
-	return expValue;
-}
-
 void ADwarfPlayerState::FocusIdle()
 {
 	CameraActor->SetState(ADwarfCameraActor::IDLE);
@@ -1258,7 +1066,7 @@ void ADwarfPlayerState::QuitGame()
 void ADwarfPlayerState::StartRun()
 {
 	inRun = true;
-	rogueData = RoguePlayerData();
+	rogueData = NewObject<URoguePlayerData>();
 
 	// Build the item pool
 	BuildItemPool();
@@ -1268,6 +1076,7 @@ void ADwarfPlayerState::StartRun()
 
 	// Create new rogue cave
 	currentCave = new RogueCave(); // TODO: Create once and reset between runs
+	rogueData->currentCave = currentCave;
 
 	FActorSpawnParameters param;
 	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -1279,12 +1088,14 @@ void ADwarfPlayerState::StartRun()
 		return;
 	}
 
-	currentCave->BlockBreakDelegate.BindUObject(this, &ADwarfPlayerState::BlockRewardRogue);
+	currentCave->BlockBreakDelegate.BindUObject(rogueData, &URoguePlayerData::BlockReward);
 	currentCave->DamageTextClass = DamageTextClass;
 	currentCave->GenerateStart();
 	currentCave->dwarfPawn->PositionToCave(currentCave);
 
-	RogueHUD->SetLevel(rogueData.level, (float)rogueData.experience / (float)rogueData.experienceRequired);
+	rogueData->RogueHUD = RogueHUD;
+	RogueHUD->CardSelection->SetRogueData(rogueData);
+	RogueHUD->SetLevel(rogueData->level, (float)rogueData->experience / (float)rogueData->experienceRequired);
 
 	FocusRogue();
 }
@@ -1306,12 +1117,12 @@ void ADwarfPlayerState::BuildItemPool()
 		unlockedItemPool[i]->associatedRelic = relics[i];
 	}
 
-	currentItemPool = unlockedItemPool;
+	rogueData->currentItemPool = unlockedItemPool;
 }
 
 void ADwarfPlayerState::RunRewards()
 {
-	TArray<URogueItem*> tempItems = rogueData.items;
+	TArray<URogueItem*> tempItems = rogueData->items;
 	int totalWeight = 0;
 
 	int itemCount = tempItems.Num();
@@ -1332,13 +1143,13 @@ void ADwarfPlayerState::RunRewards()
 		return;
 	}
 
-	RelicSelection->SetVisibility(ESlateVisibility::Visible);
-	rogueData.timePaused = true;
+	RogueHUD->RelicSelection->SetVisibility(ESlateVisibility::Visible);
+	rogueData->Pause();
 
 	UItemCard* cards[3];
-	cards[0] = RelicSelection->CardLeft;	RelicSelection->CardLeft->SetVisibility(ESlateVisibility::Hidden);
-	cards[1] = RelicSelection->CardMiddle;	RelicSelection->CardMiddle->SetVisibility(ESlateVisibility::Hidden);
-	cards[2] = RelicSelection->CardRight;	RelicSelection->CardRight->SetVisibility(ESlateVisibility::Hidden);
+	cards[0] = RogueHUD->RelicSelection->CardLeft;	RogueHUD->RelicSelection->CardLeft->SetVisibility(ESlateVisibility::Hidden);
+	cards[1] = RogueHUD->RelicSelection->CardMiddle;	RogueHUD->RelicSelection->CardMiddle->SetVisibility(ESlateVisibility::Hidden);
+	cards[2] = RogueHUD->RelicSelection->CardRight;	RogueHUD->RelicSelection->CardRight->SetVisibility(ESlateVisibility::Hidden);
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -1372,13 +1183,13 @@ void ADwarfPlayerState::EndRun()
 		currentCave->DestroyCave();
 	}
 
-	currentItemPool.Empty();
-	rogueData.items.Empty();
-	for (int i = 0; i < rogueData.itemWidgets.Num(); i++)
+	rogueData->currentItemPool.Empty();
+	rogueData->items.Empty();
+	for (int i = 0; i < rogueData->itemWidgets.Num(); i++)
 	{
-		rogueData.itemWidgets[i]->RemoveFromParent();
+		rogueData->itemWidgets[i]->RemoveFromParent();
 	}
-	rogueData.itemWidgets.Empty();
+	rogueData->itemWidgets.Empty();
 
 	inRun = false;
 	idleCave.SetCaveVisible(true);
@@ -1500,18 +1311,4 @@ void AutomaticDamager::UpdateDisplayTooltip(int _level)
 	Display->DamageText = GetDamage().ToStringTrunc();
 	Display->hitCooldown = GetCooldown();
 	Display->level = _level;
-}
-
-void RoguePlayerData::LevelUpRogue()
-{
-	level++;
-	experience -= experienceRequired;
-	experienceRequired *= 1.4f;
-}
-
-float RoguePlayerData::GetHitCooldown()
-{
-	float cd = clickCooldown;
-	OnCooldownCalc.Broadcast(cd);
-	return cd;
 }

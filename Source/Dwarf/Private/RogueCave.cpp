@@ -35,8 +35,9 @@ ABlock* RogueCave::GenerateBlock(FVector _pos)
 
 	diffBlockHealthMult = powf(1.02f, powf(blocksGenerated, 0.5f));
 
-	block->Data.health *= diffBlockHealthMult;
-	block->Data.health *= (block->Data.health + (BigNumber)blocksGenerated) / block->Data.health;
+	block->Data.maxHealth *= diffBlockHealthMult;
+	block->Data.maxHealth *= (block->Data.maxHealth + (BigNumber)blocksGenerated) / block->Data.maxHealth;
+	block->Data.health = block->Data.maxHealth;
 
 	cavePressure = 1.0f + blocksGenerated * 0.02f;
 	block->Data.pressureValue = cavePressure;

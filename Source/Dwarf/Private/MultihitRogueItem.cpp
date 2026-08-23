@@ -19,13 +19,13 @@ void UMultihitRogueItem::CooldownCalc(float& _cd)
 	}
 }
 
-void UMultihitRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
+void UMultihitRogueItem::Bind(URoguePlayerData* _player, Cave* _cave)
 {
 	 
 	handle = _player->OnCooldownCalc.AddUObject(this, &UMultihitRogueItem::CooldownCalc);
 }
 
-void UMultihitRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
+void UMultihitRogueItem::UnBind(URoguePlayerData* _player, Cave* _cave)
 {
 	_player->OnCooldownCalc.Remove(handle);
 }

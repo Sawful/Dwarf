@@ -6,13 +6,13 @@ void UCooldownRogueItem::CooldownCalc(float& _cd)
 	_cd *= powf(0.90f, level);
 }
 
-void UCooldownRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
+void UCooldownRogueItem::Bind(URoguePlayerData* _player, Cave* _cave)
 {
 	 
 	handle = _player->OnCooldownCalc.AddUObject(this, &UCooldownRogueItem::CooldownCalc);
 }
 
-void UCooldownRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
+void UCooldownRogueItem::UnBind(URoguePlayerData* _player, Cave* _cave)
 {
 	_player->OnCooldownCalc.Remove(handle);
 }

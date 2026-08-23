@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,9 +6,13 @@
 #include "Components/TextBlock.h"
 #include "Components/WrapBox.h"
 #include "Components/ProgressBar.h"
-#include "ExpBarWidget.h"
+
 #include "BigNumber.h"
+
+#include "ExpBarWidget.h"
 #include "UpgradeEntryWidget.h"
+#include "RogueCardSelection.h"
+
 #include "RogueHUD.generated.h"
 
 class URogueItem;
@@ -36,6 +38,16 @@ public:
 	UProgressBar* PressureBar;
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UTextBlock* DistanceTraveledText;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<URogueCardSelection> CardSelectionClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<URogueCardSelection> RelicSelectionClass;
+
+	UPROPERTY()
+	URogueCardSelection* CardSelection;
+	UPROPERTY()
+	URogueCardSelection* RelicSelection;
 
 	void SetLevel(int _level, float _progress);
 	void SetDistanceText(int _distance);

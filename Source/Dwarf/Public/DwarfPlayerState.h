@@ -12,7 +12,6 @@
 #include "IdleHUD.h"
 #include "CharacterMenuWidget.h"
 #include "RogueHUD.h"
-#include "RogueCardSelection.h"
 
 #include "RogueItem.h"
 #include "IdleRelic.h"
@@ -22,10 +21,13 @@
 #include "DamageSource.h"
 #include "DwarfPawn.h"
 #include "Milestone.h"
+#include "RoguePlayerData.h"
 #include "DwarfPlayerState.generated.h"
 
 class USaveGame;
 class UUpgradeEntryData;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnHit, ADwarfPlayerState*);
 
 struct SavedStats
 {
@@ -34,14 +36,6 @@ struct SavedStats
 	Milestone<int> metersWalked = 0;
 	Milestone<int> rebirthCount = 0;
 };
-
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageCalc, BigNumber&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnPressureCalc, BigNumber&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnPressureRegenCalc, BigNumber&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnExpCalc, BigNumber&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnCooldownCalc, float&);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnTick, float);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnHit, ADwarfPlayerState*);
 
 enum DamageType
 {
@@ -72,35 +66,6 @@ struct AutomaticDamager
 	void UpdateDisplayTooltip(int _level);
 };
 
-
-struct RoguePlayerData
-{
-	int level = 1;
-	BigNumber experience = 0;
-	BigNumber experienceRequired = 8;
-	TArray<URogueItem*> items;
-	TArray<UUpgradeEntryWidget*> itemWidgets;
-
-	bool timePaused = false;
-
-	float clickCooldown = 1.0f;
-	float clickTimer = 1.0f;
-
-	DamageSource ClickSource;
-	BigNumber MinDamage = 10;
-	BigNumber MaxDamage = 15;
-	BigNumber MaxPressure = 100;
-	BigNumber Pressure = 100;
-	float PressureResistance = 0; // 0 <=> full damage, 1 <=> invulnerable
-	FOnDamageCalc OnDamageCalc;
-	FOnPressureCalc OnPressureCalc;
-	FOnPressureRegenCalc OnPressureRegenCalc;
-	FOnExpCalc OnExpCalc;
-	FOnCooldownCalc OnCooldownCalc;
-	FOnTick OnTick;
-	void LevelUpRogue();
-	float GetHitCooldown();
-};
 
 UCLASS()
 class DWARF_API ADwarfPlayerState : public APlayerState
@@ -156,29 +121,16 @@ class DWARF_API ADwarfPlayerState : public APlayerState
 	UPROPERTY()
 	URogueHUD* RogueHUD;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<URogueCardSelection> CardSelectionClass;
-	UPROPERTY()
-	URogueCardSelection* CardSelection;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<URogueCardSelection> RelicSelectionClass;
-
-	UPROPERTY()
-	URogueCardSelection* RelicSelection;
-	IdleRelic* relicCardSelection[3];
-
 	ResourceUpgrade* resourceUpgrades[UpgradeType::UPGRADE_COUNT];
 
 	TArray<IdleRelic*> obtainedRelics;
 
 	// ROGUE //
 	bool inRun = false;
-	RoguePlayerData rogueData;
+	URoguePlayerData* rogueData;
 	UPROPERTY()
 	TArray<URogueItem*> unlockedItemPool;
-	TArray<URogueItem*> currentItemPool;
-	int itemsSelection[3];
+	IdleRelic* relicCardSelection[3];
 
 	bool TimeBoost = false;
 	float TimeBoostFactor;
@@ -202,21 +154,12 @@ public:
 	bool CheckCost(const TArray<ResourceData>& _cost);
 	bool PayCost(const TArray<ResourceData>& _cost);
 
+	UFUNCTION(BlueprintCallable)
 	void BuyResourceUpgrade(UpgradeType _upgrade);
 
 	FString CreateCostText(UpgradeType _upgrade, const TArray<ResourceData>& _cost);
 	void RebuildCostCache(UpgradeType _upgrade);
 	int GetMaxUpgradeMult(UpgradeType _upgrade);
-
-	UFUNCTION()
-	void CardSelectLeft();
-	UFUNCTION()
-	void CardSelectMiddle();
-	UFUNCTION()
-	void CardSelectRight();
-
-	void AddItem(URogueItem* _item);
-	void AddItemFromPool(unsigned int _index);
 
 	UFUNCTION()
 	void RelicCardSelectLeft();
@@ -256,21 +199,6 @@ public:
 	UFUNCTION()
 	void HideCharacterMenu();
 
-	UFUNCTION()
-	void UpgradeStrongArms();
-	UFUNCTION()
-	void UpgradeCrit();
-	UFUNCTION()
-	void UpgradeYield();
-	UFUNCTION()
-	void UpgradeDrill();
-	UFUNCTION()
-	void UpgradeBoom();
-	UFUNCTION()
-	void UpgradeLaser();
-	UFUNCTION()
-	void UpgradeEarthquake();
-
 	bool maxMultiplier = false;
 
 	UFUNCTION()
@@ -305,8 +233,6 @@ public:
 	int RequiredExperience;
 	void IncreaseExp(int _value);
 	void LevelUp();
-	void LevelUpRogue();
-	void IncreaseRogueExp(BigNumber _value);
 	int TalentPoints;
 
 	BigNumber GlobalYieldMultiplier = 1.0f;
@@ -323,7 +249,6 @@ public:
 	BigNumber DamageWindow = 1.0f;
 	BigNumber ClickDamageMultiplier = 1.0f;
 	BigNumber GetClickDamage();
-	BigNumber GetRogueClickDamage();
 
 	AutomaticDamager Drill;
 	AutomaticDamager Boom;
@@ -340,8 +265,6 @@ public:
 	void DamageIdleCave(BigNumber _damage, DamageSource _source);
 
 	void BlockRewardIdle(BlockData _data);
-	void BlockRewardRogue(BlockData _data);
-	BigNumber GetRogueExp(BigNumber _exp);
 
 	FOnDamageCalc OnClickDamageCalc;
 	FOnCooldownCalc OnCooldownCalc;

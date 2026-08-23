@@ -24,7 +24,7 @@ void ResourceUpgrade::UpdateTooltipText()
 {
 	widget->level = upgradeLevel;
 	widget->LevelText->SetText(FText::FromString(FString::FromInt(upgradeLevel)));
-	widget->name = displayName;
+	widget->name = name;
 	widget->descriptionText = GetDescription();
 }
 
@@ -91,7 +91,7 @@ BigNumber StrongArmsUpgrade::GetBaseDamage(int _level)
 
 TArray<ResourceData> DrillUpgrade::GetCost(int _level)
 {
-	const uint64 baseValue = 3;
+	const uint64 baseValue = 1;
 	const float s1 = 0.4f;
 	const float s2 = 15;
 	TArray<ResourceData> cost;
@@ -155,7 +155,7 @@ BigNumber DrillUpgrade::GetBaseDamage(int _level)
 
 TArray<ResourceData> BoomUpgrade::GetCost(int _level)
 {
-	const uint64 baseValue = 25;
+	const uint64 baseValue = 5;
 	const float s1 = 0.45f;
 	const float s2 = 14;
 	TArray<ResourceData> cost;
@@ -219,7 +219,7 @@ BigNumber BoomUpgrade::GetBaseDamage(int _level)
 
 TArray<ResourceData> EarthquakeUpgrade::GetCost(int _level)
 {
-	const uint64 baseValue = 15;
+	const uint64 baseValue = 3;
 	const float s1 = 0.45f;
 	const float s2 = 15;
 	TArray<ResourceData> cost;
@@ -281,7 +281,7 @@ BigNumber EarthquakeUpgrade::GetBaseDamage(int _level)
 /////////////
 TArray<ResourceData> LaserUpgrade::GetCost(int _level)
 {
-	const uint64 baseValue = 5;
+	const uint64 baseValue = 1;
 	const float s1 = 0.45f;
 	const float s2 = 14;
 	TArray<ResourceData> cost;
@@ -344,7 +344,7 @@ BigNumber LaserUpgrade::GetBaseDamage(int _level)
 
 TArray<ResourceData> CritUpgrade::GetCost(int _level)
 {
-	const uint64 baseValue = 20;
+	const uint64 baseValue = 5;
 	const float s1 = 0.40f;
 	const float s2 = 15;
 	TArray<ResourceData> cost;
@@ -380,7 +380,7 @@ BigNumber CritUpgrade::GetMult(int _level)
 
 TArray<ResourceData> YieldUpgrade::GetCost(int _level)
 {
-	const uint64 baseValue = 10;
+	const uint64 baseValue = 5;
 	const float s1 = 0.40f;
 	const float s2 = 10;
 	TArray<ResourceData> cost;

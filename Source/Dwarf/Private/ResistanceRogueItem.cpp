@@ -1,11 +1,11 @@
 #include "ResistanceRogueItem.h"
 #include "DwarfPlayerState.h"
 
-void UResistanceRogueItem::Bind(RoguePlayerData* _player, Cave* _cave)
+void UResistanceRogueItem::Bind(URoguePlayerData* _player, Cave* _cave)
 {
 	handle = _player->OnPressureCalc.AddUObject(this, &UResistanceRogueItem::PressureCalc);
 }
-void UResistanceRogueItem::UnBind(RoguePlayerData* _player, Cave* _cave)
+void UResistanceRogueItem::UnBind(URoguePlayerData* _player, Cave* _cave)
 {
 	handle.Reset();
 }

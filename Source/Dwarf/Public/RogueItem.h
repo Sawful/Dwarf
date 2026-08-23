@@ -6,7 +6,7 @@
 
 #define MAX_ITEM_LEVEL 7
 
-struct RoguePlayerData;
+class URoguePlayerData;
 class Cave;
 class IdleRelic;
 
@@ -27,15 +27,17 @@ class DWARF_API URogueItem : public UObject
 	GENERATED_BODY()
 public:
 	virtual ~URogueItem() {};
-	virtual void Bind(RoguePlayerData* _player, Cave* _cave) PURE_VIRTUAL(URogueItem::Bind, );
-	virtual void UnBind(RoguePlayerData* _player, Cave* _cave) PURE_VIRTUAL(URogueItem::UnBind, );
+	virtual void Bind(URoguePlayerData* _player, Cave* _cave) PURE_VIRTUAL(URogueItem::Bind, );
+	virtual void UnBind(URoguePlayerData* _player, Cave* _cave) PURE_VIRTUAL(URogueItem::UnBind, );
 	virtual FString GetDescriptionText(int _level) PURE_VIRTUAL(URogueItem::GetDescriptionText, return FString(););
 	virtual void OnLevelUp() {};
 	virtual int GetRelicWeight();
 	int level = 0;
 	ItemRarity rarity;
 	FString name;
+
 	UPROPERTY()
 	UTexture2D* icon;
+
 	IdleRelic* associatedRelic = nullptr;
 };
