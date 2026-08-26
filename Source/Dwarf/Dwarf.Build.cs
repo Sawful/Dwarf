@@ -17,8 +17,9 @@ public class Dwarf : ModuleRules
 			"Slate", 
 			"SlateCore", 
 			"EnhancedInput", 
-			"Paper2D" 
-		});
+			"Paper2D",
+            "Niagara",
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

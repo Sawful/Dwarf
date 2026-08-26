@@ -5,10 +5,13 @@
 #include "DwarfPawn.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/TextRenderComponent.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 #define AREA_DEPTH 3
 #define ROW_DEPTH 5
 #define ROW_HEIGHT BLOCK_COUNT_Y - 1
+#define TORCH_DISTANCE 8
 
 void Cave::GenerateStart()
 {
@@ -21,11 +24,28 @@ void Cave::GenerateStart()
 	repeatableFloors[1] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, 0, 800), FRotator(), param);
 	repeatableFloors[2] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, FLOOR_LENGTH, -400), FRotator(), param);
 	repeatableFloors[3] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, 0, -400), FRotator(), param);
+	repeatableFloors[4] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(100, FLOOR_LENGTH, 0), FRotator(), param);
+	repeatableFloors[5] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(100, 0, 0), FRotator(), param);
 
 	diffBlockHealthMult = powf(blockHealthDiffScaling, difficultyLevel);
 	yieldMultiplier = powf(blockRewardsDiffScaling, difficultyLevel);
 
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Tried generating cave")));
+	for (int i = 0; i < TORCH_COUNT; i++)
+	{
+		if (IsValid(Torches[i]))
+		{
+			Torches[i]->Destroy();
+		}
+
+		FActorSpawnParameters spawnParam;
+		spawnParam.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		Torches[i] = dwarfPawn->GetWorld()->SpawnActor<AActor>(BP_TorchClass, FVector(-50000, -50000, -50000), FRotator(), spawnParam);
+	}
+
+	Torches[lastTorchIndex]->SetActorLocation(FVector(0, 0, 0));
+	lastTorchIndex = ++lastTorchIndex % TORCH_COUNT;
+	nextTorchDist = TORCH_DISTANCE * BLOCK_SIZE;
+
 	if (BP_BlockClass == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(TEXT("Could not create block class.")));
@@ -83,7 +103,7 @@ void Cave::SetCaveVisible(bool _visible)
 {
 	if (!first) return;
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		repeatableFloors[i]->SetActorHiddenInGame(!_visible);
 	}
@@ -192,11 +212,36 @@ void Cave::Break(ABlock* _broken)
 		last = last->previous;
 	}
 
+	{ // PARTICLES
+		FLinearColor color;
+		if (_broken->Data.type == MUDROCK_BLOCK)
+		{
+			color = FLinearColor(0.5, 0.3, 0);
+		}
+		else
+		{
+			FHashedMaterialParameterInfo info;
+			info.Name = FScriptName("Tint");
+			_broken->mat->GetVectorParameterValue(info, color);
+		}
+
+		UNiagaraComponent* particles = UNiagaraFunctionLibrary::SpawnSystemAtLocation(dwarfPawn->GetWorld(), BlockBreakSystem, _broken->GetActorLocation(), FRotator());
+		particles->SetColorParameter("Color", color);
+	}
+
 	blocksBroken += _broken->Data.value;
 	BlockBreakDelegate.Execute(_broken->Data);
 	_broken->DisconnectFromList();
 	_broken->Destroy();
 	GenerateTail();
+
+	float dist = dwarfPawn->GetActorLocation().Y;
+	if (nextTorchDist < dist)
+	{
+		Torches[lastTorchIndex]->SetActorLocation(FVector(0, dist, 0));
+		lastTorchIndex = ++lastTorchIndex % TORCH_COUNT;
+		nextTorchDist += TORCH_DISTANCE * BLOCK_SIZE;
+	}
 }
 
 bool Cave::CheckRank()
@@ -496,9 +541,10 @@ void Cave::SetBlockDataByType(ABlock* _block, BlockType _type)
 
 void Cave::CheckMoveFloor()
 {
-	for (int i = 0; i < 4; i++)
+	float dist = dwarfPawn->GetActorLocation().Y;
+	for (int i = 0; i < 6; i++)
 	{
-		if (repeatableFloors[i]->GetActorLocation().Y + FLOOR_LENGTH <= dwarfPawn->GetActorLocation().Y)
+		if (repeatableFloors[i]->GetActorLocation().Y + FLOOR_LENGTH <= dist)
 		{
 			repeatableFloors[i]->SetActorLocation(repeatableFloors[i]->GetActorLocation() + FVector(0, 2 * FLOOR_LENGTH, 0));
 		}
@@ -535,7 +581,10 @@ Cave::~Cave()
 Cave::Cave()
 {
 	BP_BlockClass = StaticLoadClass(ABlock::StaticClass(), nullptr, TEXT("/Game/Blueprints/BP_Block.BP_Block_C"));
+	BP_TorchClass = StaticLoadClass(AActor::StaticClass(), nullptr, TEXT("/Game/Blueprints/BP_Torch.BP_Torch_C"));
 	FloorClass = StaticLoadClass(AStaticMeshActor::StaticClass(), nullptr, TEXT("/Game/Blueprints/FloorRoof.FloorRoof_C"));
+	
+	BlockBreakSystem = LoadObject<UNiagaraSystem>(nullptr, TEXT("/Game/BlockBreakSystem.BlockBreakSystem"));
 
 	MudrockMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Mudrock.Mudrock"));
 	CoalMat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/Coal.Coal"));

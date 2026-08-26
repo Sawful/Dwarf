@@ -16,8 +16,10 @@
 #define BLOCK_COUNT_X 15
 #define BLOCK_COUNT_Y 4
 #define FLOOR_LENGTH 25600
+#define TORCH_COUNT 4
 
 class ADwarfPawn;
+class UNiagaraSystem;
 
 DECLARE_DELEGATE_OneParam(FOnBlockBreak, BlockData);
 class DWARF_API Cave
@@ -45,6 +47,13 @@ protected:
 	UMaterialInterface* MagicMat;
 
 	TSubclassOf<ABlock> BP_BlockClass = nullptr;
+	TSubclassOf<AActor> BP_TorchClass = nullptr;
+	AActor* Torches[TORCH_COUNT];
+	
+	int lastTorchIndex = 0;
+	float nextTorchDist = 0;
+
+	UNiagaraSystem* BlockBreakSystem;
 
 	bool caveVisible = true;
 	float diffBlockHealthMult = 1.0f;
@@ -59,7 +68,7 @@ public:
 	bool CheckRank();
 	TSubclassOf<AStaticMeshActor> FloorClass = nullptr;
 	TSubclassOf <ATextRenderActor> DamageTextClass;
-	AStaticMeshActor* repeatableFloors[4];
+	AStaticMeshActor* repeatableFloors[6];
 
 	AStaticMeshActor* Floor1;
 	AStaticMeshActor* Floor2;
