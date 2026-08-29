@@ -123,6 +123,7 @@ void URoguePlayerData::AddItemFromPool(unsigned int _index)
 void URoguePlayerData::SelectItem(int _index)
 {
 	Resume();
+	RogueHUD->CardSelection->SetVisibility(ESlateVisibility::Hidden);
 	AddItemFromPool(itemsSelection[_index]);
 }
 

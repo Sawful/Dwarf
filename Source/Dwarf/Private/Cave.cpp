@@ -18,10 +18,8 @@ void Cave::GenerateStart()
 	FActorSpawnParameters param;
 	param.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	//GEngine->AddOnScreenDebugMessage(0, 10, FColor::Emerald, FString::FromInt(IsValid(FloorClass)));
-
-	repeatableFloors[0] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, FLOOR_LENGTH, 800), FRotator(), param);
-	repeatableFloors[1] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, 0, 800), FRotator(), param);
+	repeatableFloors[0] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, FLOOR_LENGTH, 800), FRotator(0, 0, 180), param);
+	repeatableFloors[1] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, 0, 800), FRotator(0, 0, 180), param);
 	repeatableFloors[2] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, FLOOR_LENGTH, -400), FRotator(), param);
 	repeatableFloors[3] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(0, 0, -400), FRotator(), param);
 	repeatableFloors[4] = dwarfPawn->GetWorld()->SpawnActor<AStaticMeshActor>(FloorClass, FVector(100, FLOOR_LENGTH, 0), FRotator(), param);

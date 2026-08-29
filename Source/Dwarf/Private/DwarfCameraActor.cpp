@@ -74,7 +74,7 @@ void ADwarfCameraActor::SetState(CameraState _camState)
 
 	case IDLE:
 	{
-		currentOffset = FVector(-1500, 0, 100);
+		currentOffset = FVector(-1200, 0, 100);
 		targetPosition = pawn->GetActorLocation() + currentOffset;
 
 		break;
